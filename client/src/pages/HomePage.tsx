@@ -25,8 +25,8 @@ const styles = createStyles({
     textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)',
   },
   logoContainer: {
-    width: '300px',
-    height: '300px',
+    width: '700px',
+    height: '700px',
     backgroundColor: 'white',
     display: 'flex',
     alignItems: 'center',

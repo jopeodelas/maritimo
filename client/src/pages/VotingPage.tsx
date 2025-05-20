@@ -161,7 +161,7 @@ const VotingPage = () => {
         {players.map(player => (
           <div key={player.id} style={styles.playerCard}>
             <img 
-              src={`http://localhost:5000${player.image_url}`}
+              src={`/images/${player.image_url.replace('/images/', '')}`}
               alt={player.name} 
               style={styles.playerImage} 
             />
