@@ -10,7 +10,7 @@ const styles = createStyles({
     alignItems: 'center',
     justifyContent: 'center',
     minHeight: '100vh',
-    background: 'linear-gradient(to right, #006633 50%, #FF0000 50%)',
+    background: 'linear-gradient(to right, #009759 50%, #FE0000 50%)', 
     padding: '20px',
   },
   formContainer: {
@@ -127,8 +127,8 @@ const LoginPage = () => {
           <button 
             type="submit" 
             style={styles.button}
-            onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#004d26'}
-            onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#006633'}
+            onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#009759'} 
+            onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#FE0000'}
           >
             Login
           </button>

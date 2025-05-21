@@ -63,7 +63,7 @@ const styles = createStyles({
   },
   playerImage: {
     width: '100%',
-    height: '200px',
+    height: '350px',
     objectFit: 'cover',
   },
   playerInfo: {

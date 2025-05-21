@@ -5,6 +5,7 @@ import RegisterPage from './pages/RegisterPage';
 import VotingPage from './pages/VotingPage';
 import ProtectedRoute from './components/ProtectedRoute';
 import { AuthProvider } from './contexts/AuthContext';
+import './styles/fonts.css';
 
 // Global styles
 const globalStyles = `
