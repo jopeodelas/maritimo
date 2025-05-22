@@ -12,6 +12,7 @@ interface AuthContextType {
   user: User | null;
   loading: boolean;
   login: (email: string, password: string) => Promise<void>;
+  loginWithGoogle: () => Promise<void>;
   register: (username: string, email: string, password: string) => Promise<void>;
   logout: () => void;
   isAuthenticated: boolean;
@@ -50,8 +51,41 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
     };
 
-    checkAuth();
+    // Verificar se há um código de autorização retornado do Google OAuth
+    const urlParams = new URLSearchParams(window.location.search);
+    const googleCode = urlParams.get('code');
+    const state = urlParams.get('state');
+    
+    if (googleCode && state === localStorage.getItem('googleOAuthState')) {
+      // Se tiver código do Google, processa-o e remove dos parâmetros da URL
+      handleGoogleCallback(googleCode);
+      // Limpa o estado armazenado após uso
+      localStorage.removeItem('googleOAuthState');
+      // Remove os parâmetros da URL para não confundir o usuário
+      window.history.replaceState({}, document.title, window.location.pathname);
+    } else {
+      // Caso contrário, verificação normal de autenticação
+      checkAuth();
+    }
   }, []);
+
+  // Função para processar o retorno do OAuth do Google
+  const handleGoogleCallback = async (code: string) => {
+    setLoading(true);
+    try {
+      const response = await axios.post(
+        '/api/auth/google/callback',
+        { code },
+        { withCredentials: true }
+      );
+      setUser(response.data);
+    } catch (error) {
+      console.error('Error processing Google authentication:', error);
+      setUser(null);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const login = async (email: string, password: string) => {
     setLoading(true);
@@ -63,6 +97,27 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       );
       setUser(response.data);
     } finally {
+      setLoading(false);
+    }
+  };
+
+  const loginWithGoogle = async () => {
+    setLoading(true);
+    try {
+      // Gerar um estado aleatório para segurança contra CSRF
+      const state = Math.random().toString(36).substring(2, 15);
+      localStorage.setItem('googleOAuthState', state);
+      
+      // Obter a URL de autorização do Google do backend
+      const response = await axios.get('/api/auth/google/url', {
+        params: { state },
+        withCredentials: true,
+      });
+      
+      // Redirecionar para a página de login do Google
+      window.location.href = response.data.url;
+    } catch (error) {
+      console.error('Error initiating Google login:', error);
       setLoading(false);
     }
   };
@@ -94,6 +149,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     user,
     loading,
     login,
+    loginWithGoogle,
     register,
     logout,
     isAuthenticated: !!user,

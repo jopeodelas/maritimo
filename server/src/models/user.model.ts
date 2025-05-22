@@ -6,6 +6,7 @@ export interface User {
   username: string;
   email: string;
   password: string;
+  google_id?: string;  // Adicionado campo google_id
   created_at: Date;
 }
 
@@ -15,6 +16,18 @@ export class UserModel {
       const result = await db.query(
         'SELECT * FROM users WHERE email = $1',
         [email]
+      );
+      return result.rows[0] || null;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  static async findByGoogleId(googleId: string): Promise<User | null> {
+    try {
+      const result = await db.query(
+        'SELECT * FROM users WHERE google_id = $1',
+        [googleId]
       );
       return result.rows[0] || null;
     } catch (error) {
@@ -34,7 +47,12 @@ export class UserModel {
     }
   }
 
-  static async create(username: string, email: string, password: string): Promise<User> {
+  static async create(
+    username: string, 
+    email: string, 
+    password: string, 
+    googleId?: string
+  ): Promise<User> {
     try {
       // Check if email already exists
       const existingUser = await this.findByEmail(email);
@@ -46,11 +64,37 @@ export class UserModel {
       const salt = await bcrypt.genSalt(10);
       const hashedPassword = await bcrypt.hash(password, salt);
 
-      const result = await db.query(
-        'INSERT INTO users (username, email, password) VALUES ($1, $2, $3) RETURNING *',
-        [username, email, hashedPassword]
-      );
+      // Add google_id if provided
+      let result;
+      if (googleId) {
+        result = await db.query(
+          'INSERT INTO users (username, email, password, google_id) VALUES ($1, $2, $3, $4) RETURNING *',
+          [username, email, hashedPassword, googleId]
+        );
+      } else {
+        result = await db.query(
+          'INSERT INTO users (username, email, password) VALUES ($1, $2, $3) RETURNING *',
+          [username, email, hashedPassword]
+        );
+      }
 
+      return result.rows[0];
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  static async updateGoogleId(userId: number, googleId: string): Promise<User> {
+    try {
+      const result = await db.query(
+        'UPDATE users SET google_id = $1 WHERE id = $2 RETURNING *',
+        [googleId, userId]
+      );
+      
+      if (result.rows.length === 0) {
+        throw new Error('User not found');
+      }
+      
       return result.rows[0];
     } catch (error) {
       throw error;
