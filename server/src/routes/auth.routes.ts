@@ -19,6 +19,7 @@ router.get('/me', auth, getCurrentUser);
 
 // Google OAuth routes
 router.get('/google/url', getGoogleAuthUrl);
-router.post('/google/callback', handleGoogleCallback);
+router.get('/google/callback', handleGoogleCallback); 
+router.post('/google/callback', handleGoogleCallback); 
 
 export default router;

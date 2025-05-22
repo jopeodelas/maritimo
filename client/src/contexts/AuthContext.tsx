@@ -114,6 +114,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         withCredentials: true,
       });
       
+      console.log('Google Auth URL:', response.data.url); // Para debugging
+      
       // Redirecionar para a página de login do Google
       window.location.href = response.data.url;
     } catch (error) {
@@ -121,6 +123,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setLoading(false);
     }
   };
+  
 
   const register = async (username: string, email: string, password: string) => {
     setLoading(true);
