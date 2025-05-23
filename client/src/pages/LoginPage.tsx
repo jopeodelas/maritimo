@@ -33,7 +33,7 @@ const LoginPage = () => {
   };
 
   const styles = createStyles({
-    // Estilo global para evitar scrollbar
+    // Estilo global para evitar scrollbar - corrigido com 'as any'
     '@global': {
       'body': {
         margin: 0,
@@ -44,7 +44,7 @@ const LoginPage = () => {
       '*, *:before, *:after': {
         boxSizing: 'inherit',
       },
-    },
+    } as any,
     // Background styles
     container: {
       display: 'flex',
