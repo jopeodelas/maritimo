@@ -24,7 +24,7 @@ const RegisterPage = () => {
     
     try {
       await register(username, email, password);
-      navigate('/voting');
+      navigate('/main');
     } catch (err: any) {
       setError(err.response?.data?.message || 'Registration failed. Please try again.');
     }
@@ -33,7 +33,7 @@ const RegisterPage = () => {
   const handleGoogleLogin = async () => {
     try {
       await loginWithGoogle();
-      navigate('/voting');
+      navigate('/main');
     } catch (err: any) {
       setError('Google registration failed. Please try again.');
     }

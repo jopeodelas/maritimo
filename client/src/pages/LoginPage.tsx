@@ -17,7 +17,7 @@ const LoginPage = () => {
     
     try {
       await login(email, password);
-      navigate('/voting');
+      navigate('/main');
     } catch (err: any) {
       setError(err.response?.data?.message || 'Login failed. Please try again.');
     }
@@ -26,7 +26,7 @@ const LoginPage = () => {
   const handleGoogleLogin = async () => {
     try {
       await loginWithGoogle();
-      navigate('/voting');
+      navigate('/main');
     } catch (err: any) {
       setError('Google login failed. Please try again.');
     }

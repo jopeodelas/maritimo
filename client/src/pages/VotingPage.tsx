@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useAuth } from '../contexts/AuthContext';
+import Navbar from '../components/Navbar';
 import { createStyles } from '../styles/styleUtils';
 
 interface Player {
@@ -24,71 +25,6 @@ const VotingPage = () => {
       minHeight: '100vh',
       background: 'linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)',
       fontFamily: '"Inter", -apple-system, BlinkMacSystemFont, sans-serif',
-    },
-    topBar: {
-      background: 'linear-gradient(135deg, #009759 0%, #006633 100%)',
-      padding: '1.5vh 2vw',
-      boxShadow: '0 0.2vh 1vh rgba(0, 0, 0, 0.1)',
-      position: 'sticky',
-      top: 0,
-      zIndex: 100,
-    },
-    topBarContent: {
-      maxWidth: '1400px',
-      margin: '0 auto',
-      display: 'flex',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-      flexWrap: 'wrap',
-      gap: '2vh',
-    },
-    logo: {
-      display: 'flex',
-      alignItems: 'center',
-      gap: '1vw',
-    },
-    logoText: {
-      color: 'white',
-      fontSize: '1.8vw',
-      fontWeight: '700',
-      margin: 0,
-    },
-    logoSubtext: {
-      color: '#FFBB4C',
-      fontSize: '0.9vw',
-      margin: 0,
-      fontWeight: '4000',
-    },
-    topBarButtons: {
-      display: 'flex',
-      gap: '1vw',
-      alignItems: 'center',
-    },
-    modernButton: {
-      padding: '1vh 2vw',
-      borderRadius: '0.5vw',
-      border: 'none',
-      fontSize: '1vw',
-      fontWeight: '600',
-      cursor: 'pointer',
-      transition: 'all 0.2s ease',
-      display: 'flex',
-      alignItems: 'center',
-      gap: '0.5vw',
-    },
-    confirmButton: {
-      backgroundColor: '#FFBB4C',
-      color: '#006633',
-      disabled: {
-        backgroundColor: '#e9ecef',
-        color: '#6c757d',
-        cursor: 'not-allowed',
-      },
-    },
-    logoutButton: {
-      backgroundColor: 'transparent',
-      color: 'white',
-      border: '0.1vh solid rgba(255, 255, 255, 0.3)',
     },
     content: {
       maxWidth: '1400px',
@@ -146,6 +82,27 @@ const VotingPage = () => {
       fontSize: '1.2vw',
       color: '#6c757d',
       fontWeight: '500',
+    },
+    modernButton: {
+      padding: '1vh 2vw',
+      borderRadius: '0.5vw',
+      border: 'none',
+      fontSize: '1vw',
+      fontWeight: '600',
+      cursor: 'pointer',
+      transition: 'all 0.2s ease',
+      display: 'flex',
+      alignItems: 'center',
+      gap: '0.5vw',
+    },
+    confirmButton: {
+      backgroundColor: '#FFBB4C',
+      color: '#006633',
+      disabled: {
+        backgroundColor: '#e9ecef',
+        color: '#6c757d',
+        cursor: 'not-allowed',
+      },
     },
     positionSection: {
       marginBottom: '5vh',
@@ -254,7 +211,7 @@ const VotingPage = () => {
     },
     playerName: {
       fontSize: '1.1vw',
-      fontWeight: '6rem',
+      fontWeight: '600',
       color: '#212529',
       margin: '0 0 0.5vh 0',
       lineHeight: '1.3',
@@ -453,16 +410,7 @@ const VotingPage = () => {
   if (loading) {
     return (
       <div style={styles.container}>
-        <div style={styles.topBar}>
-          <div style={styles.topBarContent}>
-            <div style={styles.logo}>
-              <div>
-                <h1 style={styles.logoText}>CS Marítimo</h1>
-                <p style={styles.logoSubtext}>Player Voting</p>
-              </div>
-            </div>
-          </div>
-        </div>
+        <Navbar />
         <div style={styles.content}>
           <div style={styles.loading}>
             <div style={styles.loadingSpinner}></div>
@@ -481,55 +429,7 @@ const VotingPage = () => {
 
   return (
     <div style={styles.container}>
-      <div style={styles.topBar}>
-        <div style={styles.topBarContent}>
-          <div style={styles.logo}>
-            <div>
-              <h1 style={styles.logoText}>CS Marítimo</h1>
-              <p style={styles.logoSubtext}>Player Voting System</p>
-            </div>
-          </div>
-          <div style={styles.topBarButtons}>
-            <button 
-              onClick={handleConfirmVotes}
-              disabled={selectedPlayers.length === 0 || isSubmitting}
-              style={{
-                ...styles.modernButton,
-                ...styles.confirmButton,
-                ...(selectedPlayers.length === 0 || isSubmitting ? styles.confirmButton.disabled : {})
-              }}
-              onMouseOver={(e) => {
-                if (selectedPlayers.length > 0 && !isSubmitting) {
-                  e.currentTarget.style.backgroundColor = '#FFA726';
-                  e.currentTarget.style.transform = 'translateY(-0.1vh)';
-                }
-              }}
-              onMouseOut={(e) => {
-                if (selectedPlayers.length > 0 && !isSubmitting) {
-                  e.currentTarget.style.backgroundColor = '#FFBB4C';
-                  e.currentTarget.style.transform = 'translateY(0)';
-                }
-              }}
-            >
-              {isSubmitting ? 'Voting...' : `✓ Confirm (${selectedPlayers.length})`}
-            </button>
-            <button 
-              onClick={logout} 
-              style={{...styles.modernButton, ...styles.logoutButton}}
-              onMouseOver={(e) => {
-                e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.1)';
-                e.currentTarget.style.transform = 'translateY(-0.1vh)';
-              }}
-              onMouseOut={(e) => {
-                e.currentTarget.style.backgroundColor = 'transparent';
-                e.currentTarget.style.transform = 'translateY(0)';
-              }}
-            >
-              Logout
-            </button>
-          </div>
-        </div>
-      </div>
+      <Navbar />
 
       <div style={styles.content}>
         <div style={styles.header}>
@@ -542,6 +442,34 @@ const VotingPage = () => {
             {selectedPlayers.length} player{selectedPlayers.length !== 1 ? 's' : ''} selected for voting
           </div>
         )}
+
+        <div style={{ textAlign: 'center', marginBottom: '3vh' }}>
+          <button 
+            onClick={handleConfirmVotes}
+            disabled={selectedPlayers.length === 0 || isSubmitting}
+            style={{
+              ...styles.modernButton,
+              ...styles.confirmButton,
+              ...(selectedPlayers.length === 0 || isSubmitting ? styles.confirmButton.disabled : {}),
+              padding: '1.5vh 3vw',
+              fontSize: '1.2vw'
+            }}
+            onMouseOver={(e) => {
+              if (selectedPlayers.length > 0 && !isSubmitting) {
+                e.currentTarget.style.backgroundColor = '#FFA726';
+                e.currentTarget.style.transform = 'translateY(-0.1vh)';
+              }
+            }}
+            onMouseOut={(e) => {
+              if (selectedPlayers.length > 0 && !isSubmitting) {
+                e.currentTarget.style.backgroundColor = '#FFBB4C';
+                e.currentTarget.style.transform = 'translateY(0)';
+              }
+            }}
+          >
+            {isSubmitting ? 'Voting...' : `✓ Confirm Votes (${selectedPlayers.length})`}
+          </button>
+        </div>
 
         {Object.entries(groupedPlayers).map(([key, group]) => {
           if (group.players.length === 0) return null;

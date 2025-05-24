@@ -3,6 +3,7 @@ import HomePage from './pages/HomePage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import VotingPage from './pages/VotingPage';
+import MainPage from './pages/MainPage';
 import ProtectedRoute from './components/ProtectedRoute';
 import { AuthProvider } from './contexts/AuthContext';
 import './styles/fonts.css';
@@ -35,6 +36,14 @@ function App() {
             <Route path="/" element={<HomePage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
+            <Route 
+              path="/main" 
+              element={
+                <ProtectedRoute>
+                  <MainPage />
+                </ProtectedRoute>
+              } 
+            />
             <Route 
               path="/voting" 
               element={
