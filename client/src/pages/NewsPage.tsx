@@ -66,31 +66,7 @@ const NewsPage = () => {
     }
   };
 
-  const handleNewsCardHover = (e: React.MouseEvent, isHover: boolean) => {
-    const target = e.currentTarget as HTMLElement;
-    if (isHover) {
-      target.style.transform = 'translateY(-0.5vh) scale(1.02)';
-      target.style.boxShadow = '0 1.5vh 3vh rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(76, 175, 80, 0.4)';
-      target.style.borderColor = 'rgba(76, 175, 80, 0.6)';
-    } else {
-      target.style.transform = 'translateY(0) scale(1)';
-      target.style.boxShadow = '0 clamp(0.5rem, 1.5vh, 1rem) clamp(2rem, 3vh, 2.5rem) rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(76, 175, 80, 0.2)';
-      target.style.borderColor = 'rgba(76, 175, 80, 0.3)';
-    }
-  };
 
-  const handleRefreshButtonHover = (e: React.MouseEvent, isHover: boolean) => {
-    const target = e.currentTarget as HTMLElement;
-    if (isHover) {
-      target.style.background = 'linear-gradient(135deg, #66BB6A 0%, #4CAF50 100%)';
-      target.style.transform = 'scale(1.05)';
-      target.style.boxShadow = '0 0.25rem 0.75rem rgba(76, 175, 80, 0.4)';
-    } else {
-      target.style.background = 'linear-gradient(135deg, #4CAF50 0%, #388E3C 100%)';
-      target.style.transform = 'scale(1)';
-      target.style.boxShadow = '0 0.25rem 0.5rem rgba(76, 175, 80, 0.3)';
-    }
-  };
 
   const styles = createStyles({
     container: {
@@ -137,7 +113,7 @@ const NewsPage = () => {
         0 clamp(0.5rem, 1.5vh, 1rem) clamp(2rem, 4vh, 3rem) rgba(0, 0, 0, 0.4),
         inset 0 1px 0 rgba(76, 175, 80, 0.3)
       `,
-      backdropFilter: "blur(20px)",
+      backdropFilter: "blur(10px)",
       position: "relative",
       overflow: "hidden",
     },
@@ -178,7 +154,7 @@ const NewsPage = () => {
       fontSize: "clamp(0.875rem, 2vw, 1rem)",
       fontWeight: "600",
       cursor: "pointer",
-      transition: "all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)",
+      transition: "all 0.2s ease",
       display: "inline-flex",
       alignItems: "center",
       gap: "clamp(0.5rem, 1vw, 0.75rem)",
@@ -203,12 +179,12 @@ const NewsPage = () => {
       border: "1px solid rgba(76, 175, 80, 0.3)",
       borderRadius: "clamp(1rem, 2.5vw, 1.5rem)",
       padding: "clamp(1.5rem, 3vh, 2rem) clamp(1.5rem, 2.5vw, 2rem)",
-      backdropFilter: "blur(20px)",
+      backdropFilter: "blur(10px)",
       boxShadow: `
         0 clamp(0.5rem, 1.5vh, 1rem) clamp(2rem, 3vh, 2.5rem) rgba(0, 0, 0, 0.4),
         inset 0 1px 0 rgba(76, 175, 80, 0.2)
       `,
-      transition: "all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)",
+      transition: "all 0.2s ease",
       cursor: "pointer",
       position: "relative",
       overflow: "hidden",
@@ -291,7 +267,7 @@ const NewsPage = () => {
       background: "rgba(30, 40, 50, 0.95)",
       border: "1px solid rgba(76, 175, 80, 0.3)",
       borderRadius: "clamp(1rem, 2.5vw, 1.5rem)",
-      backdropFilter: "blur(20px)",
+      backdropFilter: "blur(10px)",
       boxShadow: `
         0 clamp(0.5rem, 1.5vh, 1rem) clamp(2rem, 3vh, 2.5rem) rgba(0, 0, 0, 0.4),
         inset 0 1px 0 rgba(76, 175, 80, 0.2)
@@ -312,7 +288,7 @@ const NewsPage = () => {
   if (loading) {
     return (
       <div style={styles.container}>
-        <div style={styles.backgroundPattern}></div>
+        <div style={styles.backgroundPattern} className="background-pattern"></div>
         <Navbar />
         <div style={styles.content}>
           <div style={styles.loading}>
@@ -325,7 +301,7 @@ const NewsPage = () => {
 
   return (
     <div style={styles.container}>
-      <div style={styles.backgroundPattern}></div>
+      <div style={styles.backgroundPattern} className="background-pattern"></div>
       <Navbar />
       <div style={styles.content}>
         <div style={styles.heroSection}>
@@ -339,8 +315,7 @@ const NewsPage = () => {
             style={styles.refreshButton}
             onClick={handleRefreshNews}
             disabled={refreshing}
-            onMouseOver={(e) => handleRefreshButtonHover(e, true)}
-            onMouseOut={(e) => handleRefreshButtonHover(e, false)}
+            className="hover-refresh-news"
           >
             {refreshing ? "A atualizar..." : "Atualizar Notícias"}
           </button>
@@ -366,8 +341,7 @@ const NewsPage = () => {
               <div
                 key={`${item.url}_${index}`}
                 style={styles.newsCard}
-                onMouseOver={(e) => handleNewsCardHover(e, true)}
-                onMouseOut={(e) => handleNewsCardHover(e, false)}
+                            className="hover-news-card"
                 onClick={() => window.open(item.url, '_blank')}
               >
                 <div style={styles.newsContent}>

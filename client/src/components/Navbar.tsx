@@ -158,17 +158,8 @@ const Navbar = () => {
       <div style={styles.navContent}>
         <div 
           style={styles.logoSection} 
+          className="hover-logo"
           onClick={() => navigate('/main')}
-          onMouseOver={(e) => {
-            e.currentTarget.style.transform = 'scale(1.05)';
-            const img = e.currentTarget.querySelector('img');
-            if (img) img.style.transform = 'rotate(5deg) scale(1.1)';
-          }}
-          onMouseOut={(e) => {
-            e.currentTarget.style.transform = 'scale(1)';
-            const img = e.currentTarget.querySelector('img');
-            if (img) img.style.transform = 'rotate(0deg) scale(1)';
-          }}
         >
           <img src={maritimoCrest} alt="CS Marítimo" style={styles.logoImage} />
           <div style={styles.logoTextContainer}>
@@ -180,61 +171,22 @@ const Navbar = () => {
         <div style={styles.navLinks}>
           <a
             style={styles.navLink}
+            className="hover-nav-link"
             onClick={() => navigate('/main')}
-            onMouseOver={(e) => {
-              e.currentTarget.style.backgroundColor = 'rgba(255, 187, 76, 0.2)';
-              e.currentTarget.style.color = '#FFBB4C';
-              e.currentTarget.style.borderColor = '#FFBB4C';
-              e.currentTarget.style.transform = 'translateY(-0.1vh)';
-              e.currentTarget.style.boxShadow = '0 0.3vh 1vh rgba(255, 187, 76, 0.3)';
-            }}
-            onMouseOut={(e) => {
-              e.currentTarget.style.backgroundColor = 'transparent';
-              e.currentTarget.style.color = 'white';
-              e.currentTarget.style.borderColor = 'transparent';
-              e.currentTarget.style.transform = 'translateY(0)';
-              e.currentTarget.style.boxShadow = 'none';
-            }}
           >
             Início
           </a>
           <a
             style={styles.navLink}
+            className="hover-nav-link"
             onClick={() => navigate('/voting')}
-            onMouseOver={(e) => {
-              e.currentTarget.style.backgroundColor = 'rgba(255, 187, 76, 0.2)';
-              e.currentTarget.style.color = '#FFBB4C';
-              e.currentTarget.style.borderColor = '#FFBB4C';
-              e.currentTarget.style.transform = 'translateY(-0.1vh)';
-              e.currentTarget.style.boxShadow = '0 0.3vh 1vh rgba(255, 187, 76, 0.3)';
-            }}
-            onMouseOut={(e) => {
-              e.currentTarget.style.backgroundColor = 'transparent';
-              e.currentTarget.style.color = 'white';
-              e.currentTarget.style.borderColor = 'transparent';
-              e.currentTarget.style.transform = 'translateY(0)';
-              e.currentTarget.style.boxShadow = 'none';
-            }}
           >
             Votação
           </a>
           <a
             style={styles.navLink}
+            className="hover-nav-link"
             onClick={() => navigate('/news')}
-            onMouseOver={(e) => {
-              e.currentTarget.style.backgroundColor = 'rgba(255, 187, 76, 0.2)';
-              e.currentTarget.style.color = '#FFBB4C';
-              e.currentTarget.style.borderColor = '#FFBB4C';
-              e.currentTarget.style.transform = 'translateY(-0.1vh)';
-              e.currentTarget.style.boxShadow = '0 0.3vh 1vh rgba(255, 187, 76, 0.3)';
-            }}
-            onMouseOut={(e) => {
-              e.currentTarget.style.backgroundColor = 'transparent';
-              e.currentTarget.style.color = 'white';
-              e.currentTarget.style.borderColor = 'transparent';
-              e.currentTarget.style.transform = 'translateY(0)';
-              e.currentTarget.style.boxShadow = 'none';
-            }}
           >
             Notícias
           </a>
@@ -243,19 +195,8 @@ const Navbar = () => {
         <div style={styles.rightSection}>
           <button
             style={styles.logoutButton}
+            className="hover-logout"
             onClick={handleLogout}
-            onMouseOver={(e) => {
-              e.currentTarget.style.backgroundColor = 'rgba(254, 0, 0, 0.2)';
-              e.currentTarget.style.borderColor = '#FE0000';
-              e.currentTarget.style.transform = 'translateY(-0.1vh)';
-              e.currentTarget.style.boxShadow = '0 0.3vh 1vh rgba(254, 0, 0, 0.3)';
-            }}
-            onMouseOut={(e) => {
-              e.currentTarget.style.backgroundColor = 'rgba(254, 0, 0, 0.1)';
-              e.currentTarget.style.borderColor = 'rgba(254, 0, 0, 0.5)';
-              e.currentTarget.style.transform = 'translateY(0)';
-              e.currentTarget.style.boxShadow = 'none';
-            }}
           >
             Sair
           </button>

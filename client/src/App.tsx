@@ -8,6 +8,7 @@ import NewsPage from './pages/NewsPage';
 import ProtectedRoute from './components/ProtectedRoute';
 import { AuthProvider } from './contexts/AuthContext';
 import './styles/fonts.css';
+import './styles/optimizedStyles.css';
 
 // Global styles
 const globalStyles = `

@@ -1,0 +1,301 @@
+/* Optimized CSS for better performance */
+
+/* Selective hardware acceleration - only for elements that need it */
+.hover-card,
+.hover-button,
+.hover-nav-link,
+.hover-logo,
+.hover-transfer-card,
+.hover-position,
+.hover-refresh,
+.hover-logout,
+.hover-player-card,
+.hover-news-card,
+.hover-refresh-news {
+  will-change: transform;
+  transform: translateZ(0); /* Force GPU acceleration */
+  backface-visibility: hidden;
+}
+
+/* Remove will-change after hover to free up GPU memory */
+.hover-card:not(:hover),
+.hover-button:not(:hover),
+.hover-nav-link:not(:hover),
+.hover-logo:not(:hover),
+.hover-transfer-card:not(:hover),
+.hover-position:not(:hover),
+.hover-refresh:not(:hover),
+.hover-logout:not(:hover),
+.hover-player-card:not(:hover),
+.hover-news-card:not(:hover),
+.hover-refresh-news:not(:hover) {
+  will-change: auto;
+}
+
+/* Optimized hover effects using CSS instead of JavaScript */
+.hover-card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.hover-card:hover {
+  transform: translateY(-0.5vh) scale(1.02);
+  box-shadow: 0 1vh 2vh rgba(0, 0, 0, 0.15);
+}
+
+.hover-button {
+  transition: transform 0.2s ease, background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.hover-button:hover {
+  transform: translateY(-0.25vh) scale(1.05);
+}
+
+.hover-nav-link {
+  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+}
+
+.hover-nav-link:hover {
+  background-color: rgba(255, 187, 76, 0.2) !important;
+  color: #FFBB4C !important;
+  border-color: #FFBB4C !important;
+  transform: translateY(-0.1vh);
+  box-shadow: 0 0.3vh 1vh rgba(255, 187, 76, 0.3);
+}
+
+.hover-logo {
+  transition: transform 0.2s ease;
+}
+
+.hover-logo:hover {
+  transform: scale(1.05);
+}
+
+.hover-logo:hover img {
+  transform: rotate(5deg) scale(1.1);
+}
+
+.hover-transfer-card {
+  transition: transform 0.2s ease;
+}
+
+.hover-transfer-card:hover {
+  transform: translateX(0.5vw);
+}
+
+.hover-position {
+  transition: transform 0.2s ease, background-color 0.2s ease;
+}
+
+.hover-position:hover:not(.selected) {
+  transform: scale(1.02);
+  background-color: rgba(255, 187, 76, 0.1) !important;
+}
+
+.hover-refresh {
+  transition: transform 0.2s ease;
+}
+
+.hover-refresh:hover {
+  transform: scale(1.05);
+}
+
+.hover-logout {
+  transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+}
+
+.hover-logout:hover {
+  background-color: rgba(254, 0, 0, 0.2) !important;
+  border-color: #FE0000 !important;
+  transform: translateY(-0.1vh);
+  box-shadow: 0 0.3vh 1vh rgba(254, 0, 0, 0.3);
+}
+
+/* Additional hover effects for VotingPage */
+.hover-player-card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.hover-player-card:hover:not(.voted) {
+  transform: translateY(-0.3vh);
+  box-shadow: 0 1vh 2vh rgba(76, 175, 80, 0.3);
+  border-color: #4CAF50 !important;
+  background: rgba(50, 70, 90, 0.95) !important;
+}
+
+.hover-player-card:hover:not(.voted) img {
+  transform: scale(1.05);
+}
+
+/* Additional hover effects for NewsPage */
+.hover-news-card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.hover-news-card:hover {
+  transform: translateY(-0.5vh) scale(1.02);
+  box-shadow: 0 1.5vh 3vh rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(76, 175, 80, 0.4);
+  border-color: rgba(76, 175, 80, 0.6) !important;
+}
+
+.hover-refresh-news {
+  transition: background 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.hover-refresh-news:hover {
+  background: linear-gradient(135deg, #66BB6A 0%, #4CAF50 100%) !important;
+  transform: scale(1.05);
+  box-shadow: 0 0.25rem 0.75rem rgba(76, 175, 80, 0.4);
+}
+
+/* Optimized animations - reduced complexity */
+@keyframes optimized-spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes optimized-float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-5px); }
+}
+
+/* Apply optimized animations */
+.loading-spinner {
+  animation: optimized-spin 1s linear infinite;
+  will-change: transform;
+}
+
+.background-pattern {
+  animation: optimized-float 20s ease-in-out infinite;
+  will-change: transform;
+}
+
+/* Optimized backdrop filters - use sparingly */
+.backdrop-blur {
+  backdrop-filter: blur(10px); /* Reduced from 20px for better performance */
+  -webkit-backdrop-filter: blur(10px);
+}
+
+/* Performance optimizations for specific elements */
+.selected {
+  background-color: rgba(76, 175, 80, 0.9) !important;
+  border-color: #4CAF50 !important;
+  transform: scale(1.02);
+  box-shadow: 0 0.5vh 1vh rgba(76, 175, 80, 0.4);
+}
+
+.voted {
+  opacity: 0.6;
+  cursor: not-allowed;
+  filter: grayscale(50%);
+}
+
+/* Reduce motion for users who prefer it */
+@media (prefers-reduced-motion: reduce) {
+  .hover-card,
+  .hover-button,
+  .hover-nav-link,
+  .hover-logo,
+  .hover-transfer-card,
+  .hover-position,
+  .hover-refresh,
+  .hover-logout,
+  .hover-player-card,
+  .hover-news-card,
+  .hover-refresh-news {
+    transition: none;
+    will-change: auto;
+  }
+  
+  .hover-card:hover,
+  .hover-button:hover,
+  .hover-nav-link:hover,
+  .hover-logo:hover,
+  .hover-transfer-card:hover,
+  .hover-position:hover,
+  .hover-refresh:hover,
+  .hover-logout:hover,
+  .hover-player-card:hover,
+  .hover-news-card:hover,
+  .hover-refresh-news:hover {
+    transform: none;
+  }
+  
+  .loading-spinner,
+  .background-pattern {
+    animation: none;
+    will-change: auto;
+  }
+}
+
+/* Smooth scrolling optimization */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Optimize images */
+img {
+  image-rendering: optimizeQuality;
+  image-rendering: -webkit-optimize-contrast;
+}
+
+/* Optimize transitions for better performance */
+* {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Disable expensive effects on low-end devices */
+@media (max-width: 768px) {
+  .backdrop-blur {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+  
+  .hover-card:hover,
+  .hover-button:hover,
+  .hover-player-card:hover,
+  .hover-news-card:hover {
+    transform: none;
+  }
+  
+  /* Disable animations on mobile for better performance */
+  .loading-spinner,
+  .background-pattern {
+    animation: none;
+    will-change: auto;
+  }
+}
+
+/* Additional performance optimizations */
+@media (max-width: 480px) {
+  /* Disable all hover effects on very small screens */
+  .hover-card,
+  .hover-button,
+  .hover-nav-link,
+  .hover-logo,
+  .hover-transfer-card,
+  .hover-position,
+  .hover-refresh,
+  .hover-logout,
+  .hover-player-card,
+  .hover-news-card,
+  .hover-refresh-news {
+    transition: none;
+    will-change: auto;
+  }
+  
+  .hover-card:hover,
+  .hover-button:hover,
+  .hover-nav-link:hover,
+  .hover-logo:hover,
+  .hover-transfer-card:hover,
+  .hover-position:hover,
+  .hover-refresh:hover,
+  .hover-logout:hover,
+  .hover-player-card:hover,
+  .hover-news-card:hover,
+  .hover-refresh-news:hover {
+    transform: none;
+    box-shadow: none;
+  }
+} 

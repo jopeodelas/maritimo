@@ -240,7 +240,7 @@ const MainPage = () => {
         0 clamp(0.5rem, 1.5vh, 1rem) clamp(2rem, 4vh, 3rem) rgba(0, 0, 0, 0.4),
         inset 0 1px 0 rgba(76, 175, 80, 0.3)
       `,
-      backdropFilter: "blur(20px)",
+      backdropFilter: "blur(10px)",
       position: "relative",
       overflow: "hidden",
     },
@@ -288,7 +288,7 @@ const MainPage = () => {
       border: "1px solid rgba(76, 175, 80, 0.3)",
       borderRadius: "clamp(1rem, 2.5vw, 1.5rem)",
       padding: "clamp(1.5rem, 3vh, 2.5rem) clamp(1.5rem, 2.5vw, 2rem)",
-      backdropFilter: "blur(20px)",
+      backdropFilter: "blur(10px)",
       boxShadow: `
         0 clamp(0.5rem, 1.5vh, 1rem) clamp(2rem, 3vh, 2.5rem) rgba(0, 0, 0, 0.4),
         inset 0 1px 0 rgba(76, 175, 80, 0.2)
@@ -333,7 +333,7 @@ const MainPage = () => {
       borderRadius: "clamp(0.75rem, 2vw, 1.25rem)",
       padding: "clamp(1.25rem, 2.5vh, 1.75rem) clamp(1rem, 2vw, 1.25rem)",
       textAlign: "center",
-      transition: "all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)",
+      transition: "all 0.2s ease",
       position: "relative",
       cursor: "pointer",
       overflow: "hidden",
@@ -398,7 +398,7 @@ const MainPage = () => {
       fontSize: "clamp(1rem, 2.2vw, 1.125rem)",
       fontWeight: "700",
       cursor: "pointer",
-      transition: "all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)",
+      transition: "all 0.2s ease",
       textTransform: "uppercase",
       letterSpacing: "0.05em",
       boxShadow: "0 0.5rem 1.5rem rgba(255, 215, 0, 0.4)",
@@ -415,7 +415,7 @@ const MainPage = () => {
       borderRadius: "clamp(0.75rem, 2vw, 1.25rem)",
       padding: "clamp(1.25rem, 2.5vh, 1.75rem) clamp(1.25rem, 2.5vw, 1.75rem)",
       marginBottom: "clamp(1rem, 2vh, 1.25rem)",
-      transition: "all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)",
+      transition: "all 0.2s ease",
       cursor: "pointer",
       position: "relative",
       overflow: "hidden",
@@ -533,7 +533,7 @@ const MainPage = () => {
       padding: "clamp(1.5rem, 3vh, 2rem) clamp(1.25rem, 2.5vw, 1.75rem)",
       color: "white",
       boxShadow: "0 1rem 3rem rgba(76, 175, 80, 0.3)",
-      backdropFilter: "blur(20px)",
+      backdropFilter: "blur(10px)",
       position: "relative",
       overflow: "hidden",
     },
@@ -569,7 +569,7 @@ const MainPage = () => {
       padding: "clamp(1.5rem, 3vh, 2rem) clamp(1.25rem, 2.5vw, 1.75rem)",
       color: "white",
       boxShadow: "0 1rem 3rem rgba(244, 67, 54, 0.3)",
-      backdropFilter: "blur(20px)",
+      backdropFilter: "blur(10px)",
       textAlign: "center",
     },
     pollCard: {
@@ -579,7 +579,7 @@ const MainPage = () => {
       padding: "clamp(1.5rem, 3vh, 2rem) clamp(1.25rem, 2.5vw, 1.75rem)",
       color: "white",
             boxShadow: "0 1rem 3rem rgba(255, 193, 7, 0.3)",
-      backdropFilter: "blur(20px)",
+      backdropFilter: "blur(10px)",
       position: "relative",
     },
     pollTitle: {
@@ -723,86 +723,7 @@ const MainPage = () => {
     } as any,
   });
 
-  // Enhanced hover effects
-  const handlePlayerCardHover = (e: React.MouseEvent, isHover: boolean) => {
-    const target = e.currentTarget as HTMLElement;
-    if (isHover) {
-      target.style.transform = "translateY(-0.5vh) scale(1.02)";
-      target.style.borderColor = "#4CAF50";
-      target.style.boxShadow = "0 1vh 2vh rgba(76, 175, 80, 0.3)";
-      target.style.background = "rgba(50, 70, 90, 0.95)";
-    } else {
-      target.style.transform = "translateY(0) scale(1)";
-      target.style.borderColor = "rgba(76, 175, 80, 0.2)";
-      target.style.boxShadow = "none";
-      target.style.background = "rgba(40, 55, 70, 0.9)";
-    }
-  };
 
-  const handleButtonHover = (e: React.MouseEvent, isHover: boolean) => {
-    const target = e.currentTarget as HTMLElement;
-    if (isHover) {
-      target.style.transform = "translateY(-0.25vh) scale(1.05)";
-      target.style.boxShadow = "0 1vh 2vh rgba(255, 215, 0, 0.6)";
-    } else {
-      target.style.transform = "translateY(0) scale(1)";
-      target.style.boxShadow = "0 0.5rem 1.5rem rgba(255, 215, 0, 0.4)";
-    }
-  };
-
-  const handleTransferCardHover = (e: React.MouseEvent, isHover: boolean) => {
-    const target = e.currentTarget as HTMLElement;
-    if (isHover) {
-      target.style.transform = "translateX(0.5vw)";
-      target.style.borderColor = "#4CAF50";
-      target.style.boxShadow = "0 0.5vh 1.5vh rgba(76, 175, 80, 0.2)";
-      target.style.background = "rgba(50, 70, 90, 0.95)";
-    } else {
-      target.style.transform = "translateX(0)";
-      target.style.borderColor = "rgba(76, 175, 80, 0.2)";
-      target.style.boxShadow = "none";
-      target.style.background = "rgba(40, 55, 70, 0.9)";
-    }
-  };
-
-  const handleRefreshButtonHover = (e: React.MouseEvent, isHover: boolean) => {
-    const target = e.currentTarget as HTMLElement;
-    if (isHover && !loadingRumors) {
-      target.style.transform = "translateY(-0.1vh) scale(1.05)";
-      target.style.boxShadow = "0 0.5vh 1vh rgba(76, 175, 80, 0.5)";
-    } else {
-      target.style.transform = "translateY(0) scale(1)";
-      target.style.boxShadow = "0 0.25rem 0.75rem rgba(76, 175, 80, 0.3)";
-    }
-  };
-
-  const handlePositionHover = (e: React.MouseEvent, isHover: boolean, isSelected: boolean) => {
-    if (hasVoted) return;
-    
-    const target = e.currentTarget as HTMLElement;
-    if (isHover && !isSelected) {
-      target.style.transform = "scale(1.02)";
-      target.style.borderColor = "#FFD700";
-      target.style.boxShadow = "0 0.25rem 0.75rem rgba(255, 215, 0, 0.3)";
-    } else if (!isSelected) {
-      target.style.transform = "scale(1)";
-      target.style.borderColor = "rgba(255, 255, 255, 0.3)";
-      target.style.boxShadow = "none";
-    }
-  };
-
-  const handlePollSubmitHover = (e: React.MouseEvent, isHover: boolean) => {
-    if (selectedPositions.length === 0) return;
-    
-    const target = e.currentTarget as HTMLElement;
-    if (isHover) {
-      target.style.transform = "translateY(-0.25vh) scale(1.05)";
-      target.style.boxShadow = "0 1vh 2vh rgba(76, 175, 80, 0.6)";
-    } else {
-      target.style.transform = "translateY(0) scale(1)";
-      target.style.boxShadow = "0 0.5rem 1.5rem rgba(76, 175, 80, 0.4)";
-    }
-  };
 
   if (loading) {
     return (
@@ -849,8 +770,7 @@ const MainPage = () => {
                   <div
                     key={player.id}
                     style={styles.playerCard}
-                    onMouseOver={(e) => handlePlayerCardHover(e, true)}
-                    onMouseOut={(e) => handlePlayerCardHover(e, false)}
+                    className="hover-card"
                   >
                     <div style={styles.playerRankBadge}>#{index + 1}</div>
                     <div style={styles.playerImageContainer}>
@@ -875,9 +795,8 @@ const MainPage = () => {
               <div style={styles.buttonContainer}>
                 <button
                   style={styles.actionButton}
+                  className="hover-button"
                   onClick={() => navigate("/voting")}
-                  onMouseOver={(e) => handleButtonHover(e, true)}
-                  onMouseOut={(e) => handleButtonHover(e, false)}
                 >
                   Votar Agora
                 </button>
@@ -892,10 +811,9 @@ const MainPage = () => {
                 </h2>
                 <button
                   style={styles.refreshButton}
+                  className="hover-refresh"
                   onClick={handleRefreshRumors}
                   disabled={loadingRumors}
-                  onMouseOver={(e) => handleRefreshButtonHover(e, true)}
-                  onMouseOut={(e) => handleRefreshButtonHover(e, false)}
                 >
                   
                   {loadingRumors ? "A atualizar..." : "Atualizar"}
@@ -921,8 +839,7 @@ const MainPage = () => {
                   <div
                     key={rumor.id}
                     style={styles.transferCard}
-                    onMouseOver={(e) => handleTransferCardHover(e, true)}
-                    onMouseOut={(e) => handleTransferCardHover(e, false)}
+                    className="hover-transfer-card"
                   >
                     <div style={styles.transferHeader}>
                       <div style={styles.transferPlayer}>
@@ -1010,8 +927,7 @@ const MainPage = () => {
                           ...(selectedPositions.includes(position.id) ? styles.positionSelected : {})
                         }}
                         onClick={() => handlePositionToggle(position.id)}
-                        onMouseOver={(e) => handlePositionHover(e, true, selectedPositions.includes(position.id))}
-                        onMouseOut={(e) => handlePositionHover(e, false, selectedPositions.includes(position.id))}
+                        className={`hover-position ${selectedPositions.includes(position.id) ? 'selected' : ''}`}
                       >
                         <span style={styles.positionName}>{position.name}</span>
                       </div>
@@ -1025,8 +941,7 @@ const MainPage = () => {
                     }}
                     onClick={handleSubmitPoll}
                     disabled={selectedPositions.length === 0}
-                    onMouseOver={(e) => handlePollSubmitHover(e, true)}
-                    onMouseOut={(e) => handlePollSubmitHover(e, false)}
+                    className="hover-button"
                   >
                     Submeter Resposta
                   </button>
@@ -1100,9 +1015,8 @@ const MainPage = () => {
               <h3 style={styles.statsTitle}>Ação Rápida</h3>
               <button
                 style={styles.actionButton}
+                className="hover-button"
                 onClick={() => navigate("/voting")}
-                onMouseOver={(e) => handleButtonHover(e, true)}
-                onMouseOut={(e) => handleButtonHover(e, false)}
               >
                 Ir para Votação
               </button>

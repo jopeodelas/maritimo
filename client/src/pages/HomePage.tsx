@@ -159,14 +159,7 @@ const HomePage = () => {
         <button 
           style={styles.enterButton} 
           onClick={handleEnter}
-          onMouseOver={(e) => {
-            e.currentTarget.style.backgroundColor = '#FFA726';
-            e.currentTarget.style.boxShadow = '-0.3vw 0.7vh 0.3vh rgba(0, 0, 0, 0.3)';
-          }}
-          onMouseOut={(e) => {
-            e.currentTarget.style.backgroundColor = '#FFB74D';
-            e.currentTarget.style.boxShadow = '-0.3vw 0.7vh 0.2vh rgba(0, 0, 0, 0.25)';
-          }}
+          className="hover-button"
         >
           ENTRAR
         </button>

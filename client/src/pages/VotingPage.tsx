@@ -166,7 +166,7 @@ const VotingPage = () => {
       transition: 'all 0.3s ease',
       cursor: 'pointer',
       position: 'relative',
-      backdropFilter: 'blur(20px)',
+      backdropFilter: 'blur(10px)',
     },
     selectedCard: {
       border: '0.2vh solid #FFD700',
@@ -381,29 +381,8 @@ const VotingPage = () => {
           ...(isSelected ? styles.selectedCard : {}),
           ...(isVoted ? styles.votedCard : {})
         }}
+        className={`hover-player-card ${isVoted ? 'voted' : ''} ${isSelected ? 'selected' : ''}`}
         onClick={() => handlePlayerSelect(player.id)}
-        onMouseOver={(e) => {
-          if (!isVoted) {
-            e.currentTarget.style.transform = 'translateY(-0.3vh)';
-            e.currentTarget.style.boxShadow = '0 1vh 2vh rgba(76, 175, 80, 0.3)';
-            e.currentTarget.style.borderColor = '#4CAF50';
-            e.currentTarget.style.background = 'rgba(50, 70, 90, 0.95)';
-            const img = e.currentTarget.querySelector('img');
-            if (img) img.style.transform = 'scale(1.05)';
-          }
-        }}
-        onMouseOut={(e) => {
-          if (!isVoted) {
-            e.currentTarget.style.transform = isSelected ? 'translateY(-0.2vh)' : 'translateY(0)';
-            e.currentTarget.style.boxShadow = isSelected 
-              ? '0 0.5vh 2vh rgba(255, 215, 0, 0.4)' 
-              : '0 0.2vh 1vh rgba(0, 0, 0, 0.4)';
-            e.currentTarget.style.borderColor = isSelected ? '#FFD700' : 'rgba(76, 175, 80, 0.2)';
-            e.currentTarget.style.background = isSelected ? 'rgba(50, 70, 90, 0.95)' : 'rgba(40, 55, 70, 0.9)';
-            const img = e.currentTarget.querySelector('img');
-            if (img) img.style.transform = 'scale(1)';
-          }
-        }}
       >
         <div style={styles.playerImageContainer}>
           {isVoted && <div style={styles.votedBadge}>VOTED</div>}
@@ -439,32 +418,22 @@ const VotingPage = () => {
   if (loading) {
     return (
       <div style={styles.container}>
-        <div style={styles.backgroundPattern}></div>
+        <div style={styles.backgroundPattern} className="background-pattern"></div>
         <Navbar />
         <div style={styles.content}>
           <div style={styles.loading}>
-            <div style={styles.loadingSpinner}></div>
+            <div style={styles.loadingSpinner} className="loading-spinner"></div>
             <p style={styles.loadingText}>Loading players...</p>
           </div>
         </div>
-        <style>{`
-          @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-          }
-          @keyframes float {
-            0%, 100% { transform: translateY(0px) rotate(0deg); }
-            33% { transform: translateY(-10px) rotate(1deg); }
-            66% { transform: translateY(5px) rotate(-1deg); }
-          }
-        `}</style>
+
       </div>
     );
   }
 
   return (
     <div style={styles.container}>
-      <div style={styles.backgroundPattern}></div>
+      <div style={styles.backgroundPattern} className="background-pattern"></div>
       <Navbar />
 
       <div style={styles.content}>
@@ -490,20 +459,7 @@ const VotingPage = () => {
               padding: '1.5vh 3vw',
               fontSize: '1.2vw'
             }}
-            onMouseOver={(e) => {
-              if (selectedPlayers.length > 0 && !isSubmitting) {
-                e.currentTarget.style.background = 'linear-gradient(135deg, #FFA726 0%, #FF8F00 100%)';
-                e.currentTarget.style.transform = 'translateY(-0.1vh) scale(1.05)';
-                e.currentTarget.style.boxShadow = '0 1vh 2vh rgba(255, 215, 0, 0.6)';
-              }
-            }}
-            onMouseOut={(e) => {
-              if (selectedPlayers.length > 0 && !isSubmitting) {
-                e.currentTarget.style.background = 'linear-gradient(135deg, #FFD700 0%, #FF8F00 100%)';
-                e.currentTarget.style.transform = 'translateY(0) scale(1)';
-                e.currentTarget.style.boxShadow = '0 0.5rem 1.5rem rgba(255, 215, 0, 0.4)';
-              }
-            }}
+            className="hover-button"
           >
             {isSubmitting ? 'Voting...' : `✓ Confirm Votes (${selectedPlayers.length})`}
           </button>
@@ -527,17 +483,7 @@ const VotingPage = () => {
         })}
       </div>
 
-      <style>{`
-        @keyframes spin {
-          0% { transform: rotate(0deg); }
-          100% { transform: rotate(360deg); }
-        }
-        @keyframes float {
-          0%, 100% { transform: translateY(0px) rotate(0deg); }
-          33% { transform: translateY(-10px) rotate(1deg); }
-          66% { transform: translateY(5px) rotate(-1deg); }
-        }
-      `}</style>
+
     </div>
   );
 };
