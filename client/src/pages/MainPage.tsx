@@ -4,17 +4,9 @@ import { useAuth } from "../contexts/AuthContext";
 import Navbar from "../components/Navbar";
 import { createStyles } from "../styles/styleUtils";
 import api from "../services/api";
+import { transferService } from "../services/transferService";
+import type { TransferRumor, TransferStats } from "../services/transferService";
 import type { Player } from "../types";
-
-interface TransferRumor {
-  id: number;
-  player_name: string;
-  type: "compra" | "venda";
-  club: string;
-  value: string;
-  status: "rumor" | "negociação" | "confirmado";
-  date: string;
-}
 
 const MainPage = () => {
   const navigate = useNavigate();
@@ -22,39 +14,15 @@ const MainPage = () => {
   const [topVotedPlayers, setTopVotedPlayers] = useState<Player[]>([]);
   const [loading, setLoading] = useState(true);
   const [totalVotes, setTotalVotes] = useState(0);
-
-  const [transferRumors] = useState<TransferRumor[]>([
-    {
-      id: 1,
-      player_name: "Cláudio Winck",
-      type: "venda",
-      club: "FC Porto",
-      value: "€2.5M",
-      status: "rumor",
-      date: "2024-01-15",
-    },
-    {
-      id: 2,
-      player_name: "André Vidigal",
-      type: "venda",
-      club: "Sporting CP",
-      value: "€3M",
-      status: "negociação",
-      date: "2024-01-14",
-    },
-    {
-      id: 3,
-      player_name: "Marco Silva",
-      type: "compra",
-      club: "Gil Vicente",
-      value: "€800K",
-      status: "rumor",
-      date: "2024-01-13",
-    },
-  ]);
+  const [transferRumors, setTransferRumors] = useState<TransferRumor[]>([]);
+  const [transferStats, setTransferStats] = useState<TransferStats | null>(null);
+  const [loadingRumors, setLoadingRumors] = useState(false);
+  const [lastRumorUpdate, setLastRumorUpdate] = useState<Date | null>(null);
 
   useEffect(() => {
     fetchTopVotedPlayers();
+    fetchTransferRumors();
+    fetchTransferStats();
   }, []);
 
   const fetchTopVotedPlayers = async () => {
@@ -84,6 +52,39 @@ const MainPage = () => {
     }
   };
 
+  const fetchTransferRumors = async () => {
+    try {
+      const rumors = await transferService.getRumors();
+      setTransferRumors(rumors);
+      setLastRumorUpdate(new Date());
+    } catch (error) {
+      console.error("Error fetching transfer rumors:", error);
+    }
+  };
+
+  const fetchTransferStats = async () => {
+    try {
+      const stats = await transferService.getStats();
+      setTransferStats(stats);
+    } catch (error) {
+      console.error("Error fetching transfer stats:", error);
+    }
+  };
+
+  const handleRefreshRumors = async () => {
+    setLoadingRumors(true);
+    try {
+      const rumors = await transferService.refreshRumors();
+      setTransferRumors(rumors);
+      setLastRumorUpdate(new Date());
+      await fetchTransferStats(); // Update stats as well
+    } catch (error) {
+      console.error("Error refreshing rumors:", error);
+    } finally {
+      setLoadingRumors(false);
+    }
+  };
+
   const calculatePercentage = (voteCount: number) => {
     if (totalVotes === 0) return "0.0";
     return ((voteCount / totalVotes) * 100).toFixed(1);
@@ -102,6 +103,30 @@ const MainPage = () => {
 
   const getTypeColor = (type: string) => {
     return type === "compra" ? "#27AE60" : "#E74C3C";
+  };
+
+  const getReliabilityColor = (reliability: number) => {
+    if (reliability >= 4) return "#27AE60"; // Green for high reliability
+    if (reliability >= 3) return "#F39C12"; // Orange for medium reliability
+    return "#E74C3C"; // Red for low reliability
+  };
+
+  const getReliabilityText = (reliability: number) => {
+    if (reliability >= 4) return "Alta";
+    if (reliability >= 3) return "Média";
+    return "Baixa";
+  };
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffTime = Math.abs(now.getTime() - date.getTime());
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    
+    if (diffDays === 1) return "Hoje";
+    if (diffDays === 2) return "Ontem";
+    if (diffDays <= 7) return `Há ${diffDays - 1} dias`;
+    return date.toLocaleDateString("pt-PT");
   };
 
   const styles = createStyles({
@@ -386,6 +411,50 @@ const MainPage = () => {
       color: "#78909C",
       fontWeight: "500",
     },
+    refreshButton: {
+      background: "linear-gradient(135deg, #4CAF50 0%, #45A049 100%)",
+      color: "white",
+      border: "none",
+      padding: "clamp(0.5rem, 1vh, 0.75rem) clamp(1rem, 2vw, 1.5rem)",
+      borderRadius: "clamp(0.5rem, 1vw, 0.75rem)",
+      fontSize: "clamp(0.75rem, 1.8vw, 0.875rem)",
+      fontWeight: "600",
+      cursor: "pointer",
+      transition: "all 0.3s ease",
+      display: "flex",
+      alignItems: "center",
+      gap: "0.5rem",
+      boxShadow: "0 0.25rem 0.75rem rgba(76, 175, 80, 0.3)",
+    },
+    updateInfo: {
+      fontSize: "clamp(0.75rem, 1.6vw, 0.875rem)",
+      color: "#78909C",
+      textAlign: "center",
+      marginBottom: "clamp(1rem, 2vh, 1.5rem)",
+      fontStyle: "italic",
+    },
+    transferMeta: {
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center",
+      marginTop: "clamp(0.5rem, 1vh, 0.75rem)",
+      paddingTop: "clamp(0.5rem, 1vh, 0.75rem)",
+      borderTop: "1px solid rgba(255, 255, 255, 0.1)",
+    },
+    transferSource: {
+      fontSize: "clamp(0.75rem, 1.6vw, 0.875rem)",
+      color: "#90A4AE",
+      fontStyle: "italic",
+    },
+    reliabilityBadge: {
+      padding: "clamp(0.25rem, 0.5vh, 0.375rem) clamp(0.5rem, 1vw, 0.75rem)",
+      borderRadius: "clamp(0.25rem, 0.5vw, 0.375rem)",
+      fontSize: "clamp(0.625rem, 1.4vw, 0.75rem)",
+      fontWeight: "600",
+      color: "white",
+      textTransform: "uppercase",
+      letterSpacing: "0.05em",
+    },
     sidebar: {
       display: "flex",
       flexDirection: "column",
@@ -521,6 +590,17 @@ const MainPage = () => {
     }
   };
 
+  const handleRefreshButtonHover = (e: React.MouseEvent, isHover: boolean) => {
+    const target = e.currentTarget as HTMLElement;
+    if (isHover && !loadingRumors) {
+      target.style.transform = "translateY(-0.1vh) scale(1.05)";
+      target.style.boxShadow = "0 0.5vh 1vh rgba(76, 175, 80, 0.5)";
+    } else {
+      target.style.transform = "translateY(0) scale(1)";
+      target.style.boxShadow = "0 0.25rem 0.75rem rgba(76, 175, 80, 0.3)";
+    }
+  };
+
   if (loading) {
     return (
       <div style={styles.container}>
@@ -607,51 +687,103 @@ const MainPage = () => {
                 <h2 style={styles.sectionTitle}>
                   Rumores de Transferências
                 </h2>
+                <button
+                  style={styles.refreshButton}
+                  onClick={handleRefreshRumors}
+                  disabled={loadingRumors}
+                  onMouseOver={(e) => handleRefreshButtonHover(e, true)}
+                  onMouseOut={(e) => handleRefreshButtonHover(e, false)}
+                >
+                  
+                  {loadingRumors ? "A atualizar..." : "Atualizar"}
+                </button>
                 <div style={styles.sectionTitleUnderline}></div>
               </div>
 
-              {transferRumors.map((rumor) => (
-                <div
-                  key={rumor.id}
-                  style={styles.transferCard}
-                  onMouseOver={(e) => handleTransferCardHover(e, true)}
-                  onMouseOut={(e) => handleTransferCardHover(e, false)}
-                >
-                  <div style={styles.transferHeader}>
-                    <div style={styles.transferPlayer}>
-                      {rumor.player_name}
-                    </div>
-                    <div
-                      style={{
-                        ...styles.transferType,
-                        backgroundColor: getTypeColor(rumor.type),
-                      }}
-                    >
-                      {rumor.type}
-                    </div>
-                  </div>
-                  <div style={styles.transferDetails}>
-                    <div style={styles.transferInfo}>
-                      <span style={styles.transferClub}>
-                        {rumor.type === "compra" ? "De: " : "Para: "}
-                        {rumor.club}
-                      </span>
-                      <span style={styles.transferValue}>{rumor.value}</span>
-                    </div>
-                    <span
-                      style={{
-                        ...styles.transferStatus,
-                        backgroundColor: getStatusColor(rumor.status),
-                      }}
-                    >
-                      {rumor.status}
-                    </span>
-                    <span style={styles.transferDate}>
-                      {new Date(rumor.date).toLocaleDateString("pt-PT")}
-                    </span>
-                  </div>
+              {lastRumorUpdate && (
+                <div style={styles.updateInfo}>
+                  Última atualização: {lastRumorUpdate.toLocaleTimeString("pt-PT", {
+                    hour: "2-digit",
+                    minute: "2-digit"
+                  })}
                 </div>
-              ))}
+              )}
+
+              {transferRumors.length === 0 ? (
+                <div style={styles.updateInfo}>
+                  Nenhum rumor de transferência disponível no momento.
+                </div>
+              ) : (
+                transferRumors.map((rumor) => (
+                  <div
+                    key={rumor.id}
+                    style={styles.transferCard}
+                    onMouseOver={(e) => handleTransferCardHover(e, true)}
+                    onMouseOut={(e) => handleTransferCardHover(e, false)}
+                  >
+                    <div style={styles.transferHeader}>
+                      <div style={styles.transferPlayer}>
+                        {rumor.player_name}
+                      </div>
+                      <div
+                        style={{
+                          ...styles.transferType,
+                          backgroundColor: getTypeColor(rumor.type),
+                        }}
+                      >
+                        {rumor.type}
+                      </div>
+                    </div>
+                    
+                    <div style={styles.transferDetails}>
+                      <div style={styles.transferInfo}>
+                        <span style={styles.transferClub}>
+                          {rumor.type === "compra" ? "De: " : "Para: "}
+                          {rumor.club}
+                        </span>
+                        <span style={styles.transferValue}>{rumor.value}</span>
+                      </div>
+                      <span
+                        style={{
+                          ...styles.transferStatus,
+                          backgroundColor: getStatusColor(rumor.status),
+                        }}
+                      >
+                        {rumor.status}
+                      </span>
+                      <span style={styles.transferDate}>
+                        {formatDate(rumor.date)}
+                      </span>
+                    </div>
+
+                    <div style={styles.transferMeta}>
+                      <span style={styles.transferSource}>
+                        Fonte: {rumor.source}
+                      </span>
+                      <span
+                        style={{
+                          ...styles.reliabilityBadge,
+                          backgroundColor: getReliabilityColor(rumor.reliability),
+                        }}
+                      >
+                        {getReliabilityText(rumor.reliability)}
+                      </span>
+                    </div>
+
+                    {rumor.description && (
+                      <div style={{
+                        marginTop: "clamp(0.5rem, 1vh, 0.75rem)",
+                        fontSize: "clamp(0.75rem, 1.6vw, 0.875rem)",
+                        color: "#B0BEC5",
+                        fontStyle: "italic",
+                        lineHeight: "1.4"
+                      }}>
+                        {rumor.description}
+                      </div>
+                    )}
+                  </div>
+                ))
+              )}
             </div>
           </div>
 
@@ -674,6 +806,18 @@ const MainPage = () => {
                 <span style={styles.statLabel}>Transferências Ativas</span>
                 <span style={styles.statValue}>{transferRumors.length}</span>
               </div>
+              {transferStats && (
+                <>
+                  <div style={styles.statItem}>
+                    <span style={styles.statLabel}>Rumores Recentes</span>
+                    <span style={styles.statValue}>{transferStats.recentRumors}</span>
+                  </div>
+                  <div style={styles.statItem}>
+                    <span style={styles.statLabel}>Confiabilidade Média</span>
+                    <span style={styles.statValue}>{transferStats.averageReliability}</span>
+                  </div>
+                </>
+              )}
             </div>
 
             {/* Quick Actions */}

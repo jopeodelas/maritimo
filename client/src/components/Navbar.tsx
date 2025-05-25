@@ -218,6 +218,26 @@ const Navbar = () => {
           >
             Votação
           </a>
+          <a
+            style={styles.navLink}
+            onClick={() => navigate('/news')}
+            onMouseOver={(e) => {
+              e.currentTarget.style.backgroundColor = 'rgba(255, 187, 76, 0.2)';
+              e.currentTarget.style.color = '#FFBB4C';
+              e.currentTarget.style.borderColor = '#FFBB4C';
+              e.currentTarget.style.transform = 'translateY(-0.1vh)';
+              e.currentTarget.style.boxShadow = '0 0.3vh 1vh rgba(255, 187, 76, 0.3)';
+            }}
+            onMouseOut={(e) => {
+              e.currentTarget.style.backgroundColor = 'transparent';
+              e.currentTarget.style.color = 'white';
+              e.currentTarget.style.borderColor = 'transparent';
+              e.currentTarget.style.transform = 'translateY(0)';
+              e.currentTarget.style.boxShadow = 'none';
+            }}
+          >
+            Notícias
+          </a>
         </div>
 
         <div style={styles.rightSection}>

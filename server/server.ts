@@ -8,6 +8,8 @@ import config from './src/config';
 import authRoutes from './src/routes/auth.routes';
 import playersRoutes from './src/routes/players.routes';
 import votesRoutes from './src/routes/votes.routes';
+import transferRoutes from './src/routes/transfer.routes';
+import newsRoutes from './src/routes/news.routes';
 import { errorHandler, notFoundHandler } from './src/middleware/error.middleware';
 
 const app = express();
@@ -33,6 +35,8 @@ app.use('/images', express.static(path.join(__dirname, 'public/images')));
 app.use('/api/auth', authRoutes);
 app.use('/api/players', playersRoutes);
 app.use('/api/votes', votesRoutes);
+app.use('/api/transfers', transferRoutes);
+app.use('/api/news', newsRoutes);
 
 // Error handling
 app.use(notFoundHandler);

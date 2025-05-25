@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
-import { useAuth } from '../contexts/AuthContext';
 import Navbar from '../components/Navbar';
 import { createStyles } from '../styles/styleUtils';
 
@@ -18,7 +17,6 @@ const VotingPage = () => {
   const [selectedPlayers, setSelectedPlayers] = useState<number[]>([]);
   const [loading, setLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { logout } = useAuth();
 
   const styles = createStyles({
     container: {

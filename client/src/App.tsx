@@ -4,6 +4,7 @@ import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import VotingPage from './pages/VotingPage';
 import MainPage from './pages/MainPage';
+import NewsPage from './pages/NewsPage';
 import ProtectedRoute from './components/ProtectedRoute';
 import { AuthProvider } from './contexts/AuthContext';
 import './styles/fonts.css';
@@ -49,6 +50,14 @@ function App() {
               element={
                 <ProtectedRoute>
                   <VotingPage />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/news" 
+              element={
+                <ProtectedRoute>
+                  <NewsPage />
                 </ProtectedRoute>
               } 
             />

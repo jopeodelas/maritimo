@@ -1,0 +1,890 @@
+import axios from 'axios';
+import { TransferRumor } from './transferService';
+
+interface NewsItem {
+  title: string;
+  description: string;
+  url: string;
+  publishedAt: string;
+  source: string;
+}
+
+class RealNewsService {
+  private readonly NEWS_API_KEY = process.env.NEWS_API_KEY;
+  private readonly GOOGLE_NEWS_RSS = 'https://news.google.com/rss/search';
+
+  async fetchRealTransferNews(): Promise<TransferRumor[]> {
+    const allRumors: TransferRumor[] = [];
+
+    try {
+      // Get all Marítimo news first
+      const allNews = await this.fetchAllMaritimoNews();
+      
+      // Filter only transfer-related news
+      const transferNews = allNews.filter(item => this.isTransferRelated(item.title + ' ' + item.description));
+      
+      // Convert transfer news to rumors
+      transferNews.forEach((item, index) => {
+        const transferInfo = this.extractTransferInfoFromNews(item);
+        
+        if (transferInfo) {
+          const contentHash = this.createContentHash(item.title + item.description + item.url);
+          allRumors.push({
+            id: `real_${contentHash}_${index}`,
+            player_name: transferInfo.playerName,
+            type: transferInfo.type,
+            club: transferInfo.club,
+            value: transferInfo.value,
+            status: transferInfo.status,
+            date: this.formatDate(item.publishedAt),
+            source: item.source,
+            reliability: this.calculateReliability(item.source, item.title),
+            description: item.title.substring(0, 150) + (item.title.length > 150 ? '...' : '')
+          });
+        }
+      });
+
+      // Remove duplicates and sort by date
+      const uniqueRumors = this.removeDuplicates(allRumors);
+      return uniqueRumors
+        .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+        .slice(0, 20); // Limit to 20 most recent
+
+    } catch (error) {
+      console.error('Error fetching real transfer news:', error);
+      return [];
+    }
+  }
+
+  async fetchAllMaritimoNews(): Promise<NewsItem[]> {
+    const allNews: NewsItem[] = [];
+
+    try {
+      // Get news directly from RSS sources
+      const directNews = await this.fetchDirectMaritimoNews();
+      allNews.push(...directNews);
+
+      // Remove duplicates and sort by date
+      const uniqueNews = this.removeDuplicateNews(allNews);
+      return uniqueNews
+        .sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime())
+        .slice(0, 50); // Limit to 50 most recent
+
+    } catch (error) {
+      console.error('Error fetching all Marítimo news:', error);
+      return [];
+    }
+  }
+
+  private async fetchDirectMaritimoNews(): Promise<NewsItem[]> {
+    const allNews: NewsItem[] = [];
+
+    try {
+      // Fetch from Google News RSS directly for news items
+      const searchQueries = [
+        'CS Marítimo',
+        'Marítimo futebol',
+        'CS Marítimo jogos',
+        'Marítimo resultados',
+        'CS Marítimo notícias'
+      ];
+
+      for (const query of searchQueries) {
+        const url = `${this.GOOGLE_NEWS_RSS}?q=${encodeURIComponent(query)}&hl=pt-PT&gl=PT&ceid=PT:pt`;
+        
+        try {
+          const response = await axios.get(url, {
+            headers: {
+              'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+            },
+            timeout: 8000
+          });
+
+          const newsItems = this.parseGoogleNewsRSS(response.data);
+          allNews.push(...newsItems);
+          
+          await this.delay(1000);
+        } catch (error) {
+          console.log(`Failed to fetch direct news for query: ${query}`);
+        }
+      }
+
+      // Fetch from Portuguese sports RSS
+      const rssSources = [
+        {
+          name: 'Record',
+          url: 'https://www.record.pt/rss'
+        },
+        {
+          name: 'A Bola',
+          url: 'https://www.abola.pt/rss/noticias.xml'
+        },
+        {
+          name: 'O Jogo',
+          url: 'https://www.ojogo.pt/rss'
+        }
+      ];
+
+      for (const source of rssSources) {
+        try {
+          const response = await axios.get(source.url, {
+            headers: {
+              'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+            },
+            timeout: 8000
+          });
+
+          const newsItems = this.parseRSSFeed(response.data, source.name);
+          const maritimoNews = newsItems.filter(item => 
+            this.isMaritimoRelated(item.title + ' ' + item.description)
+          );
+
+          allNews.push(...maritimoNews);
+          await this.delay(1000);
+        } catch (error) {
+          console.log(`Failed to fetch RSS from ${source.name}`);
+        }
+      }
+
+    } catch (error) {
+      console.error('Error fetching direct Marítimo news:', error);
+    }
+
+    return allNews;
+  }
+
+  private async fetchFromGoogleNewsRSS(): Promise<TransferRumor[]> {
+    try {
+      const searchQueries = [
+        'CS Marítimo transferências',
+        'Marítimo futebol contratações',
+        'Marítimo jogadores saída',
+        'CS Marítimo mercado'
+      ];
+
+      const allNews: NewsItem[] = [];
+
+      for (const query of searchQueries) {
+        const url = `${this.GOOGLE_NEWS_RSS}?q=${encodeURIComponent(query)}&hl=pt-PT&gl=PT&ceid=PT:pt`;
+        
+        try {
+          const response = await axios.get(url, {
+            headers: {
+              'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+            },
+            timeout: 8000
+          });
+
+          const newsItems = this.parseGoogleNewsRSS(response.data);
+          allNews.push(...newsItems);
+          
+          // Delay between requests
+          await this.delay(1000);
+        } catch (error) {
+          console.log(`Failed to fetch from Google News for query: ${query}`);
+        }
+      }
+
+      return this.convertNewsToRumors(allNews, 'Google News');
+    } catch (error) {
+      console.error('Error fetching from Google News RSS:', error);
+      return [];
+    }
+  }
+
+  private async fetchFromNewsAPI(): Promise<TransferRumor[]> {
+    if (!this.NEWS_API_KEY) {
+      console.log('News API key not available');
+      return [];
+    }
+
+    try {
+      const queries = [
+        'CS Marítimo transferências',
+        'Marítimo futebol',
+        'Marítimo contratações'
+      ];
+
+      const allNews: NewsItem[] = [];
+
+      for (const query of queries) {
+        const url = `https://newsapi.org/v2/everything?q=${encodeURIComponent(query)}&language=pt&sortBy=publishedAt&pageSize=10`;
+        
+        try {
+          const response = await axios.get(url, {
+            headers: {
+              'X-API-Key': this.NEWS_API_KEY
+            },
+            timeout: 8000
+          });
+
+          if (response.data.articles) {
+            const newsItems = response.data.articles.map((article: any) => ({
+              title: article.title,
+              description: article.description || '',
+              url: article.url,
+              publishedAt: article.publishedAt,
+              source: article.source?.name || 'News API'
+            }));
+
+            allNews.push(...newsItems);
+          }
+          
+          await this.delay(1000);
+        } catch (error) {
+          console.log(`Failed to fetch from News API for query: ${query}`);
+        }
+      }
+
+      return this.convertNewsToRumors(allNews, 'News API');
+    } catch (error) {
+      console.error('Error fetching from News API:', error);
+      return [];
+    }
+  }
+
+  private async fetchFromPortugueseSportsRSS(): Promise<TransferRumor[]> {
+    const rssSources = [
+      {
+        name: 'Record',
+        url: 'https://www.record.pt/rss',
+        reliability: 4
+      },
+      {
+        name: 'A Bola',
+        url: 'https://www.abola.pt/rss/noticias.xml',
+        reliability: 4
+      },
+      {
+        name: 'O Jogo',
+        url: 'https://www.ojogo.pt/rss',
+        reliability: 3
+      }
+    ];
+
+    const allNews: NewsItem[] = [];
+
+    for (const source of rssSources) {
+      try {
+        const response = await axios.get(source.url, {
+          headers: {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+          },
+          timeout: 8000
+        });
+
+        const newsItems = this.parseRSSFeed(response.data, source.name);
+        const maritimoNews = newsItems.filter(item => 
+          this.isMaritimoRelated(item.title + ' ' + item.description)
+        );
+
+        allNews.push(...maritimoNews);
+        await this.delay(1000);
+      } catch (error) {
+        console.log(`Failed to fetch RSS from ${source.name}`);
+      }
+    }
+
+    return this.convertNewsToRumors(allNews, 'RSS Feed');
+  }
+
+  private parseGoogleNewsRSS(xmlData: string): NewsItem[] {
+    const items: NewsItem[] = [];
+    
+    try {
+      // Simple XML parsing for RSS items
+      const itemMatches = xmlData.match(/<item[^>]*>[\s\S]*?<\/item>/g);
+      
+      if (itemMatches) {
+        itemMatches.forEach(itemXml => {
+          const title = this.extractXMLContent(itemXml, 'title');
+          const description = this.extractXMLContent(itemXml, 'description');
+          const link = this.extractXMLContent(itemXml, 'link');
+          const pubDate = this.extractXMLContent(itemXml, 'pubDate');
+          
+          if (title && this.isMaritimoRelated(title + ' ' + description)) {
+            const cleanedDescription = this.cleanText(description);
+            // Only include description if it's meaningful (more than 20 chars and contains actual words)
+            const finalDescription = this.isValidDescription(cleanedDescription) ? cleanedDescription : '';
+            
+            items.push({
+              title: this.cleanText(title),
+              description: finalDescription,
+              url: link || '',
+              publishedAt: pubDate || new Date().toISOString(),
+              source: 'Google News'
+            });
+          }
+        });
+      }
+    } catch (error) {
+      console.error('Error parsing Google News RSS:', error);
+    }
+
+    return items;
+  }
+
+  private parseRSSFeed(xmlData: string, sourceName: string): NewsItem[] {
+    const items: NewsItem[] = [];
+    
+    try {
+      const itemMatches = xmlData.match(/<item[^>]*>[\s\S]*?<\/item>/g);
+      
+      if (itemMatches) {
+        itemMatches.forEach(itemXml => {
+          const title = this.extractXMLContent(itemXml, 'title');
+          const description = this.extractXMLContent(itemXml, 'description');
+          const link = this.extractXMLContent(itemXml, 'link');
+          const pubDate = this.extractXMLContent(itemXml, 'pubDate');
+          
+          if (title) {
+            const cleanedDescription = this.cleanText(description);
+            const finalDescription = this.isValidDescription(cleanedDescription) ? cleanedDescription : '';
+            
+            items.push({
+              title: this.cleanText(title),
+              description: finalDescription,
+              url: link || '',
+              publishedAt: pubDate || new Date().toISOString(),
+              source: sourceName
+            });
+          }
+        });
+      }
+    } catch (error) {
+      console.error(`Error parsing RSS feed from ${sourceName}:`, error);
+    }
+
+    return items;
+  }
+
+  private extractXMLContent(xml: string, tag: string): string {
+    const regex = new RegExp(`<${tag}[^>]*>([\\s\\S]*?)<\\/${tag}>`, 'i');
+    const match = xml.match(regex);
+    return match ? match[1].trim() : '';
+  }
+
+  private cleanText(text: string): string {
+    return text
+      .replace(/<!\[CDATA\[|\]\]>/g, '')
+      .replace(/<[^>]*>/g, '') // Remove HTML tags
+      .replace(/&[a-zA-Z0-9#]+;/g, ' ') // Remove HTML entities like &nbsp;
+      .replace(/https?:\/\/[^\s]+/g, '') // Remove URLs
+      .replace(/href\s*=\s*["'][^"']*["']/gi, '') // Remove href attributes
+      .replace(/\bhref\b/gi, '') // Remove remaining 'href' text
+      .replace(/\ba_blank\b/gi, '') // Remove a_blank
+      .replace(/\bnbsp\b/gi, ' ') // Replace nbsp with space
+      .replace(/font\s*color\s*=\s*["'][^"']*["']/gi, '') // Remove font color attributes
+      .replace(/\/font/gi, '') // Remove /font
+      .replace(/\/a/gi, '') // Remove /a
+      .replace(/target\s*=\s*["'][^"']*["']/gi, '') // Remove target attributes
+      .replace(/rel\s*=\s*["'][^"']*["']/gi, '') // Remove rel attributes
+      .replace(/style\s*=\s*["'][^"']*["']/gi, '') // Remove style attributes
+      .replace(/class\s*=\s*["'][^"']*["']/gi, '') // Remove class attributes
+      .replace(/\s+/g, ' ') // Normalize multiple spaces
+      .replace(/^\s*[\/\-\.\,\;\:]+\s*/g, '') // Remove leading punctuation
+      .trim();
+  }
+
+  private isValidDescription(description: string): boolean {
+    // Check if description is meaningful
+    if (!description || description.length < 20) {
+      return false;
+    }
+    
+    // Check if it contains actual words (not just symbols/numbers)
+    const wordCount = description.match(/[a-zA-ZÀ-ÿ]{3,}/g)?.length || 0;
+    if (wordCount < 3) {
+      return false;
+    }
+    
+    // Check if it's not mostly HTML remnants or code
+    const codePatterns = [
+      /^\s*[\/\-\.\,\;\:\#\=\[\]]+\s*$/,
+      /^[a-z_]+$/i, // Single words that look like variable names
+      /^\d+$/,      // Just numbers
+    ];
+    
+    if (codePatterns.some(pattern => pattern.test(description))) {
+      return false;
+    }
+    
+    return true;
+  }
+
+  private isMaritimoRelated(text: string): boolean {
+    const maritimoKeywords = [
+      'marítimo', 'maritimo', 'cs marítimo', 'cs maritimo',
+      'clube sport marítimo', 'verde-rubro', 'verde rubro'
+    ];
+
+    const lowerText = text.toLowerCase();
+    
+    const hasMaritimoKeyword = maritimoKeywords.some(keyword => 
+      lowerText.includes(keyword)
+    );
+
+    return hasMaritimoKeyword;
+  }
+
+  private isTransferRelated(text: string): boolean {
+    const transferKeywords = [
+      'transferência', 'transferencias', 'contratação', 'contratacao',
+      'saída', 'saida', 'chegada', 'reforço', 'reforco',
+      'negociação', 'negociacao', 'acordo', 'proposta',
+      'interessado', 'interesse', 'sondagem', 'mercado',
+      'empréstimo', 'emprestimo', 'cedido', 'cedência', 'cedencia',
+      'renovação', 'renovacao', 'contrato', 'assinou', 'assinatura',
+      'rescisão', 'rescisao', 'rescinde', 'deixa o clube'
+    ];
+
+    const lowerText = text.toLowerCase();
+    
+    // Para ser considerado rumor de transferência, deve:
+    // 1. Mencionar o Marítimo diretamente
+    // 2. Ter palavras-chave de transferência
+    // 3. NÃO ser sobre treinadores/staff
+    const hasMaritimoKeyword = this.isMaritimoRelated(text);
+    const hasTransferKeyword = transferKeywords.some(keyword => lowerText.includes(keyword));
+    
+    // Excluir notícias sobre treinadores/staff
+    const staffKeywords = ['treinador', 'técnico', 'diretor', 'presidente', 'staff', 'equipa técnica'];
+    const isAboutStaff = staffKeywords.some(keyword => lowerText.includes(keyword));
+    
+    return hasMaritimoKeyword && hasTransferKeyword && !isAboutStaff;
+  }
+
+  private convertNewsToRumors(newsItems: NewsItem[], sourceType: string): TransferRumor[] {
+    const rumors: TransferRumor[] = [];
+
+    newsItems.forEach((item, index) => {
+      const transferInfo = this.extractTransferInfoFromNews(item);
+      
+      if (transferInfo) {
+        // Create a more unique ID based on content hash
+        const contentHash = this.createContentHash(item.title + item.description + item.url);
+        rumors.push({
+          id: `real_${contentHash}_${index}`,
+          player_name: transferInfo.playerName,
+          type: transferInfo.type,
+          club: transferInfo.club,
+          value: transferInfo.value,
+          status: transferInfo.status,
+          date: this.formatDate(item.publishedAt),
+          source: item.source,
+          reliability: this.calculateReliability(item.source, item.title),
+          description: item.title.substring(0, 150) + (item.title.length > 150 ? '...' : '')
+        });
+      }
+    });
+
+    return rumors;
+  }
+
+  private extractTransferInfoFromNews(item: NewsItem): {
+    playerName: string;
+    type: "compra" | "venda";
+    club: string;
+    value: string;
+    status: "rumor" | "negociação" | "confirmado";
+  } | null {
+    const fullText = item.title + ' ' + item.description;
+    
+    // Extract player name
+    const playerName = this.extractPlayerNameFromText(fullText);
+    
+    // Se não conseguir identificar um jogador específico, mas for claramente sobre transferência do Marítimo, aceitar
+    if (!playerName || playerName === 'Jogador não identificado') {
+      // Verificar se é sobre treinador/staff (não queremos estes)
+      const staffKeywords = ['treinador', 'técnico', 'diretor', 'presidente', 'staff', 'equipa técnica'];
+      if (staffKeywords.some(keyword => fullText.toLowerCase().includes(keyword))) {
+        return null;
+      }
+      
+      // Se não mencionar jogador específico mas falar de transferência, pode ser rumor geral
+      if (!fullText.toLowerCase().includes('jogador') && !fullText.toLowerCase().includes('futebolista')) {
+        return null;
+      }
+    }
+
+    // Determine transfer type
+    const type = this.determineTransferType(fullText);
+    
+    // Extract club
+    const club = this.extractClubFromText(fullText);
+    
+    // Extract value
+    const value = this.extractValueFromText(fullText);
+    
+    // Determine status
+    const status = this.determineStatusFromText(fullText);
+
+    return {
+      playerName: playerName || 'Jogador não identificado',
+      type,
+      club,
+      value,
+      status
+    };
+  }
+
+  private extractPlayerNameFromText(text: string): string | null {
+    // Known Marítimo players (plantel atual 2024/25)
+    const knownPlayers = [
+      // Equipa Principal
+      'Samú Silva', 'Igor Julião', 'Erivaldo Almeida', 'Noah Madsen',
+      'Fabio Blanco', 'Pedrinho', 'Preslav Borukov', 'Bernardo Gomes',
+      'Pedro Empis', 'Carlos Daniel', 'Vladan Danilović', 'Tomás Domingos',
+      'Pedro Teixeira', 'Rodrigo Borges', 'Afonso Freitas', 'Nachon Nsingi',
+      'Patrick Fernandes', 'Noah Françoise', 'Romain Correia', 'Fábio China',
+      'Michel', 'Enrique Zauner', 'Francisco França', 'Martim Tavares',
+      'Rodrigo Andrade', 'Ibrahima Guirassy', 'Gonçalo Tabuaço',
+      
+      // Outros jogadores sob contrato
+      'Nito Gomes',
+      
+      // Equipa B - Guarda-redes
+      'Philipp Sukhikh', 'Tomás Von Hellens', 'Pedro Gomes',
+      
+      // Equipa B - Defesas
+      'Afonso Martins', 'David Freitas', 'Cristiano Gomes', 'Jhonnys Guerrero',
+      'João Castro', 'Lucas Von Hellens', 'João Barros', 'Martim Vieira',
+      'Nuno Castanha',
+      
+      // Equipa B - Médios
+      'Ricardo Santos', 'José Camacho', 'Tiago Sousa',
+      
+      // Equipa B - Avançados
+      'Francisco Gomes', 'Rúben Marques', 'Rodrigo Vasconcelos',
+      
+      // Variações sem acentos para melhor detecção
+      'Samu Silva', 'Igor Juliao', 'Fabio China', 'Vladan Danilovic',
+      'Tomas Domingos', 'Afonso Freitas', 'Noah Francoise', 'Romain Correia',
+      'Francisco Franca', 'Goncalo Tabuaco', 'Tomas Von Hellens',
+      'Ruben Marques',
+      
+      // Jogadores históricos que ainda podem aparecer em notícias
+      'Cláudio Winck', 'André Vidigal', 'Marco Silva', 'João Afonso',
+      'Diogo Mendes', 'Rúben Macedo', 'Edgar Costa', 'Joel Tagueu',
+      'Matheus Costa', 'Paulo Victor', 'Zainadine Júnior', 'Stefano Beltrame',
+      'Henrique', 'Moisés Mosquera', 'Val', 'Brayan Riascos',
+      'Pedro Pelágio', 'Iván Rossi', 'Félix Correia', 'Geny Catamo',
+      'Claudio Winck', 'Andre Vidigal', 'Joao Afonso', 'Ruben Macedo',
+      'Moises Mosquera', 'Felix Correia', 'Ivan Rossi', 'Pedro Pelagio',
+      
+      // Possíveis alvos/rumores comuns
+      'Ivo Vieira', 'Albano Oliveira'
+    ];
+
+    // Check for known players first
+    for (const player of knownPlayers) {
+      if (text.toLowerCase().includes(player.toLowerCase())) {
+        return player;
+      }
+    }
+
+    // Improved name extraction patterns
+    const namePatterns = [
+      // Pattern for Portuguese names with accents
+      /\b([A-ZÁÀÂÃÉÈÊÍÌÎÓÒÔÕÚÙÛÇ][a-záàâãéèêíìîóòôõúùûç]+(?:\s+[A-ZÁÀÂÃÉÈÊÍÌÎÓÒÔÕÚÙÛÇ][a-záàâãéèêíìîóòôõúùûç]+)+)\b/g,
+      // Pattern for names in quotes
+      /"([A-ZÁÀÂÃÉÈÊÍÌÎÓÒÔÕÚÙÛÇ][a-záàâãéèêíìîóòôõúùûç]+(?:\s+[A-ZÁÀÂÃÉÈÊÍÌÎÓÒÔÕÚÙÛÇ][a-záàâãéèêíìîóòôõúùûç]+)+)"/g,
+      // Pattern for names after common keywords
+      /(?:jogador|futebolista|avançado|médio|defesa|guarda-redes)\s+([A-ZÁÀÂÃÉÈÊÍÌÎÓÒÔÕÚÙÛÇ][a-záàâãéèêíìîóòôõúùûç]+(?:\s+[A-ZÁÀÂÃÉÈÊÍÌÎÓÒÔÕÚÙÛÇ][a-záàâãéèêíìîóòôõúùûç]+)+)/gi
+    ];
+
+    for (const pattern of namePatterns) {
+      const matches = text.match(pattern);
+      if (matches && matches.length > 0) {
+        // Filter out common words that are not names
+        const excludeWords = ['marítimo', 'clube', 'equipa', 'futebol', 'jogador', 'transferência', 'contratação', 'treinador', 'técnico'];
+        const potentialName = matches[0].replace(/"/g, '').trim();
+        
+        if (!excludeWords.some(word => potentialName.toLowerCase().includes(word)) && 
+            potentialName.length > 3 && 
+            potentialName.split(' ').length >= 2) {
+          return potentialName;
+        }
+      }
+    }
+
+    // Try to find names mentioned with Marítimo context
+    const maritimoContextPattern = /marítimo.*?([A-ZÁÀÂÃÉÈÊÍÌÎÓÒÔÕÚÙÛÇ][a-záàâãéèêíìîóòôõúùûç]+\s+[A-ZÁÀÂÃÉÈÊÍÌÎÓÒÔÕÚÙÛÇ][a-záàâãéèêíìîóòôõúùûç]+)/gi;
+    const contextMatch = text.match(maritimoContextPattern);
+    if (contextMatch && contextMatch.length > 0) {
+      const nameMatch = contextMatch[0].match(/([A-ZÁÀÂÃÉÈÊÍÌÎÓÒÔÕÚÙÛÇ][a-záàâãéèêíìîóòôõúùûç]+\s+[A-ZÁÀÂÃÉÈÊÍÌÎÓÒÔÕÚÙÛÇ][a-záàâãéèêíìîóòôõúùûç]+)$/);
+      if (nameMatch) {
+        return nameMatch[1];
+      }
+    }
+
+    return null; // Retorna null em vez de string para melhor controle
+  }
+
+  private determineTransferType(text: string): "compra" | "venda" {
+    const buyKeywords = ['contratação', 'contratacao', 'chegada', 'reforço', 'reforco', 'assinou'];
+    const sellKeywords = ['saída', 'saida', 'deixa', 'abandona', 'venda'];
+
+    const lowerText = text.toLowerCase();
+    
+    const hasBuyKeyword = buyKeywords.some(keyword => lowerText.includes(keyword));
+    const hasSellKeyword = sellKeywords.some(keyword => lowerText.includes(keyword));
+
+    if (hasBuyKeyword && !hasSellKeyword) return 'compra';
+    if (hasSellKeyword && !hasBuyKeyword) return 'venda';
+    
+    return 'venda'; // Default assumption for Marítimo
+  }
+
+  private extractClubFromText(text: string): string {
+    const portugueseClubs = [
+      'FC Porto', 'Sporting CP', 'SL Benfica', 'SC Braga', 'Vitória SC',
+      'Gil Vicente', 'Boavista FC', 'Rio Ave FC', 'CD Santa Clara',
+      'Portimonense', 'Famalicão', 'Paços de Ferreira', 'Arouca',
+      'Chaves', 'Vizela', 'Casa Pia', 'Estoril'
+    ];
+
+    for (const club of portugueseClubs) {
+      if (text.toLowerCase().includes(club.toLowerCase())) {
+        return club;
+      }
+    }
+
+    return 'Clube não especificado';
+  }
+
+  private extractValueFromText(text: string): string {
+    // Primeiro verificar se é sobre treinador/staff - se for, não extrair valores
+    const staffKeywords = ['treinador', 'técnico', 'diretor', 'presidente', 'staff', 'equipa técnica'];
+    const lowerText = text.toLowerCase();
+    const isAboutStaff = staffKeywords.some(keyword => lowerText.includes(keyword));
+    
+    if (isAboutStaff) {
+      return 'Valor não revelado';
+    }
+
+    const valuePatterns = [
+      // Padrões específicos para transferências de jogadores
+      /(?:transferência|contratação|negociação|acordo|proposta)\s*(?:de|por)?\s*€?\s*(\d+(?:[.,]\d+)?)\s*(milhões?|milhao|milhoes|M|mil|K)/gi,
+      /(?:custo|valor|preço|preco)\s*de\s*€?\s*(\d+(?:[.,]\d+)?)\s*(milhões?|milhao|milhoes|M|mil|K)/gi,
+      
+      // Padrões em euros com contexto de jogador
+      /jogador.*?€\s*(\d+(?:[.,]\d+)?)\s*(milhões?|milhao|milhoes|M|mil|K)/gi,
+      /futebolista.*?€\s*(\d+(?:[.,]\d+)?)\s*(milhões?|milhao|milhoes|M|mil|K)/gi,
+      
+      // Padrões mais específicos
+      /€\s*(\d+(?:[.,]\d+)?)\s*(milhões?|milhao|milhoes|M)\s*(?:de\s*euros?)?/gi,
+      /(\d+(?:[.,]\d+)?)\s*(milhões?|milhao|milhoes|M)\s*de\s*euros/gi,
+      /(\d+(?:[.,]\d+)?)\s*(mil)\s*euros/gi,
+      
+      // Padrões com "por"
+      /por\s*€?\s*(\d+(?:[.,]\d+)?)\s*(milhões?|milhao|milhoes|M|mil)/gi,
+      /por\s*(\d+(?:[.,]\d+)?)\s*(milhões?|milhao|milhoes|M)\s*de\s*euros/gi,
+      
+      // Padrões mais simples mas com validação de contexto
+      /€\s*(\d+(?:[.,]\d+)?)\s*(milhões?|milhao|milhoes|M)/gi,
+      /(\d+(?:[.,]\d+)?)\s*euros/gi
+    ];
+
+    for (const pattern of valuePatterns) {
+      const matches = text.match(pattern);
+      if (matches && matches.length > 0) {
+        // Verificar se o valor está no contexto correto (perto de palavras relacionadas com transferências)
+        const match = matches[0];
+        const matchIndex = text.toLowerCase().indexOf(match.toLowerCase());
+        const contextBefore = text.substring(Math.max(0, matchIndex - 100), matchIndex).toLowerCase();
+        const contextAfter = text.substring(matchIndex, Math.min(text.length, matchIndex + match.length + 100)).toLowerCase();
+        const fullContext = contextBefore + ' ' + contextAfter;
+        
+        // Verificar se está no contexto de transferência/jogador
+        const transferContext = [
+          'transferência', 'transferencia', 'contratação', 'contratacao',
+          'jogador', 'futebolista', 'acordo', 'proposta', 'negociação', 'negociacao',
+          'custo', 'valor', 'preço', 'preco', 'pagar', 'pago'
+        ];
+        
+        const hasTransferContext = transferContext.some(keyword => fullContext.includes(keyword));
+        
+        if (hasTransferContext) {
+          // Clean up the match and return it
+          let value = match.trim();
+          
+          // Normalize common abbreviations
+          value = value.replace(/milhao/gi, 'milhão');
+          value = value.replace(/milhoes/gi, 'milhões');
+          value = value.replace(/\bM\b/g, 'milhões');
+          value = value.replace(/\bK\b/g, 'mil');
+          
+          // Add euro symbol if not present
+          if (!value.includes('€') && !value.toLowerCase().includes('euro')) {
+            value = '€' + value;
+          }
+          
+          return value;
+        }
+      }
+    }
+
+    // Check for free transfer indicators
+    const freeTransferKeywords = [
+      'transferência livre', 'transferencia livre', 'livre', 'gratuito', 
+      'sem custos', 'custo zero', 'a custo zero', 'fim de contrato',
+      'parâmetro zero', 'parametro zero'
+    ];
+    
+    if (freeTransferKeywords.some(keyword => lowerText.includes(keyword))) {
+      return 'Transferência livre';
+    }
+
+    // Check for loan indicators
+    const loanKeywords = ['empréstimo', 'emprestimo', 'cedido', 'cedência', 'cedencia'];
+    if (loanKeywords.some(keyword => lowerText.includes(keyword))) {
+      return 'Empréstimo';
+    }
+
+    return 'Valor não revelado';
+  }
+
+  private determineStatusFromText(text: string): "rumor" | "negociação" | "confirmado" {
+    const confirmedKeywords = ['confirmado', 'oficial', 'anunciado', 'assinado'];
+    const negotiationKeywords = ['negociação', 'negociacao', 'conversas', 'acordo'];
+    
+    const lowerText = text.toLowerCase();
+    
+    if (confirmedKeywords.some(keyword => lowerText.includes(keyword))) {
+      return 'confirmado';
+    }
+    
+    if (negotiationKeywords.some(keyword => lowerText.includes(keyword))) {
+      return 'negociação';
+    }
+    
+    return 'rumor';
+  }
+
+  private formatDate(dateString: string): string {
+    try {
+      const date = new Date(dateString);
+      return date.toISOString().split('T')[0];
+    } catch {
+      return new Date().toISOString().split('T')[0];
+    }
+  }
+
+  private calculateReliability(source: string, title: string): number {
+    let baseReliability = 3;
+    
+    switch (source.toLowerCase()) {
+      case 'record':
+      case 'a bola':
+        baseReliability = 4;
+        break;
+      case 'o jogo':
+        baseReliability = 3;
+        break;
+      default:
+        baseReliability = 3;
+    }
+
+    if (title.toLowerCase().includes('confirmado') || title.toLowerCase().includes('oficial')) {
+      baseReliability = Math.min(5, baseReliability + 1);
+    }
+
+    return baseReliability;
+  }
+
+  private removeDuplicates(rumors: TransferRumor[]): TransferRumor[] {
+    const seen = new Set<string>();
+    return rumors.filter(rumor => {
+      const key = `${rumor.player_name}_${rumor.club}_${rumor.type}`.toLowerCase();
+      if (seen.has(key)) {
+        return false;
+      }
+      seen.add(key);
+      return true;
+    });
+  }
+
+  private delay(ms: number): Promise<void> {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
+  private createContentHash(content: string): string {
+    // Simple hash function to create unique IDs
+    let hash = 0;
+    for (let i = 0; i < content.length; i++) {
+      const char = content.charCodeAt(i);
+      hash = ((hash << 5) - hash) + char;
+      hash = hash & hash; // Convert to 32-bit integer
+    }
+    return Math.abs(hash).toString(36);
+  }
+
+  private removeDuplicateNews(news: NewsItem[]): NewsItem[] {
+    const seen = new Set<string>();
+    const titleSimilarity = new Map<string, NewsItem>();
+    
+    return news.filter(item => {
+      // Check exact duplicates first
+      const exactKey = `${item.title}_${item.url}`.toLowerCase();
+      if (seen.has(exactKey)) {
+        return false;
+      }
+      seen.add(exactKey);
+      
+      // Check for similar titles (same story from different sources)
+      const normalizedTitle = this.normalizeTitle(item.title);
+      const titleKey = this.createTitleSignature(normalizedTitle);
+      
+      if (titleSimilarity.has(titleKey)) {
+        const existingItem = titleSimilarity.get(titleKey)!;
+        // Keep the one from more reliable source or more recent
+        const existingReliability = this.getSourceReliability(existingItem.source);
+        const currentReliability = this.getSourceReliability(item.source);
+        
+        if (currentReliability > existingReliability || 
+            (currentReliability === existingReliability && new Date(item.publishedAt) > new Date(existingItem.publishedAt))) {
+          // Replace the existing one
+          titleSimilarity.set(titleKey, item);
+          return true;
+        }
+        return false;
+      }
+      
+      titleSimilarity.set(titleKey, item);
+      return true;
+    });
+  }
+
+  private normalizeTitle(title: string): string {
+    return title
+      .toLowerCase()
+      .replace(/[^\w\s]/g, ' ') // Remove punctuation
+      .replace(/\s+/g, ' ') // Normalize spaces
+      .trim();
+  }
+
+  private createTitleSignature(normalizedTitle: string): string {
+    // Create a signature based on key words, ignoring common words
+    const commonWords = ['o', 'a', 'os', 'as', 'de', 'da', 'do', 'das', 'dos', 'em', 'no', 'na', 'nos', 'nas', 'para', 'por', 'com', 'sem', 'que', 'e', 'ou', 'mas', 'se', 'quando', 'onde', 'como', 'porque', 'já', 'ainda', 'mais', 'menos', 'muito', 'pouco', 'todo', 'toda', 'todos', 'todas', 'este', 'esta', 'estes', 'estas', 'esse', 'essa', 'esses', 'essas', 'aquele', 'aquela', 'aqueles', 'aquelas'];
+    
+    const words = normalizedTitle.split(' ')
+      .filter(word => word.length > 2 && !commonWords.includes(word))
+      .sort()
+      .slice(0, 5); // Take first 5 significant words
+    
+    return words.join('_');
+  }
+
+  private getSourceReliability(source: string): number {
+    switch (source.toLowerCase()) {
+      case 'record': return 5;
+      case 'a bola': return 4;
+      case 'o jogo': return 4;
+      case 'google news': return 3;
+      default: return 2;
+    }
+  }
+}
+
+export const realNewsService = new RealNewsService(); 
