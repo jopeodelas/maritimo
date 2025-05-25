@@ -10,6 +10,7 @@ import playersRoutes from './src/routes/players.routes';
 import votesRoutes from './src/routes/votes.routes';
 import transferRoutes from './src/routes/transfer.routes';
 import newsRoutes from './src/routes/news.routes';
+import pollRoutes from './src/routes/poll.routes';
 import { errorHandler, notFoundHandler } from './src/middleware/error.middleware';
 
 const app = express();
@@ -37,6 +38,7 @@ app.use('/api/players', playersRoutes);
 app.use('/api/votes', votesRoutes);
 app.use('/api/transfers', transferRoutes);
 app.use('/api/news', newsRoutes);
+app.use('/api/poll', pollRoutes);
 
 // Error handling
 app.use(notFoundHandler);

@@ -18,12 +18,34 @@ const MainPage = () => {
   const [transferStats, setTransferStats] = useState<TransferStats | null>(null);
   const [loadingRumors, setLoadingRumors] = useState(false);
   const [lastRumorUpdate, setLastRumorUpdate] = useState<Date | null>(null);
+  
+  // Poll states
+  const [selectedPositions, setSelectedPositions] = useState<string[]>([]);
+  const [hasVoted, setHasVoted] = useState(false);
+  const [pollResults, setPollResults] = useState<{[key: string]: number}>({});
+  const [totalPollVotes, setTotalPollVotes] = useState(0);
 
   useEffect(() => {
     fetchTopVotedPlayers();
     fetchTransferRumors();
     fetchTransferStats();
+    checkPollVoteStatus();
   }, []);
+
+  const checkPollVoteStatus = async () => {
+    try {
+      const response = await api.get('/poll/positions/check');
+      setHasVoted(response.data.hasVoted);
+      if (response.data.hasVoted) {
+        setPollResults(response.data.results);
+        setTotalPollVotes(response.data.totalVotes);
+      }
+    } catch (error) {
+      console.error("Error checking poll status:", error);
+      // If there's an error, assume user hasn't voted (safe default)
+      setHasVoted(false);
+    }
+  };
 
   const fetchTopVotedPlayers = async () => {
     try {
@@ -127,6 +149,50 @@ const MainPage = () => {
     if (diffDays === 2) return "Ontem";
     if (diffDays <= 7) return `Há ${diffDays - 1} dias`;
     return date.toLocaleDateString("pt-PT");
+  };
+
+  // Poll functions
+  const positions = [
+    { id: 'guarda-redes', name: 'Guarda-Redes' },
+    { id: 'defesa-central', name: 'Defesa Central' },
+    { id: 'laterais', name: 'Laterais' },
+    { id: 'medio-centro', name: 'Médio Centro' },
+    { id: 'extremos', name: 'Extremos' },
+    { id: 'ponta-de-lanca', name: 'Ponta de Lança' }
+  ];
+
+  const handlePositionToggle = (positionId: string) => {
+    if (hasVoted) return;
+    
+    setSelectedPositions(prev => 
+      prev.includes(positionId) 
+        ? prev.filter(id => id !== positionId)
+        : [...prev, positionId]
+    );
+  };
+
+  const handleSubmitPoll = async () => {
+    if (selectedPositions.length === 0 || hasVoted) return;
+    
+    try {
+      const response = await api.post('/poll/positions', {
+        positions: selectedPositions
+      });
+      
+      setHasVoted(true);
+      setPollResults(response.data.results);
+      setTotalPollVotes(response.data.totalVotes);
+    } catch (error) {
+      console.error("Error submitting poll:", error);
+      // If there's an error, don't change the state
+      // The user can try again
+    }
+  };
+
+  const calculatePollPercentage = (votes: number) => {
+    if (totalPollVotes === 0) return "0.0";
+    // Calculate percentage based on unique voters who chose this position
+    return ((votes / totalPollVotes) * 100).toFixed(1);
   };
 
   const styles = createStyles({
@@ -506,6 +572,115 @@ const MainPage = () => {
       backdropFilter: "blur(20px)",
       textAlign: "center",
     },
+    pollCard: {
+      background: "rgba(255, 193, 7, 0.9)",
+      border: "1px solid rgba(255, 255, 255, 0.2)",
+      borderRadius: "clamp(1rem, 2.5vw, 1.5rem)",
+      padding: "clamp(1.5rem, 3vh, 2rem) clamp(1.25rem, 2.5vw, 1.75rem)",
+      color: "white",
+            boxShadow: "0 1rem 3rem rgba(255, 193, 7, 0.3)",
+      backdropFilter: "blur(20px)",
+      position: "relative",
+    },
+    pollTitle: {
+      fontSize: "clamp(1rem, 2vw, 1.25rem)",
+      fontWeight: "700",
+      marginBottom: "clamp(1.5rem, 2.5vh, 1.75rem)",
+      color: "#1A252F",
+      textShadow: "0 0.125rem 0.25rem rgba(0, 0, 0, 0.2)",
+      lineHeight: "1.1",
+      whiteSpace: "nowrap",
+      overflow: "hidden",
+      textOverflow: "ellipsis",
+    },
+    positionsList: {
+      display: "flex",
+      flexDirection: "column",
+      gap: "clamp(0.75rem, 1.5vh, 1rem)",
+      marginBottom: "clamp(1.5rem, 2.5vh, 2rem)",
+      flex: 1,
+    },
+    positionOption: {
+      background: "rgba(26, 37, 47, 0.8)",
+      border: "2px solid rgba(255, 255, 255, 0.3)",
+      borderRadius: "clamp(0.5rem, 1.5vw, 0.75rem)",
+      padding: "clamp(0.75rem, 1.5vh, 1rem) clamp(1rem, 2vw, 1.25rem)",
+      cursor: "pointer",
+      transition: "all 0.3s ease",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      textAlign: "center",
+    },
+    positionSelected: {
+      background: "rgba(76, 175, 80, 0.9)",
+      borderColor: "#4CAF50",
+      transform: "scale(1.02)",
+      boxShadow: "0 0.5rem 1rem rgba(76, 175, 80, 0.4)",
+    },
+    positionName: {
+      fontSize: "clamp(0.875rem, 1.8vw, 1rem)",
+      fontWeight: "600",
+      color: "white",
+      margin: 0,
+      flex: 1,
+    },
+    pollSubmitButton: {
+      background: "linear-gradient(135deg, #4CAF50 0%, #45A049 100%)",
+      color: "white",
+      border: "none",
+      padding: "clamp(1rem, 2vh, 1.25rem) clamp(2rem, 4vw, 2.5rem)",
+      borderRadius: "clamp(0.75rem, 2vw, 1rem)",
+      fontSize: "clamp(1rem, 2.2vw, 1.125rem)",
+      fontWeight: "700",
+      cursor: "pointer",
+      transition: "all 0.3s ease",
+      textTransform: "uppercase",
+      letterSpacing: "0.05em",
+      boxShadow: "0 0.5rem 1.5rem rgba(76, 175, 80, 0.4)",
+      marginTop: "auto",
+    },
+    pollSubmitDisabled: {
+      background: "rgba(120, 144, 156, 0.5)",
+      cursor: "not-allowed",
+      boxShadow: "none",
+    },
+    resultsList: {
+      display: "flex",
+      flexDirection: "column",
+      gap: "clamp(0.75rem, 1.5vh, 1rem)",
+      flex: 1,
+      marginBottom: "clamp(1.5rem, 2.5vh, 2rem)",
+    },
+    resultItem: {
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center",
+      background: "rgba(26, 37, 47, 0.8)",
+      borderRadius: "clamp(0.5rem, 1vw, 0.75rem)",
+      padding: "clamp(0.75rem, 1.5vh, 1rem) clamp(1rem, 2vw, 1.25rem)",
+      border: "1px solid rgba(255, 255, 255, 0.2)",
+    },
+    resultPosition: {
+      display: "flex",
+      alignItems: "center",
+      fontSize: "clamp(0.875rem, 2vw, 1rem)",
+      fontWeight: "600",
+      color: "white",
+      flex: 1,
+    },
+    resultPercentage: {
+      fontSize: "clamp(1rem, 2.5vw, 1.25rem)",
+      fontWeight: "700",
+      color: "#4CAF50",
+      flexShrink: 0,
+    },
+    pollInfo: {
+      fontSize: "clamp(0.75rem, 1.6vw, 0.875rem)",
+      color: "#1A252F",
+      marginTop: "clamp(1rem, 2vh, 1.25rem)",
+      opacity: 0.8,
+    },
     loading: {
       display: "flex",
       justifyContent: "center",
@@ -538,7 +713,7 @@ const MainPage = () => {
       },
       transferDetails: {
         gridTemplateColumns: "1fr",
-        gap: "clamp(0.75rem, 1.5vh, 1rem)",
+                gap: "clamp(0.75rem, 1.5vh, 1rem)",
       },
     } as any,
     "@media (max-width: 30rem)": {
@@ -598,6 +773,34 @@ const MainPage = () => {
     } else {
       target.style.transform = "translateY(0) scale(1)";
       target.style.boxShadow = "0 0.25rem 0.75rem rgba(76, 175, 80, 0.3)";
+    }
+  };
+
+  const handlePositionHover = (e: React.MouseEvent, isHover: boolean, isSelected: boolean) => {
+    if (hasVoted) return;
+    
+    const target = e.currentTarget as HTMLElement;
+    if (isHover && !isSelected) {
+      target.style.transform = "scale(1.02)";
+      target.style.borderColor = "#FFD700";
+      target.style.boxShadow = "0 0.25rem 0.75rem rgba(255, 215, 0, 0.3)";
+    } else if (!isSelected) {
+      target.style.transform = "scale(1)";
+      target.style.borderColor = "rgba(255, 255, 255, 0.3)";
+      target.style.boxShadow = "none";
+    }
+  };
+
+  const handlePollSubmitHover = (e: React.MouseEvent, isHover: boolean) => {
+    if (selectedPositions.length === 0) return;
+    
+    const target = e.currentTarget as HTMLElement;
+    if (isHover) {
+      target.style.transform = "translateY(-0.25vh) scale(1.05)";
+      target.style.boxShadow = "0 1vh 2vh rgba(76, 175, 80, 0.6)";
+    } else {
+      target.style.transform = "translateY(0) scale(1)";
+      target.style.boxShadow = "0 0.5rem 1.5rem rgba(76, 175, 80, 0.4)";
     }
   };
 
@@ -789,6 +992,78 @@ const MainPage = () => {
 
           {/* Sidebar */}
           <div style={styles.sidebar}>
+            {/* Poll Section */}
+            <div style={styles.pollCard}>
+              {!hasVoted ? (
+                /* Front of card - Poll */
+                <div>
+                  <h3 style={styles.pollTitle}>
+                    Que posição deveríamos reforçar?
+                  </h3>
+                  
+                  <div style={styles.positionsList}>
+                    {positions.map((position) => (
+                      <div
+                        key={position.id}
+                        style={{
+                          ...styles.positionOption,
+                          ...(selectedPositions.includes(position.id) ? styles.positionSelected : {})
+                        }}
+                        onClick={() => handlePositionToggle(position.id)}
+                        onMouseOver={(e) => handlePositionHover(e, true, selectedPositions.includes(position.id))}
+                        onMouseOut={(e) => handlePositionHover(e, false, selectedPositions.includes(position.id))}
+                      >
+                        <span style={styles.positionName}>{position.name}</span>
+                      </div>
+                    ))}
+                  </div>
+                  
+                  <button
+                    style={{
+                      ...styles.pollSubmitButton,
+                      ...(selectedPositions.length === 0 ? styles.pollSubmitDisabled : {})
+                    }}
+                    onClick={handleSubmitPoll}
+                    disabled={selectedPositions.length === 0}
+                    onMouseOver={(e) => handlePollSubmitHover(e, true)}
+                    onMouseOut={(e) => handlePollSubmitHover(e, false)}
+                  >
+                    Submeter Resposta
+                  </button>
+                  
+                  <p style={styles.pollInfo}>
+                    Selecione uma ou mais posições
+                  </p>
+                </div>
+              ) : (
+                /* Back of card - Results */
+                <div>
+                  <h3 style={styles.pollTitle}>
+                    Resultados da Poll
+                  </h3>
+                  
+                  <div style={styles.resultsList}>
+                    {positions
+                      .sort((a, b) => (pollResults[b.id] || 0) - (pollResults[a.id] || 0))
+                      .map((position) => (
+                        <div key={position.id} style={styles.resultItem}>
+                          <div style={styles.resultPosition}>
+                            <span>{position.name}</span>
+                          </div>
+                          <span style={styles.resultPercentage}>
+                            {calculatePollPercentage(pollResults[position.id] || 0)}%
+                          </span>
+                        </div>
+                      ))}
+                  </div>
+                  
+                  <p style={styles.pollInfo}>
+                    Total de votos: {totalPollVotes}
+                  </p>
+                </div>
+              )}
+            </div>
+
             {/* Stats Section */}
             <div style={styles.statsCard}>
               <h3 style={styles.statsTitle}>Estatísticas</h3>
