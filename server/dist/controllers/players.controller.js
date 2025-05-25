@@ -14,8 +14,8 @@ const player_model_1 = require("../models/player.model");
 const errorTypes_1 = require("../utils/errorTypes");
 const getAllPlayers = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const players = yield player_model_1.PlayerModel.findAll();
-        res.json(players);
+        const result = yield player_model_1.PlayerModel.findAll();
+        res.json(result);
     }
     catch (error) {
         next(error);

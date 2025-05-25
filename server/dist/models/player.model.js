@@ -16,16 +16,27 @@ exports.PlayerModel = void 0;
 const db_1 = __importDefault(require("../config/db"));
 class PlayerModel {
     static findAll() {
+        var _a;
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const result = yield db_1.default.query(`
+                // Get players with vote counts
+                const playersResult = yield db_1.default.query(`
         SELECT p.*, COUNT(v.id) as vote_count
         FROM players p
         LEFT JOIN votes v ON p.id = v.player_id
         GROUP BY p.id
         ORDER BY vote_count DESC
       `);
-                return result.rows;
+                // Get total unique voters
+                const votersResult = yield db_1.default.query(`
+        SELECT COUNT(DISTINCT user_id) as total_unique_voters
+        FROM votes
+      `);
+                const totalUniqueVoters = parseInt(((_a = votersResult.rows[0]) === null || _a === void 0 ? void 0 : _a.total_unique_voters) || '0');
+                return {
+                    players: playersResult.rows,
+                    totalUniqueVoters
+                };
             }
             catch (error) {
                 throw error;

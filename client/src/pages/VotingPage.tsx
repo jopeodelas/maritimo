@@ -23,13 +23,35 @@ const VotingPage = () => {
   const styles = createStyles({
     container: {
       minHeight: '100vh',
-      background: 'linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)',
-      fontFamily: '"Inter", -apple-system, BlinkMacSystemFont, sans-serif',
+      background: `
+        radial-gradient(circle at 20% 50%, rgba(76, 175, 80, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, rgba(244, 67, 54, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 40% 80%, rgba(255, 193, 7, 0.1) 0%, transparent 50%),
+        linear-gradient(135deg, #0F1419 0%, #1A252F 50%, #2C3E50 100%)
+      `,
+      fontFamily: '"Roboto", "Inter", -apple-system, BlinkMacSystemFont, sans-serif',
+      position: "relative",
+      overflow: "hidden",
+    },
+    backgroundPattern: {
+      position: "absolute",
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      backgroundImage: `
+        linear-gradient(30deg, transparent 40%, rgba(76, 175, 80, 0.03) 40%, rgba(76, 175, 80, 0.03) 60%, transparent 60%),
+        linear-gradient(-30deg, transparent 40%, rgba(244, 67, 54, 0.03) 40%, rgba(244, 67, 54, 0.03) 60%, transparent 60%)
+      `,
+      backgroundSize: "clamp(3rem, 8vw, 6rem) clamp(3rem, 8vw, 6rem)",
+      animation: "float 20s ease-in-out infinite",
     },
     content: {
       maxWidth: '1400px',
       margin: '0 auto',
       padding: '3vh 2vw',
+      position: "relative",
+      zIndex: 2,
     },
     header: {
       textAlign: 'center',
@@ -38,29 +60,30 @@ const VotingPage = () => {
     title: {
       fontSize: '3vw',
       fontWeight: '800',
-      color: '#212529',
+      color: '#FFFFFF',
       margin: '0 0 1vh 0',
-      background: 'linear-gradient(135deg, #009759 0%, #006633 100%)',
+      background: 'linear-gradient(135deg, #FFD700 0%, #FFA000 100%)',
       WebkitBackgroundClip: 'text',
       WebkitTextFillColor: 'transparent',
       backgroundClip: 'text',
+      textShadow: "0 0.125rem 0.25rem rgba(255, 215, 0, 0.3)",
     },
     subtitle: {
       fontSize: '1.2vw',
-      color: '#6c757d',
+      color: '#B0BEC5',
       margin: 0,
       fontWeight: '400',
     },
     selectionInfo: {
-      background: 'linear-gradient(135deg, #FFBB4C 0%, #FFB74D 100%)',
-      color: '#006633',
+      background: 'linear-gradient(135deg, #FFD700 0%, #FF8F00 100%)',
+      color: '#1A252F',
       padding: '1.5vh 2vw',
       borderRadius: '1vw',
       marginBottom: '3vh',
       textAlign: 'center',
       fontSize: '1.1vw',
       fontWeight: '600',
-      boxShadow: '0 0.2vh 1vh rgba(255, 187, 76, 0.3)',
+      boxShadow: '0 0.5rem 1.5rem rgba(255, 215, 0, 0.4)',
     },
     loading: {
       display: 'flex',
@@ -73,14 +96,14 @@ const VotingPage = () => {
     loadingSpinner: {
       width: '4vw',
       height: '4vw',
-      border: '0.3vw solid #e9ecef',
-      borderTop: '0.3vw solid #009759',
+      border: '0.3vw solid rgba(76, 175, 80, 0.2)',
+      borderTop: '0.3vw solid #4CAF50',
       borderRadius: '50%',
       animation: 'spin 1s linear infinite',
     },
     loadingText: {
       fontSize: '1.2vw',
-      color: '#6c757d',
+      color: '#B0BEC5',
       fontWeight: '500',
     },
     modernButton: {
@@ -96,12 +119,14 @@ const VotingPage = () => {
       gap: '0.5vw',
     },
     confirmButton: {
-      backgroundColor: '#FFBB4C',
-      color: '#006633',
+      background: 'linear-gradient(135deg, #FFD700 0%, #FF8F00 100%)',
+      color: '#1A252F',
+      boxShadow: '0 0.5rem 1.5rem rgba(255, 215, 0, 0.4)',
       disabled: {
-        backgroundColor: '#e9ecef',
-        color: '#6c757d',
+        backgroundColor: 'rgba(40, 55, 70, 0.9)',
+        color: '#78909C',
         cursor: 'not-allowed',
+        boxShadow: 'none',
       },
     },
     positionSection: {
@@ -113,7 +138,7 @@ const VotingPage = () => {
       gap: '1vw',
       marginBottom: '2vh',
       padding: '1vh 0',
-      borderBottom: '0.1vh solid #dee2e6',
+      borderBottom: '0.1vh solid rgba(76, 175, 80, 0.3)',
     },
     positionIcon: {
       fontSize: '1.5vw',
@@ -121,12 +146,12 @@ const VotingPage = () => {
     positionTitle: {
       fontSize: '1.5vw',
       fontWeight: '700',
-      color: '#212529',
+      color: '#FFFFFF',
       margin: 0,
     },
     positionCount: {
       fontSize: '0.9vw',
-      color: '#6c757d',
+      color: '#B0BEC5',
       fontWeight: '500',
     },
     playersGrid: {
@@ -135,19 +160,21 @@ const VotingPage = () => {
       gridTemplateColumns: 'repeat(auto-fill, minmax(15vw, 1fr))',
     },
     playerCard: {
-      backgroundColor: 'white',
+      background: 'rgba(40, 55, 70, 0.9)',
+      border: '1px solid rgba(76, 175, 80, 0.2)',
       borderRadius: '1vw',
       overflow: 'hidden',
-      boxShadow: '0 0.2vh 1vh rgba(0, 0, 0, 0.08)',
+      boxShadow: '0 0.2vh 1vh rgba(0, 0, 0, 0.4)',
       transition: 'all 0.3s ease',
       cursor: 'pointer',
       position: 'relative',
-      border: '0.1vh solid transparent',
+      backdropFilter: 'blur(20px)',
     },
     selectedCard: {
-      border: '0.2vh solid #FFBB4C',
-      boxShadow: '0 0.5vh 2vh rgba(255, 187, 76, 0.3)',
+      border: '0.2vh solid #FFD700',
+      boxShadow: '0 0.5vh 2vh rgba(255, 215, 0, 0.4)',
       transform: 'translateY(-0.2vh)',
+      background: 'rgba(50, 70, 90, 0.95)',
     },
     votedCard: {
       opacity: 0.6,
@@ -172,7 +199,7 @@ const VotingPage = () => {
       left: 0,
       width: '100%',
       height: '100%',
-      backgroundColor: 'rgba(255, 187, 76, 0.9)',
+      backgroundColor: 'rgba(255, 215, 0, 0.9)',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
@@ -185,20 +212,20 @@ const VotingPage = () => {
     checkIcon: {
       width: '3vw',
       height: '3vw',
-      backgroundColor: 'white',
+      backgroundColor: '#1A252F',
       borderRadius: '50%',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
       fontSize: '1.5vw',
-      color: '#009759',
+      color: '#4CAF50',
       fontWeight: 'bold',
     },
     votedBadge: {
       position: 'absolute',
       top: '1vh',
       right: '1vw',
-      backgroundColor: '#dc3545',
+      backgroundColor: '#F44336',
       color: 'white',
       padding: '0.5vh 1vw',
       borderRadius: '2vw',
@@ -212,13 +239,13 @@ const VotingPage = () => {
     playerName: {
       fontSize: '1.1vw',
       fontWeight: '600',
-      color: '#212529',
+      color: '#FFFFFF',
       margin: '0 0 0.5vh 0',
       lineHeight: '1.3',
     },
     playerPosition: {
       fontSize: '0.9vw',
-      color: '#6c757d',
+      color: '#B0BEC5',
       margin: '0 0 1vh 0',
       fontWeight: '500',
     },
@@ -230,14 +257,14 @@ const VotingPage = () => {
     voteCount: {
       fontSize: '0.9vw',
       fontWeight: '600',
-      color: '#009759',
+      color: '#4CAF50',
       display: 'flex',
       alignItems: 'center',
       gap: '0.3vw',
     },
     playerNumber: {
       fontSize: '0.8vw',
-      color: '#adb5bd',
+      color: '#78909C',
       fontWeight: '500',
     },
   });
@@ -250,7 +277,7 @@ const VotingPage = () => {
           axios.get('/api/votes/user', { withCredentials: true })
         ]);
         
-        setPlayers(playersRes.data);
+        setPlayers(playersRes.data.players || playersRes.data);
         setUserVotes(votesRes.data.map((vote: any) => vote.player_id));
       } catch (err) {
         console.error(err);
@@ -360,7 +387,9 @@ const VotingPage = () => {
         onMouseOver={(e) => {
           if (!isVoted) {
             e.currentTarget.style.transform = 'translateY(-0.3vh)';
-            e.currentTarget.style.boxShadow = '0 0.5vh 2vh rgba(0, 0, 0, 0.15)';
+            e.currentTarget.style.boxShadow = '0 1vh 2vh rgba(76, 175, 80, 0.3)';
+            e.currentTarget.style.borderColor = '#4CAF50';
+            e.currentTarget.style.background = 'rgba(50, 70, 90, 0.95)';
             const img = e.currentTarget.querySelector('img');
             if (img) img.style.transform = 'scale(1.05)';
           }
@@ -369,8 +398,10 @@ const VotingPage = () => {
           if (!isVoted) {
             e.currentTarget.style.transform = isSelected ? 'translateY(-0.2vh)' : 'translateY(0)';
             e.currentTarget.style.boxShadow = isSelected 
-              ? '0 0.5vh 2vh rgba(255, 187, 76, 0.3)' 
-              : '0 0.2vh 1vh rgba(0, 0, 0, 0.08)';
+              ? '0 0.5vh 2vh rgba(255, 215, 0, 0.4)' 
+              : '0 0.2vh 1vh rgba(0, 0, 0, 0.4)';
+            e.currentTarget.style.borderColor = isSelected ? '#FFD700' : 'rgba(76, 175, 80, 0.2)';
+            e.currentTarget.style.background = isSelected ? 'rgba(50, 70, 90, 0.95)' : 'rgba(40, 55, 70, 0.9)';
             const img = e.currentTarget.querySelector('img');
             if (img) img.style.transform = 'scale(1)';
           }
@@ -410,6 +441,7 @@ const VotingPage = () => {
   if (loading) {
     return (
       <div style={styles.container}>
+        <div style={styles.backgroundPattern}></div>
         <Navbar />
         <div style={styles.content}>
           <div style={styles.loading}>
@@ -422,6 +454,11 @@ const VotingPage = () => {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
           }
+          @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            33% { transform: translateY(-10px) rotate(1deg); }
+            66% { transform: translateY(5px) rotate(-1deg); }
+          }
         `}</style>
       </div>
     );
@@ -429,6 +466,7 @@ const VotingPage = () => {
 
   return (
     <div style={styles.container}>
+      <div style={styles.backgroundPattern}></div>
       <Navbar />
 
       <div style={styles.content}>
@@ -456,14 +494,16 @@ const VotingPage = () => {
             }}
             onMouseOver={(e) => {
               if (selectedPlayers.length > 0 && !isSubmitting) {
-                e.currentTarget.style.backgroundColor = '#FFA726';
-                e.currentTarget.style.transform = 'translateY(-0.1vh)';
+                e.currentTarget.style.background = 'linear-gradient(135deg, #FFA726 0%, #FF8F00 100%)';
+                e.currentTarget.style.transform = 'translateY(-0.1vh) scale(1.05)';
+                e.currentTarget.style.boxShadow = '0 1vh 2vh rgba(255, 215, 0, 0.6)';
               }
             }}
             onMouseOut={(e) => {
               if (selectedPlayers.length > 0 && !isSubmitting) {
-                e.currentTarget.style.backgroundColor = '#FFBB4C';
-                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.background = 'linear-gradient(135deg, #FFD700 0%, #FF8F00 100%)';
+                e.currentTarget.style.transform = 'translateY(0) scale(1)';
+                e.currentTarget.style.boxShadow = '0 0.5rem 1.5rem rgba(255, 215, 0, 0.4)';
               }
             }}
           >
@@ -493,6 +533,11 @@ const VotingPage = () => {
         @keyframes spin {
           0% { transform: rotate(0deg); }
           100% { transform: rotate(360deg); }
+        }
+        @keyframes float {
+          0%, 100% { transform: translateY(0px) rotate(0deg); }
+          33% { transform: translateY(-10px) rotate(1deg); }
+          66% { transform: translateY(5px) rotate(-1deg); }
         }
       `}</style>
     </div>

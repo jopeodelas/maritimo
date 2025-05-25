@@ -4,8 +4,8 @@ import { NotFoundError } from '../utils/errorTypes';
 
 export const getAllPlayers = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const players = await PlayerModel.findAll();
-    res.json(players);
+    const result = await PlayerModel.findAll();
+    res.json(result);
   } catch (error) {
     next(error);
   }

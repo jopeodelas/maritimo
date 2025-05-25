@@ -60,21 +60,19 @@ const MainPage = () => {
   const fetchTopVotedPlayers = async () => {
     try {
       const response = await api.get("/players");
-      const players = response.data;
+      const { players, totalUniqueVoters } = response.data;
 
       const playersWithNumbers = players.map((player: any) => ({
         ...player,
         vote_count: parseInt(player.vote_count) || 0,
       }));
 
-      // O número total de utilizadores únicos é o máximo de votos que qualquer jogador tem
-      // Se um jogador tem 3 votos, significa que 3 utilizadores únicos votaram (máximo possível)
-      const maxVotes = Math.max(...playersWithNumbers.map((player: Player) => player.vote_count));
-      setTotalVotes(maxVotes);
+      // O número total de utilizadores únicos que votaram
+      setTotalVotes(totalUniqueVoters);
 
       const sortedPlayers = playersWithNumbers
         .sort((a: Player, b: Player) => b.vote_count - a.vote_count)
-        .slice(0, 7);
+        .slice(0, 8);
 
       setTopVotedPlayers(sortedPlayers);
     } catch (error) {

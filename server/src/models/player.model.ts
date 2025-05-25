@@ -12,17 +12,35 @@ export interface PlayerWithVotes extends Player {
   vote_count: number;
 }
 
+export interface PlayersResponse {
+  players: PlayerWithVotes[];
+  totalUniqueVoters: number;
+}
+
 export class PlayerModel {
-  static async findAll(): Promise<PlayerWithVotes[]> {
+  static async findAll(): Promise<PlayersResponse> {
     try {
-      const result = await db.query(`
+      // Get players with vote counts
+      const playersResult = await db.query(`
         SELECT p.*, COUNT(v.id) as vote_count
         FROM players p
         LEFT JOIN votes v ON p.id = v.player_id
         GROUP BY p.id
         ORDER BY vote_count DESC
       `);
-      return result.rows;
+
+      // Get total unique voters
+      const votersResult = await db.query(`
+        SELECT COUNT(DISTINCT user_id) as total_unique_voters
+        FROM votes
+      `);
+
+      const totalUniqueVoters = parseInt(votersResult.rows[0]?.total_unique_voters || '0');
+
+      return {
+        players: playersResult.rows,
+        totalUniqueVoters
+      };
     } catch (error) {
       throw error;
     }

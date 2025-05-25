@@ -51,7 +51,8 @@ const register = (req, res, next) => __awaiter(void 0, void 0, void 0, function*
             httpOnly: true,
             secure: config_1.default.nodeEnv === 'production',
             sameSite: 'strict',
-            maxAge: 24 * 60 * 60 * 1000 // 1 day
+            maxAge: 24 * 60 * 60 * 1000,
+            signed: true // Adicione esta opção para assinar o cookie
         });
         // Send response without password
         const { password: _ } = user, userWithoutPassword = __rest(user, ["password"]);
@@ -85,7 +86,8 @@ const login = (req, res, next) => __awaiter(void 0, void 0, void 0, function* ()
             httpOnly: true,
             secure: config_1.default.nodeEnv === 'production',
             sameSite: 'strict',
-            maxAge: 24 * 60 * 60 * 1000 // 1 day
+            maxAge: 24 * 60 * 60 * 1000,
+            signed: true // Adicione esta opção para assinar o cookie
         });
         // Send response without password
         const { password: _ } = user, userWithoutPassword = __rest(user, ["password"]);
@@ -184,8 +186,8 @@ const handleGoogleCallback = (req, res, next) => __awaiter(void 0, void 0, void 
             });
             // Para requisições GET, redirecionar para a página principal após autenticação bem-sucedida
             if (req.method === 'GET') {
-                console.log('Redirecting to voting page...');
-                return res.redirect(config_1.default.clientUrl + '/voting');
+                console.log('Redirecting to main page...');
+                return res.redirect(config_1.default.clientUrl + '/main');
             }
             // Para requisições POST, enviar a resposta JSON como antes
             console.log('Sending JSON response with user data...');
@@ -209,7 +211,12 @@ const handleGoogleCallback = (req, res, next) => __awaiter(void 0, void 0, void 
 });
 exports.handleGoogleCallback = handleGoogleCallback;
 const logout = (req, res) => {
-    res.clearCookie('token');
+    res.clearCookie('token', {
+        httpOnly: true,
+        secure: config_1.default.nodeEnv === 'production',
+        sameSite: 'strict',
+        signed: true
+    });
     res.json({ message: 'Logged out successfully' });
 };
 exports.logout = logout;

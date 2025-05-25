@@ -37,7 +37,8 @@ export const register = async (req: Request, res: Response, next: NextFunction) 
       httpOnly: true,
       secure: config.nodeEnv === 'production',
       sameSite: 'strict',
-      maxAge: 24 * 60 * 60 * 1000 // 1 day
+      maxAge: 24 * 60 * 60 * 1000, // 1 day
+      signed: true // Adicione esta opção para assinar o cookie
     });
 
     // Send response without password
@@ -80,7 +81,8 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
       httpOnly: true,
       secure: config.nodeEnv === 'production',
       sameSite: 'strict',
-      maxAge: 24 * 60 * 60 * 1000 // 1 day
+      maxAge: 24 * 60 * 60 * 1000, // 1 day
+      signed: true // Adicione esta opção para assinar o cookie
     });
 
     // Send response without password
@@ -205,8 +207,8 @@ export const handleGoogleCallback = async (req: Request, res: Response, next: Ne
         
         // Para requisições GET, redirecionar para a página principal após autenticação bem-sucedida
         if (req.method === 'GET') {
-          console.log('Redirecting to voting page...');
-          return res.redirect(config.clientUrl + '/voting');
+          console.log('Redirecting to main page...');
+          return res.redirect(config.clientUrl + '/main');
         }
         
         // Para requisições POST, enviar a resposta JSON como antes
@@ -234,7 +236,12 @@ export const handleGoogleCallback = async (req: Request, res: Response, next: Ne
   
 
 export const logout = (req: Request, res: Response) => {
-  res.clearCookie('token');
+  res.clearCookie('token', {
+    httpOnly: true,
+    secure: config.nodeEnv === 'production',
+    sameSite: 'strict',
+    signed: true
+  });
   res.json({ message: 'Logged out successfully' });
 };
 
