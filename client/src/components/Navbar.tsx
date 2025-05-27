@@ -208,6 +208,15 @@ const Navbar = () => {
           >
             Notícias
           </Link>
+          <Link
+            to="/history"
+            style={styles.navLink}
+            className="hover-nav-link"
+            role="menuitem"
+            aria-label="Ir para página de história"
+          >
+            História
+          </Link>
         </div>
 
         <div style={styles.rightSection}>
