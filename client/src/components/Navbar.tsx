@@ -1,6 +1,7 @@
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { createStyles } from '../styles/styleUtils';
+import OptimizedImage from './OptimizedImage';
 import maritimoCrest from '../assets/maritimo-crest.png';
 
 const Navbar = () => {
@@ -37,15 +38,17 @@ const Navbar = () => {
       gap: '1.2vw',
       cursor: 'pointer',
       transition: 'transform 0.3s ease',
+      textDecoration: 'none',
     },
     logoImage: {
       width: '3.5vw',
-      height: '3.5vw',
+      height: '3.85vw',
       borderRadius: '50%',
       backgroundColor: 'white',
       padding: '0.3vw',
       boxShadow: '0 0.2vh 0.8vh rgba(0, 0, 0, 0.2)',
       transition: 'transform 0.3s ease',
+      objectFit: 'contain',
     },
     logoTextContainer: {
       display: 'flex',
@@ -86,6 +89,7 @@ const Navbar = () => {
       textShadow: '0.05vh 0.05vh 0.2vh rgba(0, 0, 0, 0.3)',
       position: 'relative',
       overflow: 'hidden',
+      display: 'inline-block',
     },
     rightSection: {
       display: 'flex',
@@ -154,42 +158,56 @@ const Navbar = () => {
   });
 
   return (
-    <nav style={styles.navbar}>
+    <nav style={styles.navbar} role="navigation" aria-label="Main navigation">
       <div style={styles.navContent}>
-        <div 
+        <Link 
+          to="/main"
           style={styles.logoSection} 
           className="hover-logo"
-          onClick={() => navigate('/main')}
+          aria-label="CS Marítimo - Ir para página principal"
         >
-          <img src={maritimoCrest} alt="CS Marítimo" style={styles.logoImage} />
+          <OptimizedImage 
+            src={maritimoCrest} 
+            alt="CS Marítimo logo" 
+            style={styles.logoImage}
+            width="40"
+            height="40"
+            loading="eager"
+          />
           <div style={styles.logoTextContainer}>
             <h2 style={styles.logoText}>CS MARÍTIMO</h2>
             <p style={styles.logoSubtext}>made by fans for fans</p>
           </div>
-        </div>
+        </Link>
 
-        <div style={styles.navLinks}>
-          <a
+        <div style={styles.navLinks} role="menubar">
+          <Link
+            to="/main"
             style={styles.navLink}
             className="hover-nav-link"
-            onClick={() => navigate('/main')}
+            role="menuitem"
+            aria-label="Ir para página inicial"
           >
             Início
-          </a>
-          <a
+          </Link>
+          <Link
+            to="/voting"
             style={styles.navLink}
             className="hover-nav-link"
-            onClick={() => navigate('/voting')}
+            role="menuitem"
+            aria-label="Ir para página de votação"
           >
             Votação
-          </a>
-          <a
+          </Link>
+          <Link
+            to="/news"
             style={styles.navLink}
             className="hover-nav-link"
-            onClick={() => navigate('/news')}
+            role="menuitem"
+            aria-label="Ir para página de notícias"
           >
             Notícias
-          </a>
+          </Link>
         </div>
 
         <div style={styles.rightSection}>
@@ -197,6 +215,7 @@ const Navbar = () => {
             style={styles.logoutButton}
             className="hover-logout"
             onClick={handleLogout}
+            aria-label="Terminar sessão"
           >
             Sair
           </button>

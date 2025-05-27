@@ -14,21 +14,16 @@ export interface TransferRumor {
 }
 
 export interface TransferStats {
-  total: number;
-  compras: number;
-  vendas: number;
-  rumores: number;
-  negociacoes: number;
-  confirmados: number;
-  averageReliability: string;
-  sources: string[];
+  totalRumors: number;
   recentRumors: number;
+  averageReliability: string;
+  lastUpdate: string;
 }
 
 class TransferService {
   async getRumors(): Promise<TransferRumor[]> {
     try {
-      const response = await api.get('/transfers/rumors');
+      const response = await api.get('/transfer/rumors');
       return response.data.data || [];
     } catch (error) {
       console.error('Error fetching transfer rumors:', error);
@@ -38,7 +33,7 @@ class TransferService {
 
   async getStats(): Promise<TransferStats | null> {
     try {
-      const response = await api.get('/transfers/stats');
+      const response = await api.get('/transfer/stats');
       return response.data.data;
     } catch (error) {
       console.error('Error fetching transfer stats:', error);
@@ -48,7 +43,7 @@ class TransferService {
 
   async refreshRumors(): Promise<TransferRumor[]> {
     try {
-      const response = await api.post('/transfers/refresh');
+      const response = await api.post('/transfer/refresh');
       return response.data.data || [];
     } catch (error) {
       console.error('Error refreshing transfer rumors:', error);
@@ -58,7 +53,7 @@ class TransferService {
 
   async addManualRumor(rumor: Omit<TransferRumor, 'id' | 'date'>): Promise<TransferRumor> {
     try {
-      const response = await api.post('/transfers/rumors', rumor);
+      const response = await api.post('/transfer/rumors', rumor);
       return response.data.data;
     } catch (error) {
       console.error('Error adding manual rumor:', error);

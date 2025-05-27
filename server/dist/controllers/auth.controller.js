@@ -187,7 +187,10 @@ const handleGoogleCallback = (req, res, next) => __awaiter(void 0, void 0, void 
             // Para requisições GET, redirecionar para a página principal após autenticação bem-sucedida
             if (req.method === 'GET') {
                 console.log('Redirecting to main page...');
-                return res.redirect(config_1.default.clientUrl + '/main');
+                console.log('Config clientUrl:', config_1.default.clientUrl);
+                const redirectUrl = `${config_1.default.clientUrl}/main`;
+                console.log('Final redirect URL:', redirectUrl);
+                return res.redirect(redirectUrl);
             }
             // Para requisições POST, enviar a resposta JSON como antes
             console.log('Sending JSON response with user data...');
@@ -204,7 +207,10 @@ const handleGoogleCallback = (req, res, next) => __awaiter(void 0, void 0, void 
         // Para requisições GET, redirecionar para a página de login com mensagem de erro
         if (req.method === 'GET') {
             console.log('Redirecting to login page with error...');
-            return res.redirect(config_1.default.clientUrl + '/login?error=google_auth_failed');
+            console.log('Config clientUrl:', config_1.default.clientUrl);
+            const errorRedirectUrl = `${config_1.default.clientUrl}/login?error=google_auth_failed`;
+            console.log('Final error redirect URL:', errorRedirectUrl);
+            return res.redirect(errorRedirectUrl);
         }
         next(error);
     }

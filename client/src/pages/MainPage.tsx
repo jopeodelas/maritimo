@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import Navbar from "../components/Navbar";
+import OptimizedImage from "../components/OptimizedImage";
+import LayoutStabilizer from "../components/LayoutStabilizer";
 import { createStyles } from "../styles/styleUtils";
 import api from "../services/api";
 import { transferService } from "../services/transferService";
@@ -356,16 +358,18 @@ const MainPage = () => {
       margin: "clamp(1rem, 2.5vh, 1.5rem) auto",
       width: "clamp(4rem, 10vw, 5.5rem)",
       height: "clamp(4rem, 10vw, 5.5rem)",
+      borderRadius: "50%",
+      overflow: "hidden",
+      border: "3px solid #4CAF50",
+      boxShadow: "0 0.5rem 1rem rgba(76, 175, 80, 0.3)",
+      transition: "all 0.3s ease",
     },
     playerImage: {
       width: "100%",
       height: "100%",
-      borderRadius: "50%",
       objectFit: "cover",
       objectPosition: "top center",
-      border: "3px solid #4CAF50",
       transition: "all 0.3s ease",
-      boxShadow: "0 0.5rem 1rem rgba(76, 175, 80, 0.3)",
     },
     playerName: {
       fontSize: "clamp(1rem, 2.2vw, 1.125rem)",
@@ -765,32 +769,38 @@ const MainPage = () => {
                 <div style={styles.sectionTitleUnderline}></div>
               </div>
 
-              <div style={styles.playersGrid}>
-                {topVotedPlayers.map((player, index) => (
-                  <div
-                    key={player.id}
-                    style={styles.playerCard}
-                    className="hover-card"
-                  >
-                    <div style={styles.playerRankBadge}>#{index + 1}</div>
-                    <div style={styles.playerImageContainer}>
-                      <img
-                        src={player.image_url || "/images/default-player.jpg"}
-                        alt={player.name}
-                        style={styles.playerImage}
-                        onError={(e) => {
-                          e.currentTarget.src = "/images/default-player.jpg";
-                        }}
-                      />
+              <LayoutStabilizer minHeight="400px" className="layout-stable">
+                <div style={styles.playersGrid}>
+                  {topVotedPlayers.map((player, index) => (
+                    <div
+                      key={player.id}
+                      style={styles.playerCard}
+                      className="hover-card layout-stable"
+                    >
+                      <div style={styles.playerRankBadge}>#{index + 1}</div>
+                      <LayoutStabilizer 
+                        style={styles.playerImageContainer}
+                        aspectRatio="1"
+                        className="image-container"
+                      >
+                        <OptimizedImage
+                          src={player.image_url || "/images/default-player.jpg"}
+                          alt={player.name}
+                          style={styles.playerImage}
+                          loading="lazy"
+                          width="88"
+                          height="88"
+                        />
+                      </LayoutStabilizer>
+                      <h3 style={styles.playerName}>{player.name}</h3>
+                      <p style={styles.playerPosition}>{player.position}</p>
+                      <div style={styles.votePercentage}>
+                        {calculatePercentage(player.vote_count)}%
+                      </div>
                     </div>
-                    <h3 style={styles.playerName}>{player.name}</h3>
-                    <p style={styles.playerPosition}>{player.position}</p>
-                    <div style={styles.votePercentage}>
-                      {calculatePercentage(player.vote_count)}%
-                    </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              </LayoutStabilizer>
 
               <div style={styles.buttonContainer}>
                 <button

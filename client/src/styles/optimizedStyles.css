@@ -1,5 +1,39 @@
 /* Optimized CSS for better performance */
 
+/* Prevent layout shifts */
+.layout-stable {
+  contain: layout style paint;
+}
+
+.image-container {
+  position: relative;
+  overflow: hidden;
+}
+
+.image-container::before {
+  content: '';
+  display: block;
+  width: 100%;
+  height: 0;
+  padding-bottom: 100%; /* 1:1 aspect ratio for player images */
+}
+
+.image-container img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Font loading optimization */
+@font-face {
+  font-family: 'Shockwave';
+  src: url('../assets/fonts/Shockwave.ttf') format('truetype');
+  font-display: swap;
+}
+
 /* Selective hardware acceleration - only for elements that need it */
 .hover-card,
 .hover-button,
@@ -13,11 +47,11 @@
 .hover-news-card,
 .hover-refresh-news {
   will-change: transform;
-  transform: translateZ(0); /* Force GPU acceleration */
   backface-visibility: hidden;
+  perspective: 1000px;
 }
 
-/* Remove will-change after hover to free up GPU memory */
+/* Optimized hover effects */
 .hover-card:not(:hover),
 .hover-button:not(:hover),
 .hover-nav-link:not(:hover),
@@ -29,136 +63,153 @@
 .hover-player-card:not(:hover),
 .hover-news-card:not(:hover),
 .hover-refresh-news:not(:hover) {
-  will-change: auto;
+  transform: translateZ(0);
 }
 
-/* Optimized hover effects using CSS instead of JavaScript */
+/* Card hover effects */
 .hover-card {
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .hover-card:hover {
-  transform: translateY(-0.5vh) scale(1.02);
-  box-shadow: 0 1vh 2vh rgba(0, 0, 0, 0.15);
+  transform: translateY(-5px) scale(1.02);
+  border-color: #4CAF50;
+  box-shadow: 0 15px 30px rgba(76, 175, 80, 0.3);
+  background: rgba(50, 70, 90, 0.95);
 }
 
+.hover-card:hover img {
+  transform: scale(1.05);
+}
+
+/* Button hover effects - enhanced for better visibility */
 .hover-button {
-  transition: transform 0.2s ease, background-color 0.2s ease, border-color 0.2s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
 }
 
 .hover-button:hover {
-  transform: translateY(-0.25vh) scale(1.05);
+  transform: translateY(-3px) scale(1.05);
+  box-shadow: 0 15px 30px rgba(255, 215, 0, 0.6);
+  filter: brightness(1.1);
 }
 
+.hover-button:active {
+  transform: translateY(-1px) scale(1.02);
+  transition: all 0.1s ease;
+}
+
+/* Navigation link hover effects */
 .hover-nav-link {
-  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .hover-nav-link:hover {
-  background-color: rgba(255, 187, 76, 0.2) !important;
-  color: #FFBB4C !important;
-  border-color: #FFBB4C !important;
-  transform: translateY(-0.1vh);
-  box-shadow: 0 0.3vh 1vh rgba(255, 187, 76, 0.3);
+  transform: translateY(-2px);
+  color: #FFD700 !important;
+  text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
 }
 
+/* Logo hover effects */
 .hover-logo {
-  transition: transform 0.2s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .hover-logo:hover {
-  transform: scale(1.05);
+  transform: scale(1.1) rotate(5deg);
 }
 
 .hover-logo:hover img {
-  transform: rotate(5deg) scale(1.1);
+  filter: brightness(1.2);
 }
 
+/* Transfer card hover effects */
 .hover-transfer-card {
-  transition: transform 0.2s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .hover-transfer-card:hover {
-  transform: translateX(0.5vw);
+  transform: translateX(10px);
+  border-color: rgba(76, 175, 80, 0.6);
 }
 
+/* Position hover effects */
 .hover-position {
-  transition: transform 0.2s ease, background-color 0.2s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .hover-position:hover:not(.selected) {
-  transform: scale(1.02);
-  background-color: rgba(255, 187, 76, 0.1) !important;
+  transform: scale(1.05);
+  background: rgba(76, 175, 80, 0.3);
 }
 
+/* Refresh button hover effects */
 .hover-refresh {
-  transition: transform 0.2s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .hover-refresh:hover {
-  transform: scale(1.05);
+  transform: scale(1.1);
+  box-shadow: 0 10px 20px rgba(76, 175, 80, 0.5);
 }
 
+/* Logout button hover effects */
 .hover-logout {
-  transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .hover-logout:hover {
-  background-color: rgba(254, 0, 0, 0.2) !important;
-  border-color: #FE0000 !important;
-  transform: translateY(-0.1vh);
-  box-shadow: 0 0.3vh 1vh rgba(254, 0, 0, 0.3);
+  transform: scale(1.05);
+  background: linear-gradient(135deg, #F44336 0%, #D32F2F 100%);
 }
 
-/* Additional hover effects for VotingPage */
+/* Player card hover effects */
 .hover-player-card {
-  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .hover-player-card:hover:not(.voted) {
-  transform: translateY(-0.3vh);
-  box-shadow: 0 1vh 2vh rgba(76, 175, 80, 0.3);
-  border-color: #4CAF50 !important;
-  background: rgba(50, 70, 90, 0.95) !important;
+  transform: translateY(-5px) scale(1.02);
+  border-color: #4CAF50;
+  box-shadow: 0 15px 30px rgba(76, 175, 80, 0.3);
+  background: rgba(50, 70, 90, 0.95);
 }
 
 .hover-player-card:hover:not(.voted) img {
   transform: scale(1.05);
 }
 
-/* Additional hover effects for NewsPage */
+/* News card hover effects */
 .hover-news-card {
-  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .hover-news-card:hover {
-  transform: translateY(-0.5vh) scale(1.02);
-  box-shadow: 0 1.5vh 3vh rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(76, 175, 80, 0.4);
-  border-color: rgba(76, 175, 80, 0.6) !important;
+  transform: translateY(-5px);
+  box-shadow: 0 15px 30px rgba(76, 175, 80, 0.3);
 }
 
+/* News refresh button hover effects */
 .hover-refresh-news {
-  transition: background 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .hover-refresh-news:hover {
-  background: linear-gradient(135deg, #66BB6A 0%, #4CAF50 100%) !important;
-  transform: scale(1.05);
-  box-shadow: 0 0.25rem 0.75rem rgba(76, 175, 80, 0.4);
+  transform: rotate(180deg) scale(1.1);
+  color: #4CAF50;
 }
 
-/* Optimized animations - reduced complexity */
+/* Optimized animations */
 @keyframes optimized-spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  to { transform: rotate(360deg); }
 }
 
 @keyframes optimized-float {
   0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-5px); }
+  50% { transform: translateY(-10px); }
 }
 
-/* Apply optimized animations */
 .loading-spinner {
   animation: optimized-spin 1s linear infinite;
   will-change: transform;
@@ -169,27 +220,27 @@
   will-change: transform;
 }
 
-/* Optimized backdrop filters - use sparingly */
+/* Backdrop blur optimization */
 .backdrop-blur {
-  backdrop-filter: blur(10px); /* Reduced from 20px for better performance */
+  backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
 }
 
-/* Performance optimizations for specific elements */
+/* Selection states */
 .selected {
-  background-color: rgba(76, 175, 80, 0.9) !important;
+  background: rgba(76, 175, 80, 0.9) !important;
   border-color: #4CAF50 !important;
-  transform: scale(1.02);
-  box-shadow: 0 0.5vh 1vh rgba(76, 175, 80, 0.4);
+  transform: scale(1.02) !important;
+  box-shadow: 0 10px 20px rgba(76, 175, 80, 0.4) !important;
 }
 
 .voted {
-  opacity: 0.6;
-  cursor: not-allowed;
-  filter: grayscale(50%);
+  opacity: 0.6 !important;
+  cursor: not-allowed !important;
+  filter: grayscale(50%) !important;
 }
 
-/* Reduce motion for users who prefer it */
+/* Reduced motion preferences */
 @media (prefers-reduced-motion: reduce) {
   .hover-card,
   .hover-button,
@@ -223,28 +274,104 @@
   .loading-spinner,
   .background-pattern {
     animation: none;
-    will-change: auto;
   }
 }
 
-/* Smooth scrolling optimization */
+/* Base optimizations */
 html {
   scroll-behavior: smooth;
+  text-rendering: optimizeLegibility;
 }
 
-/* Optimize images */
 img {
-  image-rendering: optimizeQuality;
   image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
 }
 
-/* Optimize transitions for better performance */
 * {
+  box-sizing: border-box;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Disable expensive effects on low-end devices */
+/* AGGRESSIVE OUTLINE REMOVAL - Remove all yellow outlines */
+*,
+*:before,
+*:after,
+*:focus,
+*:active,
+*:hover,
+button,
+button:focus,
+button:active,
+button:hover,
+input,
+input:focus,
+input:active,
+textarea,
+textarea:focus,
+textarea:active,
+select,
+select:focus,
+select:active,
+a,
+a:focus,
+a:active,
+a:hover,
+div,
+div:focus,
+div:active,
+span,
+span:focus,
+span:active {
+  outline: none !important;
+  outline-width: 0 !important;
+  outline-style: none !important;
+  outline-color: transparent !important;
+  -webkit-tap-highlight-color: transparent !important;
+  -webkit-focus-ring-color: transparent !important;
+  -moz-outline: none !important;
+  box-shadow: none !important;
+}
+
+/* Remove any browser default focus styles */
+:focus {
+  outline: none !important;
+  outline-width: 0 !important;
+  outline-style: none !important;
+  outline-color: transparent !important;
+  box-shadow: none !important;
+}
+
+:active {
+  outline: none !important;
+  outline-width: 0 !important;
+  outline-style: none !important;
+  outline-color: transparent !important;
+  box-shadow: none !important;
+}
+
+/* Remove webkit tap highlight */
+* {
+  -webkit-tap-highlight-color: transparent !important;
+  -webkit-touch-callout: none !important;
+  -webkit-user-select: none !important;
+  -moz-user-select: none !important;
+  -ms-user-select: none !important;
+  user-select: none !important;
+}
+
+/* Allow text selection only where needed */
+input,
+textarea,
+[contenteditable] {
+  -webkit-user-select: text !important;
+  -moz-user-select: text !important;
+  -ms-user-select: text !important;
+  user-select: text !important;
+}
+
+/* Mobile optimizations */
 @media (max-width: 768px) {
   .backdrop-blur {
     backdrop-filter: none;
@@ -253,22 +380,26 @@ img {
   
   .hover-card:hover,
   .hover-button:hover,
+  .hover-nav-link:hover,
+  .hover-logo:hover,
+  .hover-transfer-card:hover,
+  .hover-position:hover,
+  .hover-refresh:hover,
+  .hover-logout:hover,
   .hover-player-card:hover,
-  .hover-news-card:hover {
+  .hover-news-card:hover,
+  .hover-refresh-news:hover {
     transform: none;
   }
   
-  /* Disable animations on mobile for better performance */
   .loading-spinner,
   .background-pattern {
-    animation: none;
-    will-change: auto;
+    animation-duration: 2s;
   }
 }
 
-/* Additional performance optimizations */
+/* Very small screens */
 @media (max-width: 480px) {
-  /* Disable all hover effects on very small screens */
   .hover-card,
   .hover-button,
   .hover-nav-link,
@@ -280,8 +411,9 @@ img {
   .hover-player-card,
   .hover-news-card,
   .hover-refresh-news {
-    transition: none;
     will-change: auto;
+    backface-visibility: visible;
+    perspective: none;
   }
   
   .hover-card:hover,

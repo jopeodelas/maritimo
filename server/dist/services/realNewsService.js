@@ -282,9 +282,12 @@ class RealNewsService {
                     const link = this.extractXMLContent(itemXml, 'link');
                     const pubDate = this.extractXMLContent(itemXml, 'pubDate');
                     if (title && this.isMaritimoRelated(title + ' ' + description)) {
+                        const cleanedDescription = this.cleanText(description);
+                        // Only include description if it's meaningful (more than 20 chars and contains actual words)
+                        const finalDescription = this.isValidDescription(cleanedDescription) ? cleanedDescription : '';
                         items.push({
                             title: this.cleanText(title),
-                            description: this.cleanText(description),
+                            description: finalDescription,
                             url: link || '',
                             publishedAt: pubDate || new Date().toISOString(),
                             source: 'Google News'
@@ -309,9 +312,11 @@ class RealNewsService {
                     const link = this.extractXMLContent(itemXml, 'link');
                     const pubDate = this.extractXMLContent(itemXml, 'pubDate');
                     if (title) {
+                        const cleanedDescription = this.cleanText(description);
+                        const finalDescription = this.isValidDescription(cleanedDescription) ? cleanedDescription : '';
                         items.push({
                             title: this.cleanText(title),
-                            description: this.cleanText(description),
+                            description: finalDescription,
                             url: link || '',
                             publishedAt: pubDate || new Date().toISOString(),
                             source: sourceName
@@ -333,9 +338,45 @@ class RealNewsService {
     cleanText(text) {
         return text
             .replace(/<!\[CDATA\[|\]\]>/g, '')
-            .replace(/<[^>]*>/g, '')
-            .replace(/&[^;]+;/g, ' ')
+            .replace(/<[^>]*>/g, '') // Remove HTML tags
+            .replace(/&[a-zA-Z0-9#]+;/g, ' ') // Remove HTML entities like &nbsp;
+            .replace(/https?:\/\/[^\s]+/g, '') // Remove URLs
+            .replace(/href\s*=\s*["'][^"']*["']/gi, '') // Remove href attributes
+            .replace(/\bhref\b/gi, '') // Remove remaining 'href' text
+            .replace(/\ba_blank\b/gi, '') // Remove a_blank
+            .replace(/\bnbsp\b/gi, ' ') // Replace nbsp with space
+            .replace(/font\s*color\s*=\s*["'][^"']*["']/gi, '') // Remove font color attributes
+            .replace(/\/font/gi, '') // Remove /font
+            .replace(/\/a/gi, '') // Remove /a
+            .replace(/target\s*=\s*["'][^"']*["']/gi, '') // Remove target attributes
+            .replace(/rel\s*=\s*["'][^"']*["']/gi, '') // Remove rel attributes
+            .replace(/style\s*=\s*["'][^"']*["']/gi, '') // Remove style attributes
+            .replace(/class\s*=\s*["'][^"']*["']/gi, '') // Remove class attributes
+            .replace(/\s+/g, ' ') // Normalize multiple spaces
+            .replace(/^\s*[\/\-\.\,\;\:]+\s*/g, '') // Remove leading punctuation
             .trim();
+    }
+    isValidDescription(description) {
+        var _a;
+        // Check if description is meaningful
+        if (!description || description.length < 20) {
+            return false;
+        }
+        // Check if it contains actual words (not just symbols/numbers)
+        const wordCount = ((_a = description.match(/[a-zA-ZÀ-ÿ]{3,}/g)) === null || _a === void 0 ? void 0 : _a.length) || 0;
+        if (wordCount < 3) {
+            return false;
+        }
+        // Check if it's not mostly HTML remnants or code
+        const codePatterns = [
+            /^\s*[\/\-\.\,\;\:\#\=\[\]]+\s*$/,
+            /^[a-z_]+$/i,
+            /^\d+$/, // Just numbers
+        ];
+        if (codePatterns.some(pattern => pattern.test(description))) {
+            return false;
+        }
+        return true;
     }
     isMaritimoRelated(text) {
         const maritimoKeywords = [

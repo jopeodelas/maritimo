@@ -1,5 +1,6 @@
 // src/pages/HomePage.tsx
 import { useNavigate } from 'react-router-dom';
+import OptimizedImage from '../components/OptimizedImage';
 import maritimoCrest from '../assets/maritimo-crest.png';
 import { createStyles } from '../styles/styleUtils';
 
@@ -154,7 +155,14 @@ const HomePage = () => {
       
       <div style={styles.content}>
         <div style={styles.logoContainer}>
-          <img src={maritimoCrest} alt="CS Marítimo" style={styles.clubLogo} />
+          <OptimizedImage 
+            src={maritimoCrest} 
+            alt="CS Marítimo" 
+            style={styles.clubLogo}
+            loading="eager"
+            width="300"
+            height="273"
+          />
         </div>
         <button 
           style={styles.enterButton} 

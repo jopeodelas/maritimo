@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import Navbar from '../components/Navbar';
+import OptimizedImage from '../components/OptimizedImage';
 import { createStyles } from '../styles/styleUtils';
 
 interface Player {
@@ -387,10 +388,13 @@ const VotingPage = () => {
         <div style={styles.playerImageContainer}>
           {isVoted && <div style={styles.votedBadge}>VOTED</div>}
           
-          <img 
+          <OptimizedImage 
             src={`/images/${player.image_url.replace('/images/', '')}`}
             alt={player.name} 
-            style={styles.playerImage} 
+            style={styles.playerImage}
+            loading="lazy"
+            width="200"
+            height="200"
           />
           
           <div style={{

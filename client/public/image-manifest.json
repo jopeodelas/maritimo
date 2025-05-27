@@ -1,0 +1,352 @@
+{
+  "player": {
+    "afonso-freitas": {
+      "webp": {
+        "small": "/images/optimized/afonso-freitas-small.webp",
+        "medium": "/images/optimized/afonso-freitas.webp",
+        "large": "/images/optimized/afonso-freitas-large.webp"
+      },
+      "avif": {
+        "small": "/images/optimized/afonso-freitas-small.avif",
+        "medium": "/images/optimized/afonso-freitas.avif",
+        "large": "/images/optimized/afonso-freitas-large.avif"
+      }
+    },
+    "alexandre-guedes": {
+      "webp": {
+        "small": "/images/optimized/alexandre-guedes-small.webp",
+        "medium": "/images/optimized/alexandre-guedes.webp",
+        "large": "/images/optimized/alexandre-guedes-large.webp"
+      },
+      "avif": {
+        "small": "/images/optimized/alexandre-guedes-small.avif",
+        "medium": "/images/optimized/alexandre-guedes.avif",
+        "large": "/images/optimized/alexandre-guedes-large.avif"
+      }
+    },
+    "carlos-daniel": {
+      "webp": {
+        "small": "/images/optimized/carlos-daniel-small.webp",
+        "medium": "/images/optimized/carlos-daniel.webp",
+        "large": "/images/optimized/carlos-daniel-large.webp"
+      },
+      "avif": {
+        "small": "/images/optimized/carlos-daniel-small.avif",
+        "medium": "/images/optimized/carlos-daniel.avif",
+        "large": "/images/optimized/carlos-daniel-large.avif"
+      }
+    },
+    "daniel-benchimol": {
+      "webp": {
+        "small": "/images/optimized/daniel-benchimol-small.webp",
+        "medium": "/images/optimized/daniel-benchimol.webp",
+        "large": "/images/optimized/daniel-benchimol-large.webp"
+      },
+      "avif": {
+        "small": "/images/optimized/daniel-benchimol-small.avif",
+        "medium": "/images/optimized/daniel-benchimol.avif",
+        "large": "/images/optimized/daniel-benchimol-large.avif"
+      }
+    },
+    "default-player": {
+      "webp": {
+        "small": "/images/optimized/default-player-small.webp",
+        "medium": "/images/optimized/default-player.webp",
+        "large": "/images/optimized/default-player-large.webp"
+      },
+      "avif": {
+        "small": "/images/optimized/default-player-small.avif",
+        "medium": "/images/optimized/default-player.avif",
+        "large": "/images/optimized/default-player-large.avif"
+      }
+    },
+    "fabio-blanco": {
+      "webp": {
+        "small": "/images/optimized/fabio-blanco-small.webp",
+        "medium": "/images/optimized/fabio-blanco.webp",
+        "large": "/images/optimized/fabio-blanco-large.webp"
+      },
+      "avif": {
+        "small": "/images/optimized/fabio-blanco-small.avif",
+        "medium": "/images/optimized/fabio-blanco.avif",
+        "large": "/images/optimized/fabio-blanco-large.avif"
+      }
+    },
+    "fabio-china": {
+      "webp": {
+        "small": "/images/optimized/fabio-china-small.webp",
+        "medium": "/images/optimized/fabio-china.webp",
+        "large": "/images/optimized/fabio-china-large.webp"
+      },
+      "avif": {
+        "small": "/images/optimized/fabio-china-small.avif",
+        "medium": "/images/optimized/fabio-china.avif",
+        "large": "/images/optimized/fabio-china-large.avif"
+      }
+    },
+    "francisco-franca": {
+      "webp": {
+        "small": "/images/optimized/francisco-franca-small.webp",
+        "medium": "/images/optimized/francisco-franca.webp",
+        "large": "/images/optimized/francisco-franca-large.webp"
+      },
+      "avif": {
+        "small": "/images/optimized/francisco-franca-small.avif",
+        "medium": "/images/optimized/francisco-franca.avif",
+        "large": "/images/optimized/francisco-franca-large.avif"
+      }
+    },
+    "goncalo-tabuaco": {
+      "webp": {
+        "small": "/images/optimized/goncalo-tabuaco-small.webp",
+        "medium": "/images/optimized/goncalo-tabuaco.webp",
+        "large": "/images/optimized/goncalo-tabuaco-large.webp"
+      },
+      "avif": {
+        "small": "/images/optimized/goncalo-tabuaco-small.avif",
+        "medium": "/images/optimized/goncalo-tabuaco.avif",
+        "large": "/images/optimized/goncalo-tabuaco-large.avif"
+      }
+    },
+    "ibrahima-guirassy": {
+      "webp": {
+        "small": "/images/optimized/ibrahima-guirassy-small.webp",
+        "medium": "/images/optimized/ibrahima-guirassy.webp",
+        "large": "/images/optimized/ibrahima-guirassy-large.webp"
+      },
+      "avif": {
+        "small": "/images/optimized/ibrahima-guirassy-small.avif",
+        "medium": "/images/optimized/ibrahima-guirassy.avif",
+        "large": "/images/optimized/ibrahima-guirassy-large.avif"
+      }
+    },
+    "igor-juliao": {
+      "webp": {
+        "small": "/images/optimized/igor-juliao-small.webp",
+        "medium": "/images/optimized/igor-juliao.webp",
+        "large": "/images/optimized/igor-juliao-large.webp"
+      },
+      "avif": {
+        "small": "/images/optimized/igor-juliao-small.avif",
+        "medium": "/images/optimized/igor-juliao.avif",
+        "large": "/images/optimized/igor-juliao-large.avif"
+      }
+    },
+    "junior-almeida": {
+      "webp": {
+        "small": "/images/optimized/junior-almeida-small.webp",
+        "medium": "/images/optimized/junior-almeida.webp",
+        "large": "/images/optimized/junior-almeida-large.webp"
+      },
+      "avif": {
+        "small": "/images/optimized/junior-almeida-small.avif",
+        "medium": "/images/optimized/junior-almeida.avif",
+        "large": "/images/optimized/junior-almeida-large.avif"
+      }
+    },
+    "kimiss-zavala": {
+      "webp": {
+        "small": "/images/optimized/kimiss-zavala-small.webp",
+        "medium": "/images/optimized/kimiss-zavala.webp",
+        "large": "/images/optimized/kimiss-zavala-large.webp"
+      },
+      "avif": {
+        "small": "/images/optimized/kimiss-zavala-small.avif",
+        "medium": "/images/optimized/kimiss-zavala.avif",
+        "large": "/images/optimized/kimiss-zavala-large.avif"
+      }
+    },
+    "martim-tavares": {
+      "webp": {
+        "small": "/images/optimized/martim-tavares-small.webp",
+        "medium": "/images/optimized/martim-tavares.webp",
+        "large": "/images/optimized/martim-tavares-large.webp"
+      },
+      "avif": {
+        "small": "/images/optimized/martim-tavares-small.avif",
+        "medium": "/images/optimized/martim-tavares.avif",
+        "large": "/images/optimized/martim-tavares-large.avif"
+      }
+    },
+    "michel-costa": {
+      "webp": {
+        "small": "/images/optimized/michel-costa-small.webp",
+        "medium": "/images/optimized/michel-costa.webp",
+        "large": "/images/optimized/michel-costa-large.webp"
+      },
+      "avif": {
+        "small": "/images/optimized/michel-costa-small.avif",
+        "medium": "/images/optimized/michel-costa.avif",
+        "large": "/images/optimized/michel-costa-large.avif"
+      }
+    },
+    "nachon-nsingi": {
+      "webp": {
+        "small": "/images/optimized/nachon-nsingi-small.webp",
+        "medium": "/images/optimized/nachon-nsingi.webp",
+        "large": "/images/optimized/nachon-nsingi-large.webp"
+      },
+      "avif": {
+        "small": "/images/optimized/nachon-nsingi-small.avif",
+        "medium": "/images/optimized/nachon-nsingi.avif",
+        "large": "/images/optimized/nachon-nsingi-large.avif"
+      }
+    },
+    "noah-madsen": {
+      "webp": {
+        "small": "/images/optimized/noah-madsen-small.webp",
+        "medium": "/images/optimized/noah-madsen.webp",
+        "large": "/images/optimized/noah-madsen-large.webp"
+      },
+      "avif": {
+        "small": "/images/optimized/noah-madsen-small.avif",
+        "medium": "/images/optimized/noah-madsen.avif",
+        "large": "/images/optimized/noah-madsen-large.avif"
+      }
+    },
+    "patrick-fernandes": {
+      "webp": {
+        "small": "/images/optimized/patrick-fernandes-small.webp",
+        "medium": "/images/optimized/patrick-fernandes.webp",
+        "large": "/images/optimized/patrick-fernandes-large.webp"
+      },
+      "avif": {
+        "small": "/images/optimized/patrick-fernandes-small.avif",
+        "medium": "/images/optimized/patrick-fernandes.avif",
+        "large": "/images/optimized/patrick-fernandes-large.avif"
+      }
+    },
+    "pedro-silva": {
+      "webp": {
+        "small": "/images/optimized/pedro-silva-small.webp",
+        "medium": "/images/optimized/pedro-silva.webp",
+        "large": "/images/optimized/pedro-silva-large.webp"
+      },
+      "avif": {
+        "small": "/images/optimized/pedro-silva-small.avif",
+        "medium": "/images/optimized/pedro-silva.avif",
+        "large": "/images/optimized/pedro-silva-large.avif"
+      }
+    },
+    "pena-zauner": {
+      "webp": {
+        "small": "/images/optimized/pena-zauner-small.webp",
+        "medium": "/images/optimized/pena-zauner.webp",
+        "large": "/images/optimized/pena-zauner-large.webp"
+      },
+      "avif": {
+        "small": "/images/optimized/pena-zauner-small.avif",
+        "medium": "/images/optimized/pena-zauner.avif",
+        "large": "/images/optimized/pena-zauner-large.avif"
+      }
+    },
+    "preslav-borukov": {
+      "webp": {
+        "small": "/images/optimized/preslav-borukov-small.webp",
+        "medium": "/images/optimized/preslav-borukov.webp",
+        "large": "/images/optimized/preslav-borukov-large.webp"
+      },
+      "avif": {
+        "small": "/images/optimized/preslav-borukov-small.avif",
+        "medium": "/images/optimized/preslav-borukov.avif",
+        "large": "/images/optimized/preslav-borukov-large.avif"
+      }
+    },
+    "rodrigo-andrade": {
+      "webp": {
+        "small": "/images/optimized/rodrigo-andrade-small.webp",
+        "medium": "/images/optimized/rodrigo-andrade.webp",
+        "large": "/images/optimized/rodrigo-andrade-large.webp"
+      },
+      "avif": {
+        "small": "/images/optimized/rodrigo-andrade-small.avif",
+        "medium": "/images/optimized/rodrigo-andrade.avif",
+        "large": "/images/optimized/rodrigo-andrade-large.avif"
+      }
+    },
+    "rodrigo-borges": {
+      "webp": {
+        "small": "/images/optimized/rodrigo-borges-small.webp",
+        "medium": "/images/optimized/rodrigo-borges.webp",
+        "large": "/images/optimized/rodrigo-borges-large.webp"
+      },
+      "avif": {
+        "small": "/images/optimized/rodrigo-borges-small.avif",
+        "medium": "/images/optimized/rodrigo-borges.avif",
+        "large": "/images/optimized/rodrigo-borges-large.avif"
+      }
+    },
+    "romain-correia": {
+      "webp": {
+        "small": "/images/optimized/romain-correia-small.webp",
+        "medium": "/images/optimized/romain-correia.webp",
+        "large": "/images/optimized/romain-correia-large.webp"
+      },
+      "avif": {
+        "small": "/images/optimized/romain-correia-small.avif",
+        "medium": "/images/optimized/romain-correia.avif",
+        "large": "/images/optimized/romain-correia-large.avif"
+      }
+    },
+    "samu-silva": {
+      "webp": {
+        "small": "/images/optimized/samu-silva-small.webp",
+        "medium": "/images/optimized/samu-silva.webp",
+        "large": "/images/optimized/samu-silva-large.webp"
+      },
+      "avif": {
+        "small": "/images/optimized/samu-silva-small.avif",
+        "medium": "/images/optimized/samu-silva.avif",
+        "large": "/images/optimized/samu-silva-large.avif"
+      }
+    },
+    "tomas-domingos": {
+      "webp": {
+        "small": "/images/optimized/tomas-domingos-small.webp",
+        "medium": "/images/optimized/tomas-domingos.webp",
+        "large": "/images/optimized/tomas-domingos-large.webp"
+      },
+      "avif": {
+        "small": "/images/optimized/tomas-domingos-small.avif",
+        "medium": "/images/optimized/tomas-domingos.avif",
+        "large": "/images/optimized/tomas-domingos-large.avif"
+      }
+    },
+    "vladan-danilovic": {
+      "webp": {
+        "small": "/images/optimized/vladan-danilovic-small.webp",
+        "medium": "/images/optimized/vladan-danilovic.webp",
+        "large": "/images/optimized/vladan-danilovic-large.webp"
+      },
+      "avif": {
+        "small": "/images/optimized/vladan-danilovic-small.avif",
+        "medium": "/images/optimized/vladan-danilovic.avif",
+        "large": "/images/optimized/vladan-danilovic-large.avif"
+      }
+    }
+  },
+  "logo": {
+    "webp": {
+      "small": "/src/assets/maritimo-crest-small.webp",
+      "medium": "/src/assets/maritimo-crest.webp",
+      "large": "/src/assets/maritimo-crest-large.webp"
+    },
+    "avif": {
+      "small": "/src/assets/maritimo-crest-small.avif",
+      "medium": "/src/assets/maritimo-crest.avif",
+      "large": "/src/assets/maritimo-crest-large.avif"
+    }
+  },
+  "background": {
+    "webp": {
+      "small": "/images/optimized/adeptosmaritimo-small.webp",
+      "medium": "/images/optimized/adeptosmaritimo.webp",
+      "large": "/images/optimized/adeptosmaritimo-large.webp"
+    },
+    "avif": {
+      "small": "/images/optimized/adeptosmaritimo-small.avif",
+      "medium": "/images/optimized/adeptosmaritimo.avif",
+      "large": "/images/optimized/adeptosmaritimo-large.avif"
+    }
+  }
+}

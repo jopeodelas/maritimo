@@ -208,7 +208,17 @@ export const handleGoogleCallback = async (req: Request, res: Response, next: Ne
         // Para requisições GET, redirecionar para a página principal após autenticação bem-sucedida
         if (req.method === 'GET') {
           console.log('Redirecting to main page...');
-          return res.redirect(config.clientUrl + '/main');
+          console.log('Config clientUrl:', config.clientUrl);
+          
+          // Ensure no double slashes in URL
+          let baseUrl = config.clientUrl;
+          if (baseUrl.endsWith('/')) {
+            baseUrl = baseUrl.slice(0, -1);
+          }
+          const redirectUrl = `${baseUrl}/main`;
+          
+          console.log('Final redirect URL:', redirectUrl);
+          return res.redirect(redirectUrl);
         }
         
         // Para requisições POST, enviar a resposta JSON como antes
@@ -227,7 +237,17 @@ export const handleGoogleCallback = async (req: Request, res: Response, next: Ne
       // Para requisições GET, redirecionar para a página de login com mensagem de erro
       if (req.method === 'GET') {
         console.log('Redirecting to login page with error...');
-        return res.redirect(config.clientUrl + '/login?error=google_auth_failed');
+        console.log('Config clientUrl:', config.clientUrl);
+        
+        // Ensure no double slashes in URL
+        let baseUrl = config.clientUrl;
+        if (baseUrl.endsWith('/')) {
+          baseUrl = baseUrl.slice(0, -1);
+        }
+        const errorRedirectUrl = `${baseUrl}/login?error=google_auth_failed`;
+        
+        console.log('Final error redirect URL:', errorRedirectUrl);
+        return res.redirect(errorRedirectUrl);
       }
       
       next(error);
