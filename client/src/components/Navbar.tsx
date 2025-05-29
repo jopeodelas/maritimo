@@ -29,23 +29,25 @@ const Navbar = () => {
       display: 'flex',
       justifyContent: 'space-between',
       alignItems: 'center',
-      flexWrap: 'wrap',
-      gap: '2vh',
+      gap: '2vw',
+      minHeight: '6vh',
     },
     logoSection: {
       display: 'flex',
       alignItems: 'center',
-      gap: '1.2vw',
+      gap: '1vw',
       cursor: 'pointer',
       transition: 'transform 0.3s ease',
       textDecoration: 'none',
+      flex: '0 0 auto',
+      minWidth: 'fit-content',
     },
     logoImage: {
-      width: '3.5vw',
-      height: '3.85vw',
+      width: '3vw',
+      height: '3vw',
       borderRadius: '50%',
       backgroundColor: 'white',
-      padding: '0.3vw',
+      padding: '0.2vw',
       boxShadow: '0 0.2vh 0.8vh rgba(0, 0, 0, 0.2)',
       transition: 'transform 0.3s ease',
       objectFit: 'contain',
@@ -56,33 +58,37 @@ const Navbar = () => {
     },
     logoText: {
       color: 'white',
-      fontSize: '2vw',
+      fontSize: '1.6vw',
       fontWeight: '700',
       margin: 0,
       fontFamily: '"Shockwave", cursive',
       textShadow: '0.1vh 0.1vh 0.3vh rgba(0, 0, 0, 0.3)',
       lineHeight: '1',
+      whiteSpace: 'nowrap',
     },
     logoSubtext: {
       color: '#FFBB4C',
-      fontSize: '0.9vw',
+      fontSize: '0.7vw',
       margin: 0,
       fontWeight: '400',
       textShadow: '0.05vh 0.05vh 0.2vh rgba(0, 0, 0, 0.3)',
       lineHeight: '1.2',
+      whiteSpace: 'nowrap',
     },
     navLinks: {
       display: 'flex',
-      gap: '2.5vw',
+      gap: '2vw',
       alignItems: 'center',
+      flex: '1 1 auto',
+      justifyContent: 'center',
     },
     navLink: {
       color: 'white',
       textDecoration: 'none',
-      fontSize: '1.2vw',
+      fontSize: '1.1vw',
       fontWeight: '600',
-      padding: '1.2vh 2vw',
-      borderRadius: '0.8vw',
+      padding: '1vh 1.5vw',
+      borderRadius: '0.6vw',
       transition: 'all 0.3s ease',
       cursor: 'pointer',
       border: '2px solid transparent',
@@ -90,69 +96,98 @@ const Navbar = () => {
       position: 'relative',
       overflow: 'hidden',
       display: 'inline-block',
+      whiteSpace: 'nowrap',
     },
     rightSection: {
       display: 'flex',
       gap: '1.5vw',
       alignItems: 'center',
+      flex: '0 0 auto',
     },
     logoutButton: {
       backgroundColor: 'rgba(254, 0, 0, 0.1)',
       color: 'white',
       border: '2px solid rgba(254, 0, 0, 0.5)',
-      padding: '1.2vh 2.5vw',
-      borderRadius: '0.8vw',
-      fontSize: '1.1vw',
+      padding: '1vh 2vw',
+      borderRadius: '0.6vw',
+      fontSize: '1vw',
       fontWeight: '600',
       cursor: 'pointer',
       transition: 'all 0.3s ease',
       textShadow: '0.05vh 0.05vh 0.2vh rgba(0, 0, 0, 0.3)',
+      whiteSpace: 'nowrap',
     },
+    '@media (max-width: 1200px)': {
+      logoText: {
+        fontSize: '2vw',
+      },
+      logoSubtext: {
+        fontSize: '0.9vw',
+      },
+      navLink: {
+        fontSize: '1.3vw',
+      },
+      logoutButton: {
+        fontSize: '1.2vw',
+      },
+    } as any,
     '@media (max-width: 768px)': {
       navbar: {
         padding: '1vh 2vw',
       },
       navContent: {
-        flexDirection: 'column',
-        gap: '1.5vh',
+        gap: '1vw',
       },
       logoImage: {
-        width: '8vw',
-        height: '8vw',
+        width: '6vw',
+        height: '6vw',
       },
       logoText: {
-        fontSize: '4vw',
+        fontSize: '3vw',
       },
       logoSubtext: {
-        fontSize: '2vw',
+        fontSize: '1.5vw',
       },
       navLinks: {
-        gap: '4vw',
+        gap: '2vw',
       },
       navLink: {
-        fontSize: '3vw',
-        padding: '1vh 3vw',
+        fontSize: '2.5vw',
+        padding: '0.8vh 2vw',
       },
       logoutButton: {
-        fontSize: '2.5vw',
-        padding: '1vh 4vw',
+        fontSize: '2.2vw',
+        padding: '0.8vh 2.5vw',
       },
     } as any,
     '@media (max-width: 480px)': {
       navContent: {
+        flexWrap: 'wrap',
         gap: '1vh',
       },
       logoSection: {
-        gap: '2vw',
+        order: 1,
+        width: '100%',
+        justifyContent: 'center',
       },
       navLinks: {
-        flexDirection: 'column',
-        gap: '1vh',
+        order: 2,
         width: '100%',
+        justifyContent: 'center',
+        gap: '3vw',
+      },
+      rightSection: {
+        order: 3,
+        width: '100%',
+        justifyContent: 'center',
       },
       navLink: {
-        width: '100%',
-        textAlign: 'center',
+        fontSize: '3.5vw',
+        padding: '1vh 3vw',
+      },
+      logoutButton: {
+        fontSize: '3vw',
+        padding: '1vh 4vw',
       },
     } as any,
   });
@@ -216,6 +251,15 @@ const Navbar = () => {
             aria-label="Ir para página de história"
           >
             História
+          </Link>
+          <Link
+            to="/chat"
+            style={styles.navLink}
+            className="hover-nav-link"
+            role="menuitem"
+            aria-label="Ir para página de discussões"
+          >
+            Discussão
           </Link>
         </div>
 

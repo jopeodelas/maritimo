@@ -200,6 +200,78 @@
   color: #4CAF50;
 }
 
+/* Discussion card hover effects */
+.hover-discussion-card {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.hover-discussion-card:hover {
+  transform: translateY(-3px);
+  border-color: rgba(255, 187, 76, 0.6);
+  box-shadow: 0 10px 25px rgba(255, 187, 76, 0.2);
+  background: rgba(255, 255, 255, 0.15);
+}
+
+/* Discussion input and textarea focus effects */
+input:focus,
+textarea:focus,
+select:focus {
+  outline: none;
+  border-color: #FFBB4C !important;
+  box-shadow: 0 0 0 3px rgba(255, 187, 76, 0.2) !important;
+}
+
+/* Modal backdrop */
+.modal-backdrop {
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+/* Scrollbar styling for modal content */
+.modal-content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.modal-content::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+}
+
+.modal-content::-webkit-scrollbar-thumb {
+  background: rgba(255, 187, 76, 0.5);
+  border-radius: 4px;
+}
+
+.modal-content::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 187, 76, 0.7);
+}
+
+/* Custom select styling */
+select {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+}
+
+select:focus {
+  outline: none;
+  border-color: #FFBB4C !important;
+  box-shadow: 0 0 0 3px rgba(255, 187, 76, 0.2) !important;
+}
+
+select option {
+  background-color: #1A252F !important;
+  color: #FFFFFF !important;
+  padding: 10px !important;
+  border: none !important;
+}
+
+select option:hover,
+select option:checked {
+  background-color: #009759 !important;
+  color: #FFFFFF !important;
+}
+
 /* Optimized animations */
 @keyframes optimized-spin {
   to { transform: rotate(360deg); }
@@ -395,6 +467,23 @@ textarea,
   .loading-spinner,
   .background-pattern {
     animation-duration: 2s;
+  }
+  
+  .controls {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 2vh;
+  }
+  
+  .leftControls {
+    flex-direction: column;
+    gap: 2vh;
+    min-width: auto;
+  }
+  
+  .searchInput,
+  .sortSelect {
+    width: 100% !important;
   }
 }
 

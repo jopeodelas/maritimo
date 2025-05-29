@@ -199,6 +199,59 @@ const HistoryPage = () => {
       title: 'Contratação de Fábio Blanco',
       description: 'O extremo espanhol de 21 anos foi contratado ao Villarreal B em 14 de janeiro de 2025, assinando até 30 de junho de 2027 com o Marítimo.',
       category: 'jogador'
+    },
+    {
+      id: 25,
+      year: 1992,
+      title: 'Chegada de Eusébio',
+      description: 'O lateral-esquerdo estreou-se em 1992 e, até 2005, realizou 173 partidas na Primeira Liga (189 em todas as competições) e apontou 16 golos, tornando-se num símbolo de longevidade e lealdade ao Marítimo.',
+      category: 'jogador',
+      isHighlight: true
+    },
+    {
+      id: 26,
+      year: 1997,
+      title: 'Contratação de Albertino',
+      description: 'Lateral-direito contratado em 1997, foi peça-chave entre 1997 e 2004, cumprindo 169 jogos na Primeira Liga (187 em todas as competições) e marcando 18 golos, notabilizando-se pela consistência defensiva.',
+      category: 'jogador'
+    },
+    {
+      id: 27,
+      year: 2001,
+      title: 'Chegada de Pepe',
+      description: 'O defesa-central brasileiro-naturalizado português chegou ao Marítimo B em 2001, subiu em 2002–03 à equipa principal, somando 63 partidas e 3 golos até 2004, antes de se transferir para o FC Porto e lançar-se numa carreira de elite mundial.',
+      category: 'jogador',
+      isHighlight: true
+    },
+    {
+      id: 28,
+      year: 2005,
+      title: 'Contratação de Marcinho',
+      description: 'O médio ofensivo brasileiro chegou do Santos FC em janeiro de 2005 e, entre 2005 e 2009, nunca fez menos de 27 jogos por época na I Liga, atingindo o seu auge em 2008–09 com 29 partidas e 6 golos, incluindo um golo na Taça UEFA contra o Valencia CF.',
+      category: 'jogador'
+    },
+    {
+      id: 29,
+      year: 2013,
+      title: 'Contratação de Danilo Pereira',
+      description: 'O médio defensivo assinou proveniente do Parma em 1 de agosto de 2013, fez 57 jogos e marcou 4 golos pelo Marítimo em duas épocas (2013–15) e, em julho de 2015, rumou ao FC Porto num negócio de €4,5 M.',
+      category: 'jogador',
+      isHighlight: true
+    },
+    {
+      id: 30,
+      year: 2014,
+      title: 'Contratação de Moussa Marega',
+      description: 'O avançado maliano foi contratado do Amiens SC e, na temporada 2014–15, brilhou com 15 golos em 34 jogos na Primeira Liga. O seu rendimento valeu-lhe a transferência para o FC Porto por cerca de €3,8 M em janeiro de 2015.',
+      category: 'jogador',
+      isHighlight: true
+    },
+    {
+      id: 31,
+      year: 2014,
+      title: 'Contratação de Dyego Sousa',
+      description: 'Contratado do Portimonense em julho de 2014, destacou-se na equipa principal ao totalizar 61 jogos e 19 golos na Primeira Liga entre 2014 e 2017, assumindo-se como um finalizador letal.',
+      category: 'jogador'
     }
   ];
 

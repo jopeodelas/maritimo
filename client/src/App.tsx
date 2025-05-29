@@ -14,6 +14,7 @@ const VotingPage = lazy(() => import('./pages/VotingPage'));
 const MainPage = lazy(() => import('./pages/MainPage'));
 const NewsPage = lazy(() => import('./pages/NewsPage'));
 const HistoryPage = lazy(() => import('./pages/HistoryPage'));
+const ChatPage = lazy(() => import('./pages/ChatPage'));
 
 // Loading fallback component
 const LoadingFallback = () => (
@@ -109,6 +110,14 @@ function App() {
                 element={
                   <ProtectedRoute>
                     <HistoryPage />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/chat" 
+                element={
+                  <ProtectedRoute>
+                    <ChatPage />
                   </ProtectedRoute>
                 } 
               />

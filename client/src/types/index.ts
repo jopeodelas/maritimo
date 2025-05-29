@@ -18,3 +18,25 @@ export interface User {
     user_id: number;
     created_at: string;
   }
+
+  export interface Discussion {
+    id: number;
+    title: string;
+    description: string;
+    author_id: number;
+    author_username: string;
+    created_at: string;
+    updated_at: string;
+    comment_count: number;
+    last_activity: string;
+  }
+
+  export interface Comment {
+    id: number;
+    discussion_id: number;
+    author_id: number;
+    author_username: string;
+    content: string;
+    created_at: string;
+    updated_at: string;
+  }

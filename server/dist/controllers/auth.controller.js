@@ -188,7 +188,12 @@ const handleGoogleCallback = (req, res, next) => __awaiter(void 0, void 0, void 
             if (req.method === 'GET') {
                 console.log('Redirecting to main page...');
                 console.log('Config clientUrl:', config_1.default.clientUrl);
-                const redirectUrl = `${config_1.default.clientUrl}/main`;
+                // Ensure no double slashes in URL
+                let baseUrl = config_1.default.clientUrl;
+                if (baseUrl.endsWith('/')) {
+                    baseUrl = baseUrl.slice(0, -1);
+                }
+                const redirectUrl = `${baseUrl}/main`;
                 console.log('Final redirect URL:', redirectUrl);
                 return res.redirect(redirectUrl);
             }
@@ -208,7 +213,12 @@ const handleGoogleCallback = (req, res, next) => __awaiter(void 0, void 0, void 
         if (req.method === 'GET') {
             console.log('Redirecting to login page with error...');
             console.log('Config clientUrl:', config_1.default.clientUrl);
-            const errorRedirectUrl = `${config_1.default.clientUrl}/login?error=google_auth_failed`;
+            // Ensure no double slashes in URL
+            let baseUrl = config_1.default.clientUrl;
+            if (baseUrl.endsWith('/')) {
+                baseUrl = baseUrl.slice(0, -1);
+            }
+            const errorRedirectUrl = `${baseUrl}/login?error=google_auth_failed`;
             console.log('Final error redirect URL:', errorRedirectUrl);
             return res.redirect(errorRedirectUrl);
         }

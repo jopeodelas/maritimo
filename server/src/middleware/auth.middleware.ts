@@ -11,6 +11,7 @@ declare global {
   namespace Express {
     interface Request {
       userId: number;
+      user: { id: number };
     }
   }
 }
@@ -31,6 +32,7 @@ export const auth = (req: Request, res: Response, next: NextFunction) => {
       console.log('Token found, verifying...');
       const decoded = jwt.verify(token, config.jwtSecret) as JwtPayload;
       req.userId = decoded.id;
+      req.user = { id: decoded.id };
       console.log('Token verified, user ID:', decoded.id);
       next();
     } catch (err) {

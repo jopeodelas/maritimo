@@ -20,6 +20,7 @@ const auth = (req, res, next) => {
         console.log('Token found, verifying...');
         const decoded = jsonwebtoken_1.default.verify(token, config_1.default.jwtSecret);
         req.userId = decoded.id;
+        req.user = { id: decoded.id };
         console.log('Token verified, user ID:', decoded.id);
         next();
     }
