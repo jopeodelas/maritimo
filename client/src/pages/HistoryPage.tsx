@@ -321,6 +321,50 @@ const HistoryPage = () => {
       textAlign: 'center',
       marginBottom: '6vh',
     },
+    heroSection: {
+      background: "rgba(30, 40, 50, 0.95)",
+      border: "2px solid rgba(76, 175, 80, 0.4)",
+      borderRadius: "clamp(1rem, 2.5vw, 1.5rem)",
+      padding: "clamp(2rem, 4vh, 3rem) clamp(1.5rem, 3vw, 2.5rem)",
+      marginBottom: "clamp(1.5rem, 3vh, 2.5rem)",
+      color: "white",
+      textAlign: "center",
+      boxShadow: `
+        0 clamp(0.5rem, 1.5vh, 1rem) clamp(2rem, 4vh, 3rem) rgba(0, 0, 0, 0.4),
+        inset 0 1px 0 rgba(76, 175, 80, 0.3)
+      `,
+      backdropFilter: "blur(10px)",
+      position: "relative",
+      overflow: "hidden",
+    },
+    heroAccent: {
+      position: "absolute",
+      top: 0,
+      left: 0,
+      right: 0,
+      height: "4px",
+      background: "linear-gradient(90deg, #4CAF50 0%, #FFD700 50%, #F44336 100%)",
+      borderRadius: "clamp(1rem, 2.5vw, 1.5rem) clamp(1rem, 2.5vw, 1.5rem) 0 0",
+    },
+    heroTitle: {
+      fontSize: "clamp(2rem, 5vw, 3.5rem)",
+      fontWeight: "800",
+      margin: "0 0 clamp(0.5rem, 1.5vh, 1rem) 0",
+      background: "linear-gradient(135deg, #FFD700 0%, #FFA000 100%)",
+      WebkitBackgroundClip: "text",
+      WebkitTextFillColor: "transparent",
+      backgroundClip: "text",
+      textShadow: "0 0.125rem 0.25rem rgba(255, 215, 0, 0.3)",
+      letterSpacing: "-0.02em",
+      position: "relative",
+    },
+    heroSubtitle: {
+      fontSize: "clamp(1rem, 2.5vw, 1.25rem)",
+      margin: 0,
+      fontWeight: "500",
+      color: "#B0BEC5",
+      textShadow: "0 0.125rem 0.25rem rgba(0, 0, 0, 0.2)",
+    },
     title: {
       fontSize: '4vw',
       fontWeight: '700',
@@ -584,9 +628,11 @@ const HistoryPage = () => {
         <Navbar />
         
         <div style={styles.content}>
-          <div style={styles.header}>
-            <h1 style={styles.title}>História do CS Marítimo</h1>
-            <p style={styles.subtitle}>
+          {/* Hero Section */}
+          <div style={styles.heroSection}>
+            <div style={styles.heroAccent}></div>
+            <h1 style={styles.heroTitle}>História do CS Marítimo</h1>
+            <p style={styles.heroSubtitle}>
               Mais de 115 anos de paixão, tradição e momentos inesquecíveis que marcaram 
               a história do nosso querido clube madeirense
             </p>

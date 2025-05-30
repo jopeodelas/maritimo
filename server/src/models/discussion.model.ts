@@ -112,4 +112,32 @@ export class DiscussionModel {
       throw error;
     }
   }
+
+  static async delete(id: number): Promise<void> {
+    try {
+      // Start a transaction to ensure data consistency
+      await db.query('BEGIN');
+
+      // Delete all comments for this discussion first
+      await db.query(`
+        DELETE FROM comments WHERE discussion_id = $1
+      `, [id]);
+
+      // Delete the discussion
+      const result = await db.query(`
+        DELETE FROM discussions WHERE id = $1
+      `, [id]);
+
+      // Commit the transaction
+      await db.query('COMMIT');
+
+      if (result.rowCount === 0) {
+        throw new Error('Discussion not found');
+      }
+    } catch (error) {
+      // Rollback the transaction on error
+      await db.query('ROLLBACK');
+      throw error;
+    }
+  }
 } 

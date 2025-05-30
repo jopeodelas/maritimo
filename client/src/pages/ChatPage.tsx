@@ -5,6 +5,37 @@ import { createStyles } from '../styles/styleUtils';
 import api from '../services/api';
 import type { Discussion, Comment } from '../types';
 
+// Icon components
+const SendIcon = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <line x1="22" y1="2" x2="11" y2="13"></line>
+    <polygon points="22,2 15,22 11,13 2,9"></polygon>
+  </svg>
+);
+
+const DeleteIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <polyline points="3,6 5,6 21,6"></polyline>
+    <path d="m19,6v14a2,2 0 0,1 -2,2H7a2,2 0 0,1 -2,-2V6m3,0V4a2,2 0 0,1 2,-2h4a2,2 0 0,1 2,2v2"></path>
+    <line x1="10" y1="11" x2="10" y2="17"></line>
+    <line x1="14" y1="11" x2="14" y2="17"></line>
+  </svg>
+);
+
+const CloseIcon = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <line x1="18" y1="6" x2="6" y2="18"></line>
+    <line x1="6" y1="6" x2="18" y2="18"></line>
+  </svg>
+);
+
+const PlusIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <line x1="12" y1="5" x2="12" y2="19"></line>
+    <line x1="5" y1="12" x2="19" y2="12"></line>
+  </svg>
+);
+
 const ChatPage = () => {
   const { user } = useAuth();
   const [discussions, setDiscussions] = useState<Discussion[]>([]);
@@ -119,7 +150,7 @@ const ChatPage = () => {
       // Update discussion comment count
       setDiscussions(prev => prev.map(d => 
         d.id === selectedDiscussion.id 
-          ? { ...d, comment_count: d.comment_count + 1, last_activity: new Date().toISOString() }
+          ? { ...d, comment_count: Number(d.comment_count) + 1, last_activity: new Date().toISOString() }
           : d
       ));
     } catch (error) {
@@ -184,6 +215,30 @@ const ChatPage = () => {
     discussion.description.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  const handleDeleteDiscussion = async (discussionId: number) => {
+    if (!window.confirm('Tem certeza que deseja apagar esta discussão? Esta ação não pode ser desfeita.')) {
+      return;
+    }
+
+    try {
+      await api.delete(`/discussions/${discussionId}`);
+      
+      // Remove from local state
+      setDiscussions(prev => prev.filter(d => d.id !== discussionId));
+      
+      // Close drawer if this discussion was open
+      if (selectedDiscussion?.id === discussionId) {
+        closeDiscussion();
+      }
+      
+      alert('Discussão apagada com sucesso!');
+    } catch (error: any) {
+      console.error('Error deleting discussion:', error);
+      const errorMessage = error.response?.data?.message || 'Erro ao apagar discussão.';
+      alert(errorMessage);
+    }
+  };
+
   const styles = createStyles({
     container: {
       minHeight: "100vh",
@@ -223,6 +278,50 @@ const ChatPage = () => {
     header: {
       textAlign: 'center',
       marginBottom: '3vh',
+    },
+    heroSection: {
+      background: "rgba(30, 40, 50, 0.95)",
+      border: "2px solid rgba(76, 175, 80, 0.4)",
+      borderRadius: "clamp(1rem, 2.5vw, 1.5rem)",
+      padding: "clamp(2rem, 4vh, 3rem) clamp(1.5rem, 3vw, 2.5rem)",
+      marginBottom: "clamp(1.5rem, 3vh, 2.5rem)",
+      color: "white",
+      textAlign: "center",
+      boxShadow: `
+        0 clamp(0.5rem, 1.5vh, 1rem) clamp(2rem, 4vh, 3rem) rgba(0, 0, 0, 0.4),
+        inset 0 1px 0 rgba(76, 175, 80, 0.3)
+      `,
+      backdropFilter: "blur(10px)",
+      position: "relative",
+      overflow: "hidden",
+    },
+    heroAccent: {
+      position: "absolute",
+      top: 0,
+      left: 0,
+      right: 0,
+      height: "4px",
+      background: "linear-gradient(90deg, #4CAF50 0%, #FFD700 50%, #F44336 100%)",
+      borderRadius: "clamp(1rem, 2.5vw, 1.5rem) clamp(1rem, 2.5vw, 1.5rem) 0 0",
+    },
+    heroTitle: {
+      fontSize: "clamp(2rem, 5vw, 3.5rem)",
+      fontWeight: "800",
+      margin: "0 0 clamp(0.5rem, 1.5vh, 1rem) 0",
+      background: "linear-gradient(135deg, #FFD700 0%, #FFA000 100%)",
+      WebkitBackgroundClip: "text",
+      WebkitTextFillColor: "transparent",
+      backgroundClip: "text",
+      textShadow: "0 0.125rem 0.25rem rgba(255, 215, 0, 0.3)",
+      letterSpacing: "-0.02em",
+      position: "relative",
+    },
+    heroSubtitle: {
+      fontSize: "clamp(1rem, 2.5vw, 1.25rem)",
+      margin: 0,
+      fontWeight: "500",
+      color: "#B0BEC5",
+      textShadow: "0 0.125rem 0.25rem rgba(0, 0, 0, 0.2)",
     },
     title: {
       fontSize: '3.5vw',
@@ -334,317 +433,374 @@ const ChatPage = () => {
       fontSize: '0.9vw',
       color: '#B0B0B0',
     },
-    // Layout da gaveta
-    mainLayout: {
-      display: isDrawerOpen ? 'flex' : 'none',
-      height: '100vh',
+
+    // NEW REDESIGNED CHAT INTERFACE
+    chatOverlay: {
       position: 'fixed',
-      top: 0,
+      top: '70px',
       left: 0,
       right: 0,
       bottom: 0,
-      zIndex: 500, // Bem abaixo da navbar (que tem z-index 1000)
+      backgroundColor: 'rgba(0, 0, 0, 0.3)',
+      backdropFilter: 'blur(3px)',
+      zIndex: 500,
+      display: isDrawerOpen ? 'block' : 'none',
     },
-    discussionsPanel: {
-      width: '20%',
-      background: `
-        radial-gradient(circle at 20% 50%, rgba(76, 175, 80, 0.15) 0%, transparent 50%),
-        radial-gradient(circle at 80% 20%, rgba(244, 67, 54, 0.1) 0%, transparent 50%),
-        linear-gradient(135deg, #0F1419 0%, #1A252F 50%, #2C3E50 100%)
-      `,
-      borderRight: '2px solid rgba(255, 187, 76, 0.3)',
-      overflow: 'hidden',
-      display: 'flex',
-      flexDirection: 'column',
-      paddingTop: '80px', // Space for navbar
-      boxShadow: '2px 0 10px rgba(0, 0, 0, 0.3)',
-    },
-    panelHeader: {
-      padding: '2vh 2vw',
-      borderBottom: '2px solid rgba(255, 187, 76, 0.3)',
-      background: `
-        linear-gradient(135deg, rgba(15, 20, 25, 0.95) 0%, rgba(26, 37, 47, 0.9) 100%)
-      `,
-      boxShadow: '0 2px 10px rgba(0, 0, 0, 0.2)',
-    },
-    panelTitle: {
-      fontSize: '1.8vw',
-      fontWeight: '700',
-      color: '#FFFFFF',
-      marginBottom: '1vh',
-      textShadow: '0.2vh 0.2vh 0.5vh rgba(0, 0, 0, 0.5)',
-      background: 'linear-gradient(135deg, #FFFFFF 0%, #E0E0E0 100%)',
-      WebkitBackgroundClip: 'text',
-      WebkitTextFillColor: 'transparent',
-      backgroundClip: 'text',
-    },
-    panelSubtitle: {
-      fontSize: '0.9vw',
-      color: '#FFBB4C',
-      fontWeight: '500',
-      textShadow: '0.1vh 0.1vh 0.3vh rgba(0, 0, 0, 0.3)',
-    },
-    panelControls: {
-      padding: '2vh 2vw',
-      borderBottom: '2px solid rgba(255, 187, 76, 0.3)',
-      background: `
-        linear-gradient(135deg, rgba(15, 20, 25, 0.8) 0%, rgba(26, 37, 47, 0.7) 100%)
-      `,
-    },
-    panelSearchInput: {
-      width: '100%',
-      padding: '1.2vh 1.5vw',
-      borderRadius: '0.8vw',
-      border: '2px solid rgba(255, 187, 76, 0.4)',
-      background: `
-        linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.05) 100%)
-      `,
-      color: '#FFFFFF',
-      fontSize: '0.8vw',
-      marginBottom: '1.5vh',
-      transition: 'all 0.3s ease',
-      backdropFilter: 'blur(10px)',
-      boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)',
-    },
-    panelSortSelect: {
-      width: '100%',
-      padding: '1.2vh 1.5vw',
-      borderRadius: '0.8vw',
-      border: '2px solid rgba(255, 187, 76, 0.4)',
-      background: `
-        linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.05) 100%)
-      `,
-      color: '#FFFFFF',
-      fontSize: '0.8vw',
-      cursor: 'pointer',
-      transition: 'all 0.3s ease',
-      appearance: 'none',
-      backgroundImage: `url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23FFFFFF' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e")`,
-      backgroundRepeat: 'no-repeat',
-      backgroundPosition: 'right 1vw center',
-      backgroundSize: '1.2vw',
-      paddingRight: '3vw',
-      marginBottom: '1.5vh',
-      backdropFilter: 'blur(10px)',
-      boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)',
-    },
-    panelCreateButton: {
-      width: '100%',
-      background: 'linear-gradient(135deg, #009759 0%, #00b366 100%)',
-      color: 'white',
+
+    chatContainer: {
+      position: 'fixed',
+      top: '70px',
+      left: '0',
+      right: '0',
+      bottom: '0',
+      width: '100vw',
+      height: 'calc(100vh - 70px)',
+      backgroundColor: '#1e293b',
+      borderRadius: '0',
+      boxShadow: 'none',
       border: 'none',
-      padding: '1.5vh 2vw',
-      borderRadius: '0.8vw',
-      fontSize: '0.9vw',
-      fontWeight: '600',
-      cursor: 'pointer',
-      transition: 'all 0.3s ease',
-      boxShadow: '0 4px 15px rgba(0, 151, 89, 0.4)',
-      textShadow: '0.1vh 0.1vh 0.3vh rgba(0, 0, 0, 0.3)',
-    },
-    panelDiscussionsList: {
-      flex: 1,
-      overflow: 'auto',
-      padding: '1.5vh 2vw',
-      background: `
-        linear-gradient(180deg, rgba(15, 20, 25, 0.3) 0%, rgba(26, 37, 47, 0.2) 100%)
-      `,
-    },
-    panelDiscussionCard: {
-      background: `
-        linear-gradient(135deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0.06) 100%)
-      `,
-      borderRadius: '1vw',
-      padding: '1.5vh 1.5vw',
-      border: '2px solid rgba(255, 187, 76, 0.25)',
-      cursor: 'pointer',
-      transition: 'all 0.3s ease',
-      backdropFilter: 'blur(10px)',
-      marginBottom: '1vh',
-      boxShadow: '0 2px 10px rgba(0, 0, 0, 0.2)',
-    },
-    panelDiscussionTitle: {
-      fontSize: '1vw',
-      fontWeight: '600',
-      color: '#FFFFFF',
-      marginBottom: '0.5vh',
+      display: isDrawerOpen ? 'flex' : 'none',
       overflow: 'hidden',
-      textOverflow: 'ellipsis',
-      whiteSpace: 'nowrap',
-      textShadow: '0.1vh 0.1vh 0.3vh rgba(0, 0, 0, 0.3)',
+      zIndex: 501,
     },
-    panelDiscussionMeta: {
-      fontSize: '0.7vw',
-      color: '#FFBB4C',
-      marginBottom: '0.5vh',
-      fontWeight: '500',
-    },
-    panelDiscussionStats: {
-      fontSize: '0.7vw',
-      color: '#B0BEC5',
-      fontWeight: '400',
-    },
-    chatDrawer: {
-      width: '80%',
-      height: '100%',
-      background: `
-        radial-gradient(circle at 80% 20%, rgba(76, 175, 80, 0.1) 0%, transparent 50%),
-        radial-gradient(circle at 40% 80%, rgba(255, 193, 7, 0.08) 0%, transparent 50%),
-        linear-gradient(135deg, #0F1419 0%, #1A252F 50%, #2C3E50 100%)
-      `,
+
+    sidebar: {
+      width: '400px',
+      backgroundColor: '#0f172a',
+      borderRight: '1px solid rgba(255, 255, 255, 0.1)',
       display: 'flex',
       flexDirection: 'column',
-      paddingTop: '80px', // Space for navbar
-      boxShadow: '-2px 0 10px rgba(0, 0, 0, 0.3)',
+      minWidth: '400px',
+      maxWidth: '400px',
     },
-    chatHeader: {
-      padding: '2vh 3vw',
-      borderBottom: '2px solid rgba(255, 187, 76, 0.3)',
-      background: `
-        linear-gradient(135deg, rgba(15, 20, 25, 0.95) 0%, rgba(26, 37, 47, 0.9) 100%)
-      `,
-      display: 'flex',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-      boxShadow: '0 2px 10px rgba(0, 0, 0, 0.2)',
+
+    sidebarHeader: {
+      padding: '24px',
+      borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
+      backgroundColor: 'rgba(255, 255, 255, 0.02)',
     },
-    chatHeaderInfo: {
-      flex: 1,
-    },
-    chatTitle: {
-      fontSize: '1.8vw',
+
+    sidebarTitle: {
+      fontSize: '18px',
       fontWeight: '700',
-      color: '#FFFFFF',
-      marginBottom: '0.5vh',
-      background: 'linear-gradient(135deg, #FFFFFF 0%, #E0E0E0 100%)',
-      WebkitBackgroundClip: 'text',
-      WebkitTextFillColor: 'transparent',
-      backgroundClip: 'text',
-      textShadow: '0.2vh 0.2vh 0.5vh rgba(0, 0, 0, 0.5)',
+      color: '#f8fafc',
+      marginBottom: '8px',
     },
-    chatMeta: {
-      fontSize: '1vw',
-      color: '#FFBB4C',
-      marginBottom: '1vh',
-      fontWeight: '500',
-      textShadow: '0.1vh 0.1vh 0.3vh rgba(0, 0, 0, 0.3)',
+
+    sidebarSubtitle: {
+      fontSize: '13px',
+      color: '#94a3b8',
+      marginBottom: '20px',
     },
-    chatDescription: {
-      fontSize: '1.1vw',
-      color: '#B0BEC5',
-      lineHeight: '1.5',
-      fontWeight: '400',
+
+    sidebarControls: {
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '12px',
     },
-    closeButton: {
-      backgroundColor: 'transparent',
-      border: '2px solid rgba(244, 67, 54, 0.5)',
-      color: '#FFFFFF',
-      fontSize: '2vw',
+
+    sidebarSearch: {
+      width: '100%',
+      padding: '12px 16px',
+      borderRadius: '12px',
+      border: '1px solid rgba(255, 255, 255, 0.1)',
+      backgroundColor: 'rgba(255, 255, 255, 0.05)',
+      color: '#f8fafc',
+      fontSize: '14px',
+      outline: 'none',
+      transition: 'all 0.2s ease',
+    },
+
+    sidebarSelect: {
+      width: '100%',
+      padding: '12px 16px',
+      borderRadius: '12px',
+      border: '1px solid rgba(255, 255, 255, 0.1)',
+      backgroundColor: 'rgba(255, 255, 255, 0.05)',
+      color: '#f8fafc',
+      fontSize: '14px',
+      outline: 'none',
       cursor: 'pointer',
-      padding: '0.5vh 1vw',
-      borderRadius: '50%',
-      transition: 'all 0.3s ease',
-      width: '3vw',
-      height: '3vw',
+      appearance: 'none',
+      backgroundImage: `url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23f8fafc' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e")`,
+      backgroundRepeat: 'no-repeat',
+      backgroundPosition: 'right 12px center',
+      backgroundSize: '16px',
+      paddingRight: '40px',
+    },
+
+    newDiscussionBtn: {
+      width: '100%',
+      padding: '14px 20px',
+      borderRadius: '12px',
+      border: 'none',
+      backgroundColor: '#3b82f6',
+      color: 'white',
+      fontSize: '14px',
+      fontWeight: '600',
+      cursor: 'pointer',
+      transition: 'all 0.2s ease',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      boxShadow: '0 2px 8px rgba(244, 67, 54, 0.3)',
+      gap: '8px',
     },
-    messagesContainer: {
+
+    discussionList: {
       flex: 1,
       overflow: 'auto',
-      padding: '2vh 3vw',
+      padding: '0',
+    },
+
+    discussionItem: {
+      padding: '16px 24px',
+      borderBottom: '1px solid rgba(255, 255, 255, 0.05)',
+      cursor: 'pointer',
+      transition: 'all 0.2s ease',
+      position: 'relative',
+    },
+
+    discussionItemActive: {
+      backgroundColor: 'rgba(59, 130, 246, 0.1)',
+      borderLeft: '3px solid #3b82f6',
+    },
+
+    discussionItemTitle: {
+      fontSize: '15px',
+      fontWeight: '600',
+      color: '#f8fafc',
+      marginBottom: '6px',
+      lineHeight: '1.3',
+      overflow: 'hidden',
+      textOverflow: 'ellipsis',
+      whiteSpace: 'nowrap',
+    },
+
+    discussionItemMeta: {
+      fontSize: '12px',
+      color: '#64748b',
+      marginBottom: '4px',
+    },
+
+    discussionItemStats: {
+      fontSize: '12px',
+      color: '#94a3b8',
+    },
+
+    chatArea: {
+      flex: 1,
       display: 'flex',
       flexDirection: 'column',
-      gap: '1.5vh',
-      background: `
-        linear-gradient(180deg, rgba(15, 20, 25, 0.2) 0%, rgba(26, 37, 47, 0.1) 100%)
-      `,
+      backgroundColor: '#1e293b',
     },
+
+    chatHeader: {
+      padding: '24px 32px',
+      borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
+      backgroundColor: 'rgba(255, 255, 255, 0.02)',
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+    },
+
+    chatHeaderContent: {
+      flex: 1,
+    },
+
+    chatHeaderTitle: {
+      fontSize: '20px',
+      fontWeight: '700',
+      color: '#f8fafc',
+      marginBottom: '6px',
+      lineHeight: '1.3',
+    },
+
+    chatHeaderMeta: {
+      fontSize: '14px',
+      color: '#64748b',
+      marginBottom: '8px',
+    },
+
+    chatHeaderDescription: {
+      fontSize: '14px',
+      color: '#94a3b8',
+      lineHeight: '1.4',
+      maxWidth: '600px',
+    },
+
+    chatHeaderActions: {
+      display: 'flex',
+      gap: '12px',
+      alignItems: 'center',
+    },
+
+    actionButton: {
+      width: '40px',
+      height: '40px',
+      borderRadius: '10px',
+      border: 'none',
+      cursor: 'pointer',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      transition: 'all 0.2s ease',
+      fontSize: '18px',
+    },
+
+    deleteButton: {
+      backgroundColor: 'rgba(239, 68, 68, 0.1)',
+      color: '#ef4444',
+    },
+
+    closeButton: {
+      backgroundColor: 'rgba(156, 163, 175, 0.1)',
+      color: '#9ca3af',
+    },
+
+    messagesArea: {
+      flex: 1,
+      padding: '24px 32px',
+      overflow: 'auto',
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '16px',
+      minHeight: 0, // Important: allows flex child to shrink
+      scrollBehavior: 'smooth',
+    },
+
     message: {
-      background: `
-        linear-gradient(135deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0.06) 100%)
-      `,
-      borderRadius: '1.2vw',
-      padding: '1.5vh 2vw',
-      border: '1px solid rgba(255, 187, 76, 0.2)',
-      maxWidth: '85%',
-      alignSelf: 'flex-start',
-      animation: 'slideInLeft 0.3s ease',
-      backdropFilter: 'blur(10px)',
-      boxShadow: '0 2px 10px rgba(0, 0, 0, 0.15)',
+      backgroundColor: 'rgba(255, 255, 255, 0.05)',
+      borderRadius: '16px',
+      padding: '16px 20px',
+      border: '1px solid rgba(255, 255, 255, 0.1)',
+      maxWidth: '80%',
+      flexShrink: 0, // Important: prevents messages from shrinking
+      minHeight: 'auto', // Important: allows natural height
     },
+
+    // Message for other users (left side)
+    messageOther: {
+      backgroundColor: 'rgba(255, 255, 255, 0.05)',
+      borderRadius: '16px',
+      padding: '16px 20px',
+      border: '1px solid rgba(255, 255, 255, 0.1)',
+      maxWidth: '80%',
+      flexShrink: 0,
+      minHeight: 'auto',
+      alignSelf: 'flex-start',
+    },
+
+    // Message for current user (right side)
+    messageUser: {
+      backgroundColor: 'rgba(59, 130, 246, 0.15)',
+      borderRadius: '16px',
+      padding: '16px 20px',
+      border: '1px solid rgba(59, 130, 246, 0.3)',
+      maxWidth: '80%',
+      flexShrink: 0,
+      minHeight: 'auto',
+      alignSelf: 'flex-end',
+    },
+
     messageHeader: {
       display: 'flex',
       justifyContent: 'space-between',
       alignItems: 'center',
-      marginBottom: '0.8vh',
+      marginBottom: '8px',
     },
+
     messageAuthor: {
-      fontSize: '1vw',
+      fontSize: '14px',
       fontWeight: '600',
-      color: '#FFBB4C',
-      textShadow: '0.1vh 0.1vh 0.3vh rgba(0, 0, 0, 0.3)',
+      color: '#3b82f6',
     },
+
+    messageAuthorUser: {
+      fontSize: '14px',
+      fontWeight: '600',
+      color: '#93c5fd',
+    },
+
     messageTime: {
-      fontSize: '0.8vw',
-      color: '#B0BEC5',
-      fontWeight: '400',
+      fontSize: '12px',
+      color: '#64748b',
     },
+
     messageContent: {
-      fontSize: '1.1vw',
-      color: '#FFFFFF',
+      fontSize: '15px',
+      color: '#e2e8f0',
       lineHeight: '1.5',
-      wordWrap: 'break-word',
-      textShadow: '0.05vh 0.05vh 0.2vh rgba(0, 0, 0, 0.2)',
+      wordBreak: 'break-word',
     },
+
+    chatInputArea: {
+      padding: '24px 32px',
+      borderTop: '1px solid rgba(255, 255, 255, 0.1)',
+      backgroundColor: 'rgba(255, 255, 255, 0.02)',
+    },
+
     chatInputContainer: {
-      padding: '2vh 3vw',
-      borderTop: '2px solid rgba(255, 187, 76, 0.3)',
-      background: `
-        linear-gradient(135deg, rgba(15, 20, 25, 0.95) 0%, rgba(26, 37, 47, 0.9) 100%)
-      `,
-      boxShadow: '0 -2px 10px rgba(0, 0, 0, 0.2)',
-    },
-    chatInputWrapper: {
       display: 'flex',
-      gap: '1vw',
-      alignItems: 'center',
+      gap: '12px',
+      alignItems: 'flex-end',
     },
+
     chatInput: {
       flex: 1,
-      padding: '1.5vh 2vw',
-      borderRadius: '2vw',
-      border: '2px solid rgba(255, 187, 76, 0.4)',
-      background: `
-        linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.05) 100%)
-      `,
-      color: '#FFFFFF',
-      fontSize: '1.1vw',
-      transition: 'all 0.3s ease',
+      padding: '14px 18px',
+      borderRadius: '20px',
+      border: '1px solid rgba(255, 255, 255, 0.1)',
+      backgroundColor: 'rgba(255, 255, 255, 0.05)',
+      color: '#f8fafc',
+      fontSize: '15px',
       outline: 'none',
-      backdropFilter: 'blur(10px)',
-      boxShadow: '0 2px 10px rgba(0, 0, 0, 0.2)',
-      textShadow: '0.05vh 0.05vh 0.2vh rgba(0, 0, 0, 0.2)',
+      resize: 'none',
+      minHeight: '48px',
+      maxHeight: '120px',
+      transition: 'all 0.2s ease',
     },
+
     sendButton: {
-      background: 'linear-gradient(135deg, #009759 0%, #00b366 100%)',
-      color: 'white',
-      border: 'none',
-      padding: '1.5vh 2vw',
+      width: '48px',
+      height: '48px',
       borderRadius: '50%',
-      fontSize: '1.2vw',
+      border: 'none',
+      backgroundColor: '#3b82f6',
+      color: 'white',
       cursor: 'pointer',
-      transition: 'all 0.3s ease',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      width: '4vw',
-      height: '4vw',
-      boxShadow: '0 4px 15px rgba(0, 151, 89, 0.4)',
-      textShadow: '0.1vh 0.1vh 0.3vh rgba(0, 0, 0, 0.3)',
+      transition: 'all 0.2s ease',
+      flexShrink: 0,
     },
+
+    emptyState: {
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      height: '100%',
+      color: '#64748b',
+      textAlign: 'center',
+    },
+
+    emptyStateIcon: {
+      fontSize: '48px',
+      marginBottom: '16px',
+      opacity: 0.5,
+    },
+
+    emptyStateText: {
+      fontSize: '16px',
+      marginBottom: '8px',
+    },
+
+    emptyStateSubtext: {
+      fontSize: '14px',
+      opacity: 0.7,
+    },
+
     modal: {
       position: 'fixed',
       top: 0,
@@ -655,76 +811,104 @@ const ChatPage = () => {
       display: 'flex',
       justifyContent: 'center',
       alignItems: 'center',
-      zIndex: 1000,
-      padding: '2vh',
+      zIndex: 1001,
+      padding: '20px',
     },
+
     modalContent: {
-      backgroundColor: '#1A252F',
-      borderRadius: '1vw',
-      padding: '3vh 3vw',
-      maxWidth: '80vw',
+      backgroundColor: '#1e293b',
+      borderRadius: '16px',
+      padding: '32px',
+      maxWidth: '600px',
+      width: '100%',
       maxHeight: '80vh',
       overflow: 'auto',
-      border: '2px solid rgba(255, 187, 76, 0.3)',
+      border: '1px solid rgba(255, 255, 255, 0.1)',
     },
+
     modalHeader: {
       display: 'flex',
       justifyContent: 'space-between',
       alignItems: 'center',
-      marginBottom: '2vh',
-      borderBottom: '2px solid rgba(255, 187, 76, 0.2)',
-      paddingBottom: '1vh',
+      marginBottom: '24px',
+      paddingBottom: '16px',
+      borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
     },
+
+    modalTitle: {
+      fontSize: '20px',
+      fontWeight: '700',
+      color: '#f8fafc',
+    },
+
     form: {
       display: 'flex',
       flexDirection: 'column',
-      gap: '1.5vh',
+      gap: '20px',
     },
+
     input: {
-      padding: '1.2vh 1.5vw',
-      borderRadius: '0.8vw',
-      border: '2px solid rgba(255, 187, 76, 0.3)',
-      backgroundColor: 'rgba(255, 255, 255, 0.1)',
-      color: '#FFFFFF',
-      fontSize: '1vw',
-      transition: 'all 0.3s ease',
+      padding: '14px 16px',
+      borderRadius: '12px',
+      border: '1px solid rgba(255, 255, 255, 0.1)',
+      backgroundColor: 'rgba(255, 255, 255, 0.05)',
+      color: '#f8fafc',
+      fontSize: '15px',
+      outline: 'none',
+      transition: 'all 0.2s ease',
     },
+
     textarea: {
-      padding: '1.2vh 1.5vw',
-      borderRadius: '0.8vw',
-      border: '2px solid rgba(255, 187, 76, 0.3)',
-      backgroundColor: 'rgba(255, 255, 255, 0.1)',
-      color: '#FFFFFF',
-      fontSize: '1vw',
-      minHeight: '10vh',
+      padding: '14px 16px',
+      borderRadius: '12px',
+      border: '1px solid rgba(255, 255, 255, 0.1)',
+      backgroundColor: 'rgba(255, 255, 255, 0.05)',
+      color: '#f8fafc',
+      fontSize: '15px',
+      minHeight: '120px',
       resize: 'vertical',
       fontFamily: 'inherit',
+      outline: 'none',
+      transition: 'all 0.2s ease',
     },
+
     submitButton: {
-      backgroundColor: '#009759',
+      backgroundColor: '#3b82f6',
       color: 'white',
       border: 'none',
-      padding: '1.5vh 2vw',
-      borderRadius: '0.8vw',
-      fontSize: '1.1vw',
+      padding: '14px 24px',
+      borderRadius: '12px',
+      fontSize: '15px',
       fontWeight: '600',
       cursor: 'pointer',
-      transition: 'all 0.3s ease',
-      disabled: submitting,
+      transition: 'all 0.2s ease',
     },
+
     loading: {
-      textAlign: 'center',
-      padding: '4vh',
-      fontSize: '1.2vw',
-      color: '#FFBB4C',
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+      padding: '40px',
+      color: '#64748b',
+      fontSize: '15px',
     },
-    emptyState: {
-      textAlign: 'center',
-      padding: '4vh 2vw',
-      color: '#B0B0B0',
-      fontSize: '1.1vw',
-    },
+
     '@media (max-width: 768px)': {
+      chatContainer: {
+        flexDirection: 'column',
+        top: '70px',
+        height: 'calc(100vh - 70px)',
+      },
+      sidebar: {
+        height: '40vh',
+        minWidth: '100%',
+        maxWidth: '100%',
+        borderRight: 'none',
+        borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
+      },
+      chatArea: {
+        height: '60vh',
+      },
       title: {
         fontSize: '6vw',
       },
@@ -757,67 +941,6 @@ const ChatPage = () => {
       discussionStats: {
         fontSize: '2.5vw',
       },
-      mainLayout: {
-        flexDirection: 'column',
-      },
-      discussionsPanel: {
-        width: '100%',
-        height: '30%',
-      },
-      chatDrawer: {
-        width: '100%',
-        height: '70%',
-      },
-      panelTitle: {
-        fontSize: '4vw',
-      },
-      panelSubtitle: {
-        fontSize: '2.5vw',
-      },
-      panelSearchInput: {
-        fontSize: '3.5vw',
-      },
-      panelSortSelect: {
-        fontSize: '3.5vw',
-      },
-      panelCreateButton: {
-        fontSize: '3.5vw',
-      },
-      panelDiscussionTitle: {
-        fontSize: '3vw',
-      },
-      panelDiscussionMeta: {
-        fontSize: '2.5vw',
-      },
-      panelDiscussionStats: {
-        fontSize: '2.5vw',
-      },
-      chatTitle: {
-        fontSize: '4.5vw',
-      },
-      chatMeta: {
-        fontSize: '3vw',
-      },
-      chatDescription: {
-        fontSize: '3.2vw',
-      },
-      messageAuthor: {
-        fontSize: '3vw',
-      },
-      messageTime: {
-        fontSize: '2.5vw',
-      },
-      messageContent: {
-        fontSize: '3.2vw',
-      },
-      chatInput: {
-        fontSize: '3.5vw',
-      },
-      sendButton: {
-        fontSize: '3.5vw',
-        width: '12vw',
-        height: '12vw',
-      },
     } as any,
   });
 
@@ -826,11 +949,13 @@ const ChatPage = () => {
       <div style={styles.backgroundPattern}></div>
       <Navbar />
       
-      {/* Layout original quando não há gaveta */}
+      {/* Original layout - only show when drawer is closed */}
       <div style={styles.content}>
-        <div style={styles.header}>
-          <h1 style={styles.title}>Discussões</h1>
-          <p style={styles.subtitle}>Partilhe as suas opiniões sobre o CS Marítimo</p>
+        {/* Hero Section */}
+        <div style={styles.heroSection}>
+          <div style={styles.heroAccent}></div>
+          <h1 style={styles.heroTitle}>Discussões</h1>
+          <p style={styles.heroSubtitle}>Partilhe as suas opiniões sobre o CS Marítimo</p>
         </div>
 
         <div style={styles.controls}>
@@ -862,7 +987,10 @@ const ChatPage = () => {
         </div>
 
         {loading ? (
-          <div style={styles.loading}>A carregar discussões...</div>
+          <div style={styles.loading}>
+            <div className="spinner"></div>
+            A carregar discussões...
+          </div>
         ) : (
           <div style={styles.discussionsList}>
             {filteredDiscussions.map((discussion) => (
@@ -895,70 +1023,72 @@ const ChatPage = () => {
         )}
       </div>
 
-      {/* Layout da gaveta */}
-      <div style={styles.mainLayout}>
-        {/* Discussions Panel */}
-        <div style={styles.discussionsPanel}>
-          <div style={styles.panelHeader}>
-            <h1 style={styles.panelTitle}>Discussões</h1>
-            <p style={styles.panelSubtitle}>Partilhe as suas opiniões sobre o CS Marítimo</p>
+      {/* New Chat Interface */}
+      <div style={styles.chatOverlay} onClick={closeDiscussion}></div>
+      
+      <div style={styles.chatContainer} onClick={(e) => e.stopPropagation()}>
+        {/* Sidebar */}
+        <div style={styles.sidebar}>
+          <div style={styles.sidebarHeader}>
+            <h2 style={styles.sidebarTitle}>Discussões</h2>
+            <p style={styles.sidebarSubtitle}>Conversas da comunidade</p>
+            
+            <div style={styles.sidebarControls}>
+              <input
+                type="text"
+                placeholder="Pesquisar..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                style={styles.sidebarSearch}
+              />
+              
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value as 'newest' | 'oldest' | 'popular')}
+                style={styles.sidebarSelect}
+              >
+                <option value="newest">Mais Recentes</option>
+                <option value="oldest">Mais Antigas</option>
+                <option value="popular">Mais Populares</option>
+              </select>
+              
+              <button
+                onClick={() => setShowCreateForm(true)}
+                style={styles.newDiscussionBtn}
+                className="new-discussion-btn"
+              >
+                <PlusIcon />
+                Nova Discussão
+              </button>
+            </div>
           </div>
 
-          <div style={styles.panelControls}>
-            <input
-              type="text"
-              placeholder="Pesquisar discussões..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              style={styles.panelSearchInput}
-              className="panel-search-input"
-            />
-            <select
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value as 'newest' | 'oldest' | 'popular')}
-              style={styles.panelSortSelect}
-            >
-              <option value="newest">Mais Recentes</option>
-              <option value="oldest">Mais Antigas</option>
-              <option value="popular">Mais Populares</option>
-            </select>
-            <button
-              onClick={() => setShowCreateForm(true)}
-              style={styles.panelCreateButton}
-              className="hover-button"
-            >
-              Nova Discussão
-            </button>
-          </div>
-
-          <div style={styles.panelDiscussionsList}>
+          <div style={styles.discussionList}>
             {loading ? (
-              <div style={styles.loading}>A carregar discussões...</div>
+              <div style={styles.loading}>
+                <div className="spinner"></div>
+                A carregar...
+              </div>
             ) : filteredDiscussions.length === 0 ? (
-              <div style={styles.emptyState}>
-                Nenhuma discussão encontrada.
+              <div style={{ ...styles.emptyState, padding: '40px 24px' }}>
+                <div style={styles.emptyStateText}>Nenhuma discussão encontrada</div>
               </div>
             ) : (
               filteredDiscussions.map((discussion) => (
                 <div
                   key={discussion.id}
                   style={{
-                    ...styles.panelDiscussionCard,
-                    backgroundColor: selectedDiscussion?.id === discussion.id 
-                      ? 'rgba(255, 187, 76, 0.2)' 
-                      : 'rgba(255, 255, 255, 0.1)',
-                    borderColor: selectedDiscussion?.id === discussion.id 
-                      ? 'rgba(255, 187, 76, 0.5)' 
-                      : 'rgba(255, 187, 76, 0.2)',
+                    ...styles.discussionItem,
+                    ...(selectedDiscussion?.id === discussion.id ? styles.discussionItemActive : {}),
                   }}
-                  className={`hover-card ${selectedDiscussion?.id === discussion.id ? 'panel-discussion-selected' : ''}`}
+                  className="discussion-item"
                   onClick={() => openDiscussion(discussion)}
                 >
-                  <h3 style={styles.panelDiscussionTitle}>{discussion.title}</h3>
-                  <div style={styles.panelDiscussionMeta}>
-                    Por {discussion.author_username} • {formatDate(discussion.created_at)}
+                  <div style={styles.discussionItemTitle}>{discussion.title}</div>
+                  <div style={styles.discussionItemMeta}>
+                    {discussion.author_username} • {formatDate(discussion.created_at)}
                   </div>
-                  <div style={styles.panelDiscussionStats}>
+                  <div style={styles.discussionItemStats}>
                     {discussion.comment_count} comentários
                   </div>
                 </div>
@@ -967,70 +1097,105 @@ const ChatPage = () => {
           </div>
         </div>
 
-        {/* Chat Drawer */}
-        <div style={styles.chatDrawer}>
-          {selectedDiscussion && (
+        {/* Chat Area */}
+        <div style={styles.chatArea}>
+          {selectedDiscussion ? (
             <>
               <div style={styles.chatHeader}>
-                <div style={styles.chatHeaderInfo}>
-                  <h2 style={styles.chatTitle}>{selectedDiscussion.title}</h2>
-                  <div style={styles.chatMeta}>
+                <div style={styles.chatHeaderContent}>
+                  <h1 style={styles.chatHeaderTitle}>{selectedDiscussion.title}</h1>
+                  <div style={styles.chatHeaderMeta}>
                     Por {selectedDiscussion.author_username} • {formatDate(selectedDiscussion.created_at)}
                   </div>
-                  <p style={styles.chatDescription}>{selectedDiscussion.description}</p>
+                  <div style={styles.chatHeaderDescription}>
+                    {selectedDiscussion.description}
+                  </div>
                 </div>
-                <button 
-                  style={styles.closeButton} 
-                  onClick={closeDiscussion}
-                  className="close-button"
-                >
-                  ×
-                </button>
+                
+                <div style={styles.chatHeaderActions}>
+                  {user && selectedDiscussion.author_id === Number(user.id) && (
+                    <button
+                      style={{ ...styles.actionButton, ...styles.deleteButton }}
+                      onClick={() => handleDeleteDiscussion(selectedDiscussion.id)}
+                      className="action-button delete-btn"
+                      title="Apagar discussão"
+                    >
+                      <DeleteIcon />
+                    </button>
+                  )}
+                  <button
+                    style={{ ...styles.actionButton, ...styles.closeButton }}
+                    onClick={closeDiscussion}
+                    className="action-button close-btn"
+                    title="Fechar"
+                  >
+                    <CloseIcon />
+                  </button>
+                </div>
               </div>
 
-              <div style={styles.messagesContainer}>
+              <div style={styles.messagesArea}>
                 {comments.length === 0 ? (
                   <div style={styles.emptyState}>
-                    Seja o primeiro a comentar nesta discussão!
+                    <div style={styles.emptyStateIcon}>💬</div>
+                    <div style={styles.emptyStateText}>Nenhum comentário ainda</div>
+                    <div style={styles.emptyStateSubtext}>Seja o primeiro a comentar!</div>
                   </div>
                 ) : (
-                  comments.map((comment) => (
-                    <div key={comment.id} style={styles.message}>
-                      <div style={styles.messageHeader}>
-                        <span style={styles.messageAuthor}>{comment.author_username}</span>
-                        <span style={styles.messageTime}>{formatChatTime(comment.created_at)}</span>
-                      </div>
-                      <p style={styles.messageContent}>{comment.content}</p>
-                    </div>
-                  ))
+                  <>
+                    {comments.map((comment) => {
+                      const isCurrentUser = user && comment.author_id === Number(user.id);
+                      return (
+                        <div 
+                          key={comment.id} 
+                          style={isCurrentUser ? styles.messageUser : styles.messageOther}
+                        >
+                          <div style={styles.messageHeader}>
+                            <span style={isCurrentUser ? styles.messageAuthorUser : styles.messageAuthor}>{comment.author_username}</span>
+                            <span style={styles.messageTime}>{formatChatTime(comment.created_at)}</span>
+                          </div>
+                          <div style={styles.messageContent}>{comment.content}</div>
+                        </div>
+                      );
+                    })}
+                    <div ref={messagesEndRef} />
+                  </>
                 )}
-                <div ref={messagesEndRef} />
               </div>
 
-              <div style={styles.chatInputContainer}>
-                <div style={styles.chatInputWrapper}>
+              <div style={styles.chatInputArea}>
+                <div style={styles.chatInputContainer}>
                   <input
                     ref={chatInputRef}
                     type="text"
-                    placeholder="Escreva a sua mensagem..."
+                    placeholder="Escreva uma mensagem..."
                     value={newComment}
                     onChange={(e) => setNewComment(e.target.value)}
                     onKeyPress={handleKeyPress}
                     style={styles.chatInput}
-                    className="chat-input"
                     disabled={submitting}
                   />
                   <button
                     onClick={() => handleSendMessage()}
                     style={styles.sendButton}
-                    className="send-button"
+                    className="send-btn"
                     disabled={submitting || !newComment.trim()}
                   >
-                    {submitting ? '...' : '→'}
+                    {submitting ? (
+                      <div className="spinner small"></div>
+                    ) : (
+                      <SendIcon />
+                    )}
                   </button>
                 </div>
               </div>
             </>
+          ) : (
+            <div style={styles.emptyState}>
+              <div style={styles.emptyStateIcon}>💭</div>
+              <div style={styles.emptyStateText}>Selecione uma discussão</div>
+              <div style={styles.emptyStateSubtext}>Escolha uma discussão para começar a conversar</div>
+            </div>
           )}
         </div>
       </div>
@@ -1040,12 +1205,13 @@ const ChatPage = () => {
         <div style={styles.modal} onClick={() => setShowCreateForm(false)}>
           <div style={styles.modalContent} onClick={(e) => e.stopPropagation()}>
             <div style={styles.modalHeader}>
-              <h2>Nova Discussão</h2>
+              <h2 style={styles.modalTitle}>Nova Discussão</h2>
               <button
-                style={styles.closeButton}
+                style={{ ...styles.actionButton, ...styles.closeButton }}
                 onClick={() => setShowCreateForm(false)}
+                className="action-button"
               >
-                ×
+                <CloseIcon />
               </button>
             </div>
             <form onSubmit={handleCreateDiscussion} style={styles.form}>
@@ -1069,9 +1235,15 @@ const ChatPage = () => {
               <button
                 type="submit"
                 style={styles.submitButton}
+                className="submit-btn"
                 disabled={submitting}
               >
-                {submitting ? 'A criar...' : 'Criar Discussão'}
+                {submitting ? (
+                  <>
+                    <div className="spinner small"></div>
+                    A criar...
+                  </>
+                ) : 'Criar Discussão'}
               </button>
             </form>
           </div>
@@ -1079,28 +1251,39 @@ const ChatPage = () => {
       )}
 
       <style>{`
-        @keyframes slideInLeft {
-          from {
-            opacity: 0;
-            transform: translateX(-20px);
-          }
-          to {
-            opacity: 1;
-            transform: translateX(0);
-          }
-        }
-
         @keyframes optimized-float {
           0%, 100% { transform: translateY(0px) rotate(0deg); }
           33% { transform: translateY(-10px) rotate(1deg); }
           66% { transform: translateY(5px) rotate(-1deg); }
         }
 
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+
+        .spinner {
+          width: 20px;
+          height: 20px;
+          border: 2px solid rgba(59, 130, 246, 0.3);
+          border-radius: 50%;
+          border-top-color: #3b82f6;
+          animation: spin 1s linear infinite;
+          margin-right: 8px;
+        }
+
+        .spinner.small {
+          width: 16px;
+          height: 16px;
+          border-width: 2px;
+          margin: 0;
+        }
+
         .hover-card:hover {
-          transform: translateY(-2px);
-          box-shadow: 0 8px 25px rgba(255, 187, 76, 0.3);
-          border-color: rgba(255, 187, 76, 0.5);
-          background: linear-gradient(135deg, rgba(255, 255, 255, 0.18) 0%, rgba(255, 255, 255, 0.08) 100%);
+          transform: translateY(-3px);
+          box-shadow: 0 10px 30px rgba(255, 187, 76, 0.4), 0 4px 15px rgba(255, 187, 76, 0.2);
+          border-color: rgba(255, 187, 76, 0.6);
+          background: linear-gradient(135deg, rgba(255, 255, 255, 0.22) 0%, rgba(255, 255, 255, 0.12) 100%);
         }
 
         .hover-button:hover {
@@ -1109,65 +1292,92 @@ const ChatPage = () => {
           box-shadow: 0 6px 20px rgba(0, 151, 89, 0.5);
         }
 
-        input:focus, textarea:focus, select:focus {
-          border-color: rgba(255, 187, 76, 0.7);
-          box-shadow: 0 0 0 3px rgba(255, 187, 76, 0.15);
-          background: linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0.1) 100%);
+        .discussion-item:hover {
+          background-color: rgba(255, 255, 255, 0.05);
         }
 
-        /* Scrollbar styling */
+        .new-discussion-btn:hover {
+          background-color: #2563eb;
+          transform: translateY(-1px);
+        }
+
+        .action-button:hover {
+          transform: scale(1.1);
+        }
+
+        .delete-btn:hover {
+          background-color: rgba(239, 68, 68, 0.2);
+        }
+
+        .close-btn:hover {
+          background-color: rgba(156, 163, 175, 0.2);
+        }
+
+        .send-btn:hover:not(:disabled) {
+          background-color: #2563eb;
+          transform: scale(1.05);
+        }
+
+        .send-btn:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
+        }
+
+        .submit-btn:hover:not(:disabled) {
+          background-color: #2563eb;
+        }
+
+        .submit-btn:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
+        }
+
+        input:focus, textarea:focus, select:focus {
+          border-color: #3b82f6;
+          box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        /* Custom scrollbar */
         ::-webkit-scrollbar {
-          width: 8px;
+          width: 6px;
         }
 
         ::-webkit-scrollbar-track {
-          background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
-          border-radius: 4px;
+          background: rgba(255, 255, 255, 0.1);
         }
 
         ::-webkit-scrollbar-thumb {
-          background: linear-gradient(135deg, rgba(255, 187, 76, 0.4) 0%, rgba(255, 187, 76, 0.6) 100%);
-          border-radius: 4px;
-          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+          background: rgba(255, 255, 255, 0.3);
+          border-radius: 3px;
         }
 
         ::-webkit-scrollbar-thumb:hover {
-          background: linear-gradient(135deg, rgba(255, 187, 76, 0.6) 0%, rgba(255, 187, 76, 0.8) 100%);
+          background: rgba(255, 255, 255, 0.5);
         }
 
-        /* Panel discussion card selected state */
-        .panel-discussion-selected {
-          background: linear-gradient(135deg, rgba(255, 187, 76, 0.25) 0%, rgba(255, 187, 76, 0.15) 100%);
-          border-color: rgba(255, 187, 76, 0.6);
-          box-shadow: 0 4px 15px rgba(255, 187, 76, 0.3);
+        /* Placeholder styles */
+        ::placeholder {
+          color: #64748b;
         }
 
-        /* Close button hover effects */
-        .close-button:hover {
-          background-color: rgba(244, 67, 54, 0.2);
-          border-color: rgba(244, 67, 54, 0.8);
-          transform: scale(1.1);
-          box-shadow: 0 4px 12px rgba(244, 67, 54, 0.4);
-        }
-
-        /* Send button disabled state */
-        .send-button:disabled {
-          background: linear-gradient(135deg, rgba(0, 151, 89, 0.5) 0%, rgba(0, 179, 102, 0.5) 100%);
-          cursor: not-allowed;
-          transform: none;
-          box-shadow: 0 2px 8px rgba(0, 151, 89, 0.2);
-        }
-
-        /* Chat input placeholder styling */
-        .chat-input::placeholder {
-          color: rgba(255, 255, 255, 0.6);
-          font-style: italic;
-        }
-
-        /* Panel search input placeholder styling */
-        .panel-search-input::placeholder {
-          color: rgba(255, 255, 255, 0.5);
-          font-style: italic;
+        @media (max-width: 768px) {
+          .chatContainer {
+            flex-direction: column;
+            top: 70px !important;
+            height: calc(100vh - 70px) !important;
+          }
+          
+          .sidebar {
+            height: 40vh;
+            min-width: 100%;
+            max-width: 100%;
+            border-right: none;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+          }
+          
+          .chatArea {
+            height: 60vh;
+          }
         }
       `}</style>
     </div>

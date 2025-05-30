@@ -99,4 +99,31 @@ export const addComment = async (req: Request, res: Response, next: NextFunction
   } catch (error) {
     next(error);
   }
+};
+
+export const deleteDiscussion = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const discussionId = parseInt(req.params.id);
+    const userId = (req as any).user.id;
+
+    if (isNaN(discussionId)) {
+      throw new BadRequestError('Invalid discussion ID');
+    }
+
+    // Check if discussion exists and if the user is the author
+    const discussion = await DiscussionModel.getById(discussionId);
+    if (!discussion) {
+      throw new NotFoundError('Discussion not found');
+    }
+
+    if (discussion.author_id !== userId) {
+      throw new BadRequestError('Only the author can delete this discussion');
+    }
+
+    await DiscussionModel.delete(discussionId);
+    
+    res.json({ message: 'Discussion deleted successfully' });
+  } catch (error) {
+    next(error);
+  }
 }; 
