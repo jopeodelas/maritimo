@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { lazy, Suspense } from 'react';
 import ProtectedRoute from './components/ProtectedRoute';
+import ProtectedAdminRoute from './components/ProtectedAdminRoute';
 import { AuthProvider } from './contexts/AuthContext';
 import './styles/fonts.css';
 import './styles/optimizedStyles.css';
@@ -15,6 +16,7 @@ const MainPage = lazy(() => import('./pages/MainPage'));
 const NewsPage = lazy(() => import('./pages/NewsPage'));
 const HistoryPage = lazy(() => import('./pages/HistoryPage'));
 const ChatPage = lazy(() => import('./pages/ChatPage'));
+const AdminPage = lazy(() => import('./pages/AdminPage'));
 
 // Loading fallback component
 const LoadingFallback = () => (
@@ -119,6 +121,14 @@ function App() {
                   <ProtectedRoute>
                     <ChatPage />
                   </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/admin" 
+                element={
+                  <ProtectedAdminRoute>
+                    <AdminPage />
+                  </ProtectedAdminRoute>
                 } 
               />
             </Routes>

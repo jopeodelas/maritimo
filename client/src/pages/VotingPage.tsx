@@ -454,7 +454,7 @@ const VotingPage = () => {
           <p style={styles.playerPosition}>{player.position}</p>
           <div style={styles.playerStats}>
             <div style={styles.voteCount}>
-              👥 {player.vote_count} votes
+               {player.vote_count} votes
             </div>
             <div style={styles.playerNumber}>#{index + 1}</div>
           </div>

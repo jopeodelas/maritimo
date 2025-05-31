@@ -12,7 +12,9 @@ import votesRoutes from './src/routes/votes.routes';
 import transferRoutes from './src/routes/transfer.routes';
 import newsRoutes from './src/routes/news.routes';
 import pollRoutes from './src/routes/poll.routes';
+import customPollsRoutes from './src/routes/custom-polls.routes';
 import discussionsRoutes from './src/routes/discussions.routes';
+import userManagementRoutes from './src/routes/user-management.routes';
 import { errorHandler, notFoundHandler } from './src/middleware/error.middleware';
 
 const app = express();
@@ -73,7 +75,9 @@ app.use('/api/votes', votesRoutes);
 app.use('/api/transfer', transferRoutes);
 app.use('/api/news', newsRoutes);
 app.use('/api/poll', pollRoutes);
+app.use('/api/custom-polls', customPollsRoutes);
 app.use('/api/discussions', discussionsRoutes);
+app.use('/api/admin', userManagementRoutes);
 
 // Error handling
 app.use(notFoundHandler);

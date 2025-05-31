@@ -94,5 +94,66 @@ class UserModel {
             return bcrypt_1.default.compare(password, hashedPassword);
         });
     }
+    static findAll() {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                console.log('UserModel.findAll() - Executing query...');
+                // First, try with is_banned column
+                try {
+                    const result = yield db_1.default.query('SELECT id, username, email, is_admin, is_banned, created_at FROM users ORDER BY created_at DESC');
+                    console.log('Query result with is_banned:', result.rows.length, 'rows returned');
+                    console.log('First row:', result.rows[0]);
+                    return result.rows;
+                }
+                catch (columnError) {
+                    // If is_banned column doesn't exist, try without it
+                    if (columnError.message && columnError.message.includes('is_banned')) {
+                        console.log('is_banned column not found, trying without it...');
+                        const result = yield db_1.default.query('SELECT id, username, email, is_admin, false as is_banned, created_at FROM users ORDER BY created_at DESC');
+                        console.log('Query result without is_banned:', result.rows.length, 'rows returned');
+                        return result.rows;
+                    }
+                    throw columnError;
+                }
+            }
+            catch (error) {
+                console.error('Database error in findAll:', error);
+                throw error;
+            }
+        });
+    }
+    static findBannedUsers() {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const result = yield db_1.default.query('SELECT id, username, email, is_admin, is_banned, created_at FROM users WHERE is_banned = true ORDER BY created_at DESC');
+                return result.rows;
+            }
+            catch (error) {
+                throw error;
+            }
+        });
+    }
+    static banUser(userId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const result = yield db_1.default.query('UPDATE users SET is_banned = true WHERE id = $1 AND is_admin = false RETURNING *', [userId]);
+                return result.rows.length > 0;
+            }
+            catch (error) {
+                throw error;
+            }
+        });
+    }
+    static unbanUser(userId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const result = yield db_1.default.query('UPDATE users SET is_banned = false WHERE id = $1 RETURNING *', [userId]);
+                return result.rows.length > 0;
+            }
+            catch (error) {
+                throw error;
+            }
+        });
+    }
 }
 exports.UserModel = UserModel;

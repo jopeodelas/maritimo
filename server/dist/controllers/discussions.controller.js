@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.addComment = exports.getDiscussionComments = exports.createDiscussion = exports.getDiscussions = void 0;
+exports.deleteDiscussion = exports.addComment = exports.getDiscussionComments = exports.createDiscussion = exports.getDiscussions = void 0;
 const discussion_model_1 = require("../models/discussion.model");
 const comment_model_1 = require("../models/comment.model");
 const errorTypes_1 = require("../utils/errorTypes");
@@ -99,3 +99,26 @@ const addComment = (req, res, next) => __awaiter(void 0, void 0, void 0, functio
     }
 });
 exports.addComment = addComment;
+const deleteDiscussion = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const discussionId = parseInt(req.params.id);
+        const userId = req.user.id;
+        if (isNaN(discussionId)) {
+            throw new errorTypes_1.BadRequestError('Invalid discussion ID');
+        }
+        // Check if discussion exists and if the user is the author
+        const discussion = yield discussion_model_1.DiscussionModel.getById(discussionId);
+        if (!discussion) {
+            throw new errorTypes_1.NotFoundError('Discussion not found');
+        }
+        if (discussion.author_id !== userId) {
+            throw new errorTypes_1.BadRequestError('Only the author can delete this discussion');
+        }
+        yield discussion_model_1.DiscussionModel.delete(discussionId);
+        res.json({ message: 'Discussion deleted successfully' });
+    }
+    catch (error) {
+        next(error);
+    }
+});
+exports.deleteDiscussion = deleteDiscussion;

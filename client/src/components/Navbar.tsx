@@ -6,7 +6,7 @@ import maritimoCrest from '../assets/maritimo-crest.png';
 
 const Navbar = () => {
   const navigate = useNavigate();
-  const { logout } = useAuth();
+  const { logout, user } = useAuth();
 
   const handleLogout = () => {
     logout();
@@ -261,6 +261,22 @@ const Navbar = () => {
           >
             Discussão
           </Link>
+          {user?.is_admin && (
+            <Link
+              to="/admin"
+              style={{
+                ...styles.navLink,
+                background: 'linear-gradient(135deg, #FF6B35 0%, #F7931E 100%)',
+                border: '2px solid #FFD700',
+                boxShadow: '0 0.2vh 0.8vh rgba(255, 107, 53, 0.3)',
+              }}
+              className="hover-nav-link"
+              role="menuitem"
+              aria-label="Ir para painel de administração"
+            >
+              Admin
+            </Link>
+          )}
         </div>
 
         <div style={styles.rightSection}>

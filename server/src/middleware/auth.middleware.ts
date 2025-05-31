@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import config from '../config';
 import { UnauthorizedError } from '../utils/errorTypes';
+import { UserModel } from '../models/user.model';
 
 interface JwtPayload {
   id: number;
@@ -11,12 +12,12 @@ declare global {
   namespace Express {
     interface Request {
       userId: number;
-      user: { id: number };
+      user: { id: number; is_admin?: boolean };
     }
   }
 }
 
-export const auth = (req: Request, res: Response, next: NextFunction) => {
+export const auth = async (req: Request, res: Response, next: NextFunction) => {
     try {
       console.log('Auth middleware - Signed Cookies:', req.signedCookies);
       console.log('Auth middleware - Regular Cookies:', req.cookies);
@@ -31,8 +32,19 @@ export const auth = (req: Request, res: Response, next: NextFunction) => {
   
       console.log('Token found, verifying...');
       const decoded = jwt.verify(token, config.jwtSecret) as JwtPayload;
+      
+      // Check if user exists and is not banned
+      const user = await UserModel.findById(decoded.id);
+      if (!user) {
+        throw new UnauthorizedError('User not found');
+      }
+      
+      if (user.is_banned) {
+        throw new UnauthorizedError('User account has been banned');
+      }
+      
       req.userId = decoded.id;
-      req.user = { id: decoded.id };
+      req.user = { id: decoded.id, is_admin: user.is_admin };
       console.log('Token verified, user ID:', decoded.id);
       next();
     } catch (err) {

@@ -10,6 +10,18 @@ import { transferService } from "../services/transferService";
 import type { TransferRumor, TransferStats } from "../services/transferService";
 import type { Player } from "../types";
 
+interface CustomPoll {
+  id: number;
+  title: string;
+  options: string[];
+  created_by: number;
+  created_at: string;
+  is_active: boolean;
+  votes: number[];
+  total_votes: number;
+  user_voted_option?: number;
+}
+
 const MainPage = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -27,11 +39,16 @@ const MainPage = () => {
   const [pollResults, setPollResults] = useState<{[key: string]: number}>({});
   const [totalPollVotes, setTotalPollVotes] = useState(0);
 
+  // Custom polls states
+  const [customPolls, setCustomPolls] = useState<CustomPoll[]>([]);
+  const [loadingCustomPolls, setLoadingCustomPolls] = useState(false);
+
   useEffect(() => {
     fetchTopVotedPlayers();
     fetchTransferRumors();
     fetchTransferStats();
     checkPollVoteStatus();
+    fetchCustomPolls();
   }, []);
 
   const checkPollVoteStatus = async () => {
@@ -195,6 +212,34 @@ const MainPage = () => {
     if (totalPollVotes === 0) return "0.0";
     // Calculate percentage based on unique voters who chose this position
     return ((votes / totalPollVotes) * 100).toFixed(1);
+  };
+
+  const fetchCustomPolls = async () => {
+    setLoadingCustomPolls(true);
+    try {
+      const response = await api.get('/custom-polls');
+      setCustomPolls(response.data);
+    } catch (error) {
+      console.error("Error fetching custom polls:", error);
+    } finally {
+      setLoadingCustomPolls(false);
+    }
+  };
+
+  const handleCustomPollVote = async (pollId: number, optionIndex: number) => {
+    try {
+      await api.post(`/custom-polls/${pollId}/vote`, { optionIndex });
+      // Refresh custom polls to get updated results
+      await fetchCustomPolls();
+    } catch (error: any) {
+      console.error("Error voting on custom poll:", error);
+      alert(error.response?.data?.message || 'Erro ao votar na poll');
+    }
+  };
+
+  const calculateCustomPollPercentage = (votes: number, totalVotes: number) => {
+    if (totalVotes === 0) return "0.0";
+    return ((votes / totalVotes) * 100).toFixed(1);
   };
 
   const styles = createStyles({
@@ -727,7 +772,102 @@ const MainPage = () => {
     } as any,
   });
 
-
+  // Add custom poll styles to the existing styles object
+  const customPollStyles = {
+    customPollCard: {
+      background: "rgba(255, 193, 7, 0.9)",
+      border: "1px solid rgba(255, 255, 255, 0.2)",
+      borderRadius: "clamp(1rem, 2.5vw, 1.5rem)",
+      padding: "clamp(1.5rem, 3vh, 2rem) clamp(1.25rem, 2.5vw, 1.75rem)",
+      marginBottom: "clamp(1.5rem, 3vh, 2rem)",
+      color: "white",
+      boxShadow: "0 1rem 3rem rgba(255, 193, 7, 0.3)",
+      backdropFilter: "blur(10px)",
+      transition: "all 0.3s ease",
+      position: "relative" as const,
+      overflow: "hidden" as const,
+    },
+    customPollTitle: {
+      fontSize: "clamp(1rem, 2vw, 1.25rem)",
+      fontWeight: "700",
+      marginBottom: "clamp(1.5rem, 2.5vh, 1.75rem)",
+      color: "#1A252F",
+      textShadow: "0 0.125rem 0.25rem rgba(0, 0, 0, 0.2)",
+      lineHeight: "1.1",
+      whiteSpace: "nowrap" as const,
+      overflow: "hidden" as const,
+      textOverflow: "ellipsis" as const,
+    },
+    customPollOptions: {
+      display: "flex",
+      flexDirection: "column" as const,
+      gap: "clamp(0.75rem, 1.5vh, 1rem)",
+      marginBottom: "clamp(1.5rem, 2.5vh, 2rem)",
+      flex: 1,
+    },
+    customPollOption: {
+      background: "rgba(26, 37, 47, 0.8)",
+      border: "2px solid rgba(255, 255, 255, 0.3)",
+      borderRadius: "clamp(0.5rem, 1.5vw, 0.75rem)",
+      padding: "clamp(0.75rem, 1.5vh, 1rem) clamp(1rem, 2vw, 1.25rem)",
+      cursor: "pointer",
+      transition: "all 0.3s ease",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      textAlign: "center" as const,
+    },
+    customPollOptionHover: {
+      background: "rgba(76, 175, 80, 0.9)",
+      borderColor: "#4CAF50",
+      transform: "scale(1.02)",
+      boxShadow: "0 0.5rem 1rem rgba(76, 175, 80, 0.4)",
+    },
+    customPollOptionText: {
+      fontSize: "clamp(0.875rem, 1.8vw, 1rem)",
+      fontWeight: "600",
+      color: "white",
+      margin: 0,
+      flex: 1,
+    },
+    customPollResults: {
+      display: "flex",
+      flexDirection: "column" as const,
+      gap: "clamp(0.75rem, 1.5vh, 1rem)",
+      flex: 1,
+      marginBottom: "clamp(1.5rem, 2.5vh, 2rem)",
+    },
+    customPollResultItem: {
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center",
+      background: "rgba(26, 37, 47, 0.8)",
+      borderRadius: "clamp(0.5rem, 1vw, 0.75rem)",
+      padding: "clamp(0.75rem, 1.5vh, 1rem) clamp(1rem, 2vw, 1.25rem)",
+      border: "1px solid rgba(255, 255, 255, 0.2)",
+    },
+    customPollResultText: {
+      display: "flex",
+      alignItems: "center",
+      fontSize: "clamp(0.875rem, 2vw, 1rem)",
+      fontWeight: "600",
+      color: "white",
+      flex: 1,
+    },
+    customPollResultPercentage: {
+      fontSize: "clamp(1rem, 2.5vw, 1.25rem)",
+      fontWeight: "700",
+      color: "#4CAF50",
+      flexShrink: 0,
+    },
+    customPollInfo: {
+      fontSize: "clamp(0.75rem, 1.6vw, 0.875rem)",
+      color: "#1A252F",
+      marginTop: "clamp(1rem, 2vh, 1.25rem)",
+      opacity: 0.8,
+      textAlign: "center" as const,
+    },
+  };
 
   if (loading) {
     return (
@@ -988,6 +1128,58 @@ const MainPage = () => {
                 </div>
               )}
             </div>
+
+            {/* Custom Polls Section */}
+            {customPolls.map((poll) => (
+              <div key={poll.id} style={customPollStyles.customPollCard}>
+                <h3 style={customPollStyles.customPollTitle}>
+                  {poll.title}
+                </h3>
+                
+                {poll.user_voted_option !== undefined ? (
+                  /* Show results if user has voted */
+                  <div>
+                    <div style={customPollStyles.customPollResults}>
+                      {poll.options.map((option, index) => (
+                        <div key={index} style={customPollStyles.customPollResultItem}>
+                          <div style={customPollStyles.customPollResultText}>
+                            <span>{option}</span>
+                            {poll.user_voted_option === index && " ✓"}
+                          </div>
+                          <span style={customPollStyles.customPollResultPercentage}>
+                            {calculateCustomPollPercentage(poll.votes[index] || 0, poll.total_votes)}%
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                    <p style={customPollStyles.customPollInfo}>
+                      Total de votos: {poll.total_votes}
+                    </p>
+                  </div>
+                ) : (
+                  /* Show voting options if user hasn't voted */
+                  <div>
+                    <div style={customPollStyles.customPollOptions}>
+                      {poll.options.map((option, index) => (
+                        <div
+                          key={index}
+                          style={customPollStyles.customPollOption}
+                          onClick={() => handleCustomPollVote(poll.id, index)}
+                          className="hover-position"
+                        >
+                          <span style={customPollStyles.customPollOptionText}>
+                            {option}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                    <p style={customPollStyles.customPollInfo}>
+                      Clique numa opção para votar
+                    </p>
+                  </div>
+                )}
+              </div>
+            ))}
 
             {/* Stats Section */}
             <div style={styles.statsCard}>

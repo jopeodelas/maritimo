@@ -12,4 +12,6 @@ router.post('/', auth_middleware_1.auth, discussions_controller_1.createDiscussi
 router.get('/:id/comments', discussions_controller_1.getDiscussionComments);
 // Add a comment to a discussion (requires authentication)
 router.post('/:id/comments', auth_middleware_1.auth, discussions_controller_1.addComment);
+// Delete a discussion (requires authentication and ownership)
+router.delete('/:id', auth_middleware_1.auth, discussions_controller_1.deleteDiscussion);
 exports.default = router;

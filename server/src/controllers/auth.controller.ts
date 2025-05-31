@@ -69,6 +69,11 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
       throw new UnauthorizedError('Invalid credentials');
     }
 
+    // Check if user is banned
+    if (user.is_banned) {
+      throw new UnauthorizedError('A sua conta foi banida por um administrador do CS Marítimo for fans. Se acredita que isto foi um erro, entre em contacto connosco.');
+    }
+
     // Create JWT
     const token = jwt.sign(
       { id: user.id },
@@ -180,11 +185,19 @@ export const handleGoogleCallback = async (req: Request, res: Response, next: Ne
             googleId
           );
           console.log('New user created with ID:', user.id);
-        } else if (!user.google_id) {
-          // Update existing user with Google ID if they don't have one
-          console.log('Updating existing user with Google ID...');
-          user = await UserModel.updateGoogleId(user.id, googleId!);
-          console.log('User updated with Google ID');
+        } else {
+          // Check if existing user is banned
+          if (user.is_banned) {
+            console.log('User is banned, blocking Google login');
+            throw new UnauthorizedError('A sua conta foi banida por um administrador do CS Marítimo for fans. Se acredita que isto foi um erro, entre em contacto connosco.');
+          }
+          
+          if (!user.google_id) {
+            // Update existing user with Google ID if they don't have one
+            console.log('Updating existing user with Google ID...');
+            user = await UserModel.updateGoogleId(user.id, googleId!);
+            console.log('User updated with Google ID');
+          }
         }
         
         // Create JWT

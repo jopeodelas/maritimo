@@ -6,6 +6,8 @@ interface User {
   id: string;
   username: string;
   email: string;
+  is_admin?: boolean;
+  is_banned: boolean;
 }
 
 interface AuthContextType {

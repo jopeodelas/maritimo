@@ -117,5 +117,31 @@ class DiscussionModel {
             }
         });
     }
+    static delete(id) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                // Start a transaction to ensure data consistency
+                yield db_1.default.query('BEGIN');
+                // Delete all comments for this discussion first
+                yield db_1.default.query(`
+        DELETE FROM comments WHERE discussion_id = $1
+      `, [id]);
+                // Delete the discussion
+                const result = yield db_1.default.query(`
+        DELETE FROM discussions WHERE id = $1
+      `, [id]);
+                // Commit the transaction
+                yield db_1.default.query('COMMIT');
+                if (result.rowCount === 0) {
+                    throw new Error('Discussion not found');
+                }
+            }
+            catch (error) {
+                // Rollback the transaction on error
+                yield db_1.default.query('ROLLBACK');
+                throw error;
+            }
+        });
+    }
 }
 exports.DiscussionModel = DiscussionModel;
