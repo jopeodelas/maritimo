@@ -17,6 +17,7 @@ const NewsPage = lazy(() => import('./pages/NewsPage'));
 const HistoryPage = lazy(() => import('./pages/HistoryPage'));
 const ChatPage = lazy(() => import('./pages/ChatPage'));
 const AdminPage = lazy(() => import('./pages/AdminPage'));
+const MaritodlePage = lazy(() => import('./pages/MaritodlePage'));
 
 // Loading fallback component
 const LoadingFallback = () => (
@@ -129,6 +130,14 @@ function App() {
                   <ProtectedAdminRoute>
                     <AdminPage />
                   </ProtectedAdminRoute>
+                } 
+              />
+              <Route 
+                path="/maritodle" 
+                element={
+                  <ProtectedRoute>
+                    <MaritodlePage />
+                  </ProtectedRoute>
                 } 
               />
             </Routes>

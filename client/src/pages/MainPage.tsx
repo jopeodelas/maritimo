@@ -621,6 +621,83 @@ const MainPage = () => {
       backdropFilter: "blur(10px)",
       textAlign: "center",
     },
+    gameCard: {
+      background: "rgba(76, 175, 80, 0.9)",
+      border: "1px solid rgba(255, 255, 255, 0.2)",
+      borderRadius: "clamp(1rem, 2.5vw, 1.5rem)",
+      padding: "clamp(1.5rem, 3vh, 2rem) clamp(1.25rem, 2.5vw, 1.75rem)",
+      marginBottom: "clamp(1.5rem, 3vh, 2rem)",
+      color: "white",
+      boxShadow: "0 1rem 3rem rgba(76, 175, 80, 0.3)",
+      backdropFilter: "blur(10px)",
+      position: "relative",
+      overflow: "hidden",
+    },
+    gameHeader: {
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "space-between",
+      marginBottom: "clamp(1rem, 2vh, 1.25rem)",
+    },
+    gameTitle: {
+      fontSize: "clamp(1.25rem, 2.5vw, 1.5rem)",
+      fontWeight: "700",
+      margin: 0,
+      color: "white",
+      textShadow: "0 0.125rem 0.25rem rgba(0, 0, 0, 0.2)",
+    },
+    gameBadge: {
+      background: "linear-gradient(135deg, #FFD700 0%, #FFA000 100%)",
+      color: "#1A252F",
+      padding: "clamp(0.25rem, 0.5vh, 0.375rem) clamp(0.5rem, 1vw, 0.75rem)",
+      borderRadius: "clamp(0.375rem, 1vw, 0.5rem)",
+      fontSize: "clamp(0.75rem, 1.6vw, 0.875rem)",
+      fontWeight: "700",
+      textTransform: "uppercase",
+      letterSpacing: "0.05em",
+      boxShadow: "0 0.25rem 0.75rem rgba(255, 215, 0, 0.4)",
+    },
+    gameDescription: {
+      fontSize: "clamp(0.875rem, 1.8vw, 1rem)",
+      lineHeight: "1.4",
+      margin: "0 0 clamp(1.25rem, 2.5vh, 1.5rem) 0",
+      color: "rgba(255, 255, 255, 0.9)",
+    },
+    gameFeatures: {
+      display: "flex",
+      flexDirection: "column",
+      gap: "clamp(0.5rem, 1vh, 0.75rem)",
+      marginBottom: "clamp(1.5rem, 3vh, 2rem)",
+    },
+    gameFeature: {
+      display: "flex",
+      alignItems: "center",
+      gap: "clamp(0.5rem, 1vw, 0.75rem)",
+    },
+    gameFeatureIcon: {
+      fontSize: "clamp(1rem, 2vw, 1.25rem)",
+      flexShrink: 0,
+    },
+    gameFeatureText: {
+      fontSize: "clamp(0.8rem, 1.7vw, 0.925rem)",
+      color: "rgba(255, 255, 255, 0.9)",
+      fontWeight: "500",
+    },
+    gameButton: {
+      background: "linear-gradient(135deg, #FFD700 0%, #FFA000 100%)",
+      color: "#1A252F",
+      border: "none",
+      padding: "clamp(1rem, 2vh, 1.25rem) clamp(2rem, 4vw, 2.5rem)",
+      borderRadius: "clamp(0.75rem, 2vw, 1rem)",
+      fontSize: "clamp(1rem, 2.2vw, 1.125rem)",
+      fontWeight: "700",
+      cursor: "pointer",
+      transition: "all 0.3s ease",
+      textTransform: "uppercase",
+      letterSpacing: "0.05em",
+      boxShadow: "0 0.5rem 1.5rem rgba(255, 215, 0, 0.4)",
+      width: "100%",
+    },
     pollCard: {
       background: "rgba(255, 193, 7, 0.9)",
       border: "1px solid rgba(255, 255, 255, 0.2)",
@@ -1180,6 +1257,39 @@ const MainPage = () => {
                 )}
               </div>
             ))}
+
+            {/* Maritodle Game Section */}
+            <div style={styles.gameCard}>
+              <div style={styles.gameHeader}>
+                <h3 style={styles.gameTitle}>Maritodle</h3>
+                <div style={styles.gameBadge}>Novo!</div>
+              </div>
+              <p style={styles.gameDescription}>
+                Adivinha o jogador ou treinador do CS Marítimo! 
+                Um jogo inspirado no Wordle.
+              </p>
+              <div style={styles.gameFeatures}>
+                <div style={styles.gameFeature}>
+                  <span style={styles.gameFeatureIcon}>•</span>
+                  <span style={styles.gameFeatureText}>Tentativas ilimitadas</span>
+                </div>
+                <div style={styles.gameFeature}>
+                  <span style={styles.gameFeatureIcon}>•</span>
+                  <span style={styles.gameFeatureText}>Pistas após 6 e 9 tentativas</span>
+                </div>
+                <div style={styles.gameFeature}>
+                  <span style={styles.gameFeatureIcon}>•</span>
+                  <span style={styles.gameFeatureText}>9 atributos para comparar</span>
+                </div>
+              </div>
+              <button
+                style={styles.gameButton}
+                className="hover-button"
+                onClick={() => navigate("/maritodle")}
+              >
+                Jogar Maritodle
+              </button>
+            </div>
 
             {/* Stats Section */}
             <div style={styles.statsCard}>

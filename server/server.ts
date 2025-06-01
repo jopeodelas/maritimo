@@ -15,6 +15,7 @@ import pollRoutes from './src/routes/poll.routes';
 import customPollsRoutes from './src/routes/custom-polls.routes';
 import discussionsRoutes from './src/routes/discussions.routes';
 import userManagementRoutes from './src/routes/user-management.routes';
+import maritodleRoutes from './src/routes/maritodle.routes';
 import { errorHandler, notFoundHandler } from './src/middleware/error.middleware';
 
 const app = express();
@@ -78,6 +79,7 @@ app.use('/api/poll', pollRoutes);
 app.use('/api/custom-polls', customPollsRoutes);
 app.use('/api/discussions', discussionsRoutes);
 app.use('/api/admin', userManagementRoutes);
+app.use('/api/maritodle', maritodleRoutes);
 
 // Error handling
 app.use(notFoundHandler);
