@@ -337,17 +337,77 @@ export const desistir = async (req: Request, res: Response, next: NextFunction) 
     const userId = req.userId;
     
     if (!jogosAtivos[userId]) {
-      throw new BadRequestError('Nenhum jogo ativo');
+      return res.status(400).json({ erro: 'Nenhum jogo ativo encontrado' });
     }
-    
+
     const jogo = jogosAtivos[userId];
     jogo.finalizado = true;
-    
+
     res.json({
-      feedback: null,
+      feedback: [],
       venceu: false,
       perdeu: true,
-      segredo_completo: jogo.segredo
+      segredo_completo: jogo.segredo,
+      estatisticas: { tentativas: jogo.tentativas }
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const insertTrainers = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const trainers = [
+      ['Manuel Ventura', 'Masculino', 'Treinador', 180, 'Treinador', 73, 'Portugal', '{}', 2003, 2004],
+      ['Mariano Barreto', 'Masculino', 'Treinador', null, 'Treinador', 68, 'Portugal', '{}', 2004, 2005],
+      ['Juca', 'Masculino', 'Treinador', null, 'Treinador', null, 'Portugal', '{}', 2005, 2005],
+      ['João Abel', 'Masculino', 'Treinador', null, 'Treinador', null, 'Portugal', '{}', 2005, 2005],
+      ['Paulo Bonamigo', 'Masculino', 'Treinador', null, 'Treinador', null, 'Brasil', '{}', 2005, 2006],
+      ['Ulisses Morais', 'Masculino', 'Treinador', null, 'Treinador', null, 'Portugal', '{}', 2006, 2007],
+      ['Alberto Pazos', 'Masculino', 'Treinador', null, 'Treinador', null, 'Portugal', '{}', 2007, 2007],
+      ['Sebastião Lazaroni', 'Masculino', 'Treinador', null, 'Treinador', null, 'Brasil', '{}', 2007, 2008],
+      ['Lori Sandri', 'Masculino', 'Treinador', null, 'Treinador', null, 'Brasil', '{}', 2008, 2009],
+      ['Carlos Carvalhal', 'Masculino', 'Treinador', 178, 'Treinador', 59, 'Portugal', '{}', 2009, 2009],
+      ['Mitchell van der Gaag', 'Masculino', 'Treinador', 183, 'Treinador', 54, 'Países Baixos', '{}', 2009, 2010],
+      ['Pedro Martins', 'Masculino', 'Treinador', 180, 'Treinador', 47, 'Portugal', '{}', 2010, 2014],
+      ['Leonel Pontes', 'Masculino', 'Treinador', null, 'Treinador', 48, 'Portugal', '{}', 2014, 2015],
+      ['Ivo Vieira', 'Masculino', 'Treinador', null, 'Treinador', 49, 'Portugal', '{}', 2015, 2016],
+      ['Nelo Vingada', 'Masculino', 'Treinador', null, 'Treinador', 64, 'Portugal', '{}', 2016, 2016],
+      ['Paulo César', 'Masculino', 'Treinador', null, 'Treinador', 57, 'Brasil', '{}', 2016, 2016],
+      ['Daniel Ramos', 'Masculino', 'Treinador', null, 'Treinador', 51, 'Portugal', '{}', 2016, 2018],
+      ['Cláudio Braga', 'Masculino', 'Treinador', null, 'Treinador', 57, 'Portugal', '{}', 2018, 2018],
+      ['Petit', 'Masculino', 'MDC', 180, 'Treinador', 47, 'Portugal', '{}', 2018, 2019],
+      ['Nuno Manta Santos', 'Masculino', 'Treinador', null, 'Treinador', 53, 'Portugal', '{}', 2019, 2019],
+      ['José Manuel Gomes', 'Masculino', 'Treinador', null, 'Treinador', 47, 'Portugal', '{}', 2019, 2020],
+      ['Lito Vidigal', 'Masculino', 'DC', 178, 'Treinador', 55, 'Portugal', '{}', 2020, 2020],
+      ['Milton Mendes', 'Masculino', 'Treinador', null, 'Treinador', 61, 'Brasil', '{}', 2020, 2021],
+      ['Julio Velázquez', 'Masculino', 'Treinador', null, 'Treinador', 39, 'Espanha', '{}', 2021, 2021],
+      ['Vasco Seabra', 'Masculino', 'Treinador', null, 'Treinador', 36, 'Portugal', '{}', 2021, 2022],
+      ['João Henriques', 'Masculino', 'Treinador', null, 'Treinador', 44, 'Portugal', '{}', 2022, 2022],
+      ['Tulipa', 'Masculino', 'Treinador', 172, 'Treinador', 52, 'Portugal', '{}', 2023, 2023],
+      ['Fábio Pereira', 'Masculino', 'Treinador', null, 'Treinador', 39, 'Portugal', '{}', 2023, 2024],
+      ['Silas', 'Masculino', 'MDC', 176, 'Treinador', 48, 'Portugal', '{}', 2024, 2024],
+      ['Rui Duarte', 'Masculino', 'Treinador', 182, 'Treinador', 46, 'Portugal', '{}', 2024, 2025]
+    ];
+
+    let insertedCount = 0;
+    
+    for (const trainer of trainers) {
+      try {
+        await pool.query(`
+          INSERT INTO maritodle_players (nome, sexo, posicao_principal, altura_cm, papel, idade, nacionalidade, trofeus, ano_entrada, ano_saida) 
+          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+          ON CONFLICT (nome) DO NOTHING
+        `, trainer);
+        insertedCount++;
+      } catch (error) {
+        console.log(`Erro ao inserir ${trainer[0]}:`, (error as Error).message);
+      }
+    }
+
+    res.json({ 
+      message: `${insertedCount} treinadores inseridos com sucesso!`,
+      total: trainers.length 
     });
   } catch (error) {
     next(error);

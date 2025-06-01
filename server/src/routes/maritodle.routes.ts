@@ -4,7 +4,8 @@ import {
   getNomes,
   novoJogo,
   submeterPalpite,
-  desistir
+  desistir,
+  insertTrainers
 } from '../controllers/maritodle.controller';
 
 const router = Router();
@@ -23,5 +24,8 @@ router.post('/palpite', submeterPalpite);
 
 // POST /api/maritodle/desistir - Desistir do jogo
 router.post('/desistir', desistir);
+
+// POST /api/maritodle/insert-trainers - Inserir treinadores
+router.post('/insert-trainers', insertTrainers);
 
 export default router; 
