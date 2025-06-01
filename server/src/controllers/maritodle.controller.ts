@@ -52,9 +52,9 @@ function compararListas(lista1: string[], lista2: string[]) {
 function gerarFeedback(palpite: any, segredo: any) {
   const feedback = [];
   
-  // 1. Sexo
+  // 1. Jogos (anos no Marítimo) - anteriormente "Sexo"
   feedback.push({
-    coluna: 'sexo',
+    coluna: 'jogos',
     icone: palpite.sexo === segredo.sexo ? 'verde' : 'vermelho'
   });
   
@@ -104,24 +104,24 @@ function gerarFeedback(palpite: any, segredo: any) {
     icone: palpite.nacionalidade === segredo.nacionalidade ? 'verde' : 'vermelho'
   });
   
-  // 7. Troféus
-  let trofeusItem: any = {
-    coluna: 'trofeus'
+  // 7. Contribuições (anteriormente "Troféus")
+  let contribuicoesItem: any = {
+    coluna: 'contribuicoes'
   };
   
   if (segredo.trofeus.length === 0) {
-    trofeusItem.icone = 'x-branco';
-    trofeusItem.correto = true;
+    contribuicoesItem.icone = 'x-branco';
+    contribuicoesItem.correto = true;
   } else {
     const intersecao = palpite.trofeus.filter((t: string) => segredo.trofeus.includes(t));
     if (intersecao.length > 0) {
-      trofeusItem.icone = 'verde';
-      trofeusItem.trofeus_match = intersecao;
+      contribuicoesItem.icone = 'verde';
+      contribuicoesItem.trofeus_match = intersecao;
     } else {
-      trofeusItem.icone = 'x-vermelho';
+      contribuicoesItem.icone = 'x-vermelho';
     }
   }
-  feedback.push(trofeusItem);
+  feedback.push(contribuicoesItem);
   
   // 8. Período (combinando ano_entrada e ano_saida)
   let periodoIcone;
@@ -145,7 +145,7 @@ function gerarFeedback(palpite: any, segredo: any) {
 function verificarVitoria(feedback: any[]) {
   return feedback.every(f => 
     f.icone === 'verde' || 
-    (f.coluna === 'trofeus' && f.icone === 'x-branco' && f.correto)
+    (f.coluna === 'contribuicoes' && f.icone === 'x-branco' && f.correto)
   );
 }
 
@@ -180,19 +180,54 @@ async function buscarJogadoresMaritimo(): Promise<MaritodlePlayer[]> {
       FROM maritodle_players 
       ORDER BY nome
     `);
+
+    // Verificar se treinadores também foram jogadores
+    const verificarSeJogador = async (nomeTrainador: string): Promise<boolean> => {
+      // Lista de treinadores que também foram jogadores no Marítimo
+      const treinadoresQueForamJogadores = [
+        'Petit', 'Pedro Martins', 'José Gomes', 'Lito Vidigal', 'Silas'
+      ];
+      
+      return treinadoresQueForamJogadores.includes(nomeTrainador);
+    };
     
     // Converter os dados da base para o formato esperado
-    const jogadores: MaritodlePlayer[] = result.rows.map(row => ({
-      nome: row.nome,
-      sexo: row.sexo,
-      posicoes: [row.posicao_principal], // Por enquanto apenas a posição principal
-      papeis: [row.papel],
-      altura_cm: row.altura_cm,
-      idade: row.idade,
-      nacionalidade: row.nacionalidade,
-      trofeus: Array.isArray(row.trofeus) ? row.trofeus : [],
-      ano_entrada: row.ano_entrada,
-      ano_saida: row.ano_saida
+    const jogadores: MaritodlePlayer[] = await Promise.all(result.rows.map(async row => {
+      // Determinar posição baseada no papel
+      let posicoes = [row.posicao_principal];
+      if (row.papel === 'Treinador') {
+        posicoes = ['X']; // Treinadores têm posição X
+      }
+      
+      // Determinar papel baseado no histórico
+      let papeis = [row.papel];
+      if (row.papel === 'Treinador') {
+        const foiJogador = await verificarSeJogador(row.nome);
+        if (foiJogador) {
+          papeis = ['Treinador/Jogador'];
+        }
+      }
+      
+      // Usar o campo "sexo" diretamente da base de dados (que agora contém o número correto de jogos)
+      let jogosInfo = row.sexo; // Campo "sexo" contém agora "X jogos" ou "N/A jogos" para treinadores
+      
+      if (row.papel === 'Treinador' && (row.sexo === 'Masculino' || row.sexo === 'Feminino')) {
+        // Se for treinador e ainda tiver valores antigos de sexo, usar "N/A jogos"
+        jogosInfo = 'N/A jogos';
+      }
+      
+      return {
+        nome: row.nome,
+        sexo: jogosInfo, // Usar diretamente o valor da base de dados
+        posicoes: posicoes,
+        papeis: papeis,
+        altura_cm: row.altura_cm,
+        idade: row.idade,
+        nacionalidade: row.nacionalidade,
+        trofeus: Array.isArray(row.trofeus) ? row.trofeus : [], // Usar contribuições reais da BD
+        ano_entrada: row.ano_entrada,
+        ano_saida: row.ano_saida
+      };
     }));
 
     console.log(`✅ Carregados ${jogadores.length} jogadores da base de dados maritodle_players`);

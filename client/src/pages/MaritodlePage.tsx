@@ -151,12 +151,34 @@ const MaritodlePage = () => {
     };
   }, []);
 
+  // Função para normalizar texto removendo acentos
+  const normalizarTexto = (texto: string): string => {
+    return texto
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .trim();
+  };
+
+  // Função para verificar se um nome contém a busca
+  const nomeContemBusca = (nome: string, busca: string): boolean => {
+    const nomeNormalizado = normalizarTexto(nome);
+    const buscaNormalizada = normalizarTexto(busca);
+    
+    // Dividir o nome em palavras para permitir busca por segundo nome
+    const palavrasNome = nomeNormalizado.split(' ');
+    
+    // Verificar se alguma palavra do nome começa com a busca
+    return palavrasNome.some(palavra => palavra.startsWith(buscaNormalizada)) ||
+           nomeNormalizado.includes(buscaNormalizada);
+  };
+
   useEffect(() => {
     if (inputValue) {
       const jogadoresTentados = tentativas.map(t => t.nome);
       const filtered = nomes
         .filter(nome => !jogadoresTentados.includes(nome))
-        .filter(nome => nome.toLowerCase().startsWith(inputValue.toLowerCase()))
+        .filter(nome => nomeContemBusca(nome, inputValue))
         .slice(0, 5);
       setFilteredNomes(filtered);
       setShowSuggestions(filtered.length > 0);
@@ -966,8 +988,8 @@ const MaritodlePage = () => {
   });
 
   const colunas = [
-    'Nome', 'Sexo', 'Posições', 'Altura', 'Papéis', 'Idade', 
-    'Nacionalidade', 'Troféus', 'Período'
+    'Nome', 'Jogos', 'Posições', 'Altura', 'Papéis', 'Idade', 
+    'Nacionalidade', 'Contribuições', 'Período'
   ];
 
   const renderFeedbackIndicator = (display: any) => {
@@ -1048,7 +1070,7 @@ const MaritodlePage = () => {
     // Determinar o texto baseado EXCLUSIVAMENTE na coluna, ignorando o feedback.coluna
     let texto = '';
     switch (coluna) {
-      case 'Sexo':
+      case 'Jogos':
         texto = palpite?.sexo || 'N/A';
         break;
       case 'Posições':
@@ -1066,14 +1088,14 @@ const MaritodlePage = () => {
       case 'Nacionalidade':
         texto = palpite?.nacionalidade || 'N/A';
         break;
-      case 'Troféus':
-        // Para troféus, verificar se há matches específicos no feedback
+      case 'Contribuições':
+        // SEMPRE mostrar o número de contribuições, NUNCA mostrar X
         if (feedback.trofeus_match && feedback.trofeus_match.length > 0) {
           texto = feedback.trofeus_match.join(', ');
         } else if (palpite?.trofeus?.length > 0) {
           texto = palpite.trofeus.join(', ');
         } else {
-          texto = 'Nenhum';
+          texto = '0 contribuições'; // Mostrar "0 contribuições" em vez de "Nenhuma"
         }
         break;
       case 'Período':
@@ -1083,25 +1105,6 @@ const MaritodlePage = () => {
         break;
       default:
         texto = 'N/A';
-    }
-
-    // Para troféus, mostrar X se o display é x
-    if (coluna === 'Troféus' && display.type === 'x') {
-      const backgroundColor = feedback.icone === 'x-branco' ? '#4CAF50' : '#F44336';
-      return (
-        <div 
-          style={{
-            ...styles.feedbackSquare,
-            backgroundColor: backgroundColor,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: 'white'
-          }}
-        >
-          X
-        </div>
-      );
     }
 
     // Para setas numéricas
@@ -1121,12 +1124,35 @@ const MaritodlePage = () => {
       );
     }
 
-    // Para quadrados normais com texto
+    // Tratamento especial para "treinador/jogador" no campo Papéis
+    if (coluna === 'Papéis' && texto === 'treinador/jogador') {
+      return (
+        <div 
+          style={{
+            ...styles.feedbackSquare,
+            backgroundColor: display.color,
+            color: 'white',
+            fontSize: '0.7rem',
+            flexDirection: 'column',
+            justifyContent: 'center',
+            gap: '2px',
+            lineHeight: '1'
+          }}
+        >
+          <div>treinador</div>
+          <div>jogador</div>
+        </div>
+      );
+    }
+
+    // Para quadrados normais com texto - padronizar tamanho da fonte
     return (
       <div 
         style={{
           ...styles.feedbackSquare,
-          backgroundColor: display.color
+          backgroundColor: display.color,
+          color: 'white',
+          fontSize: '0.8rem' // Tamanho padronizado para todos os campos
         }}
       >
         {texto}
@@ -1250,8 +1276,8 @@ const MaritodlePage = () => {
                   <tr key={index} style={styles.attemptRow}>
                     <td style={{...styles.td, ...styles.playerName}}>{tentativa.nome}</td>
                     {tentativa.feedback.map((feedback, feedbackIndex) => {
-                      // Mapear diretamente pelo índice - feedback[0] = Sexo, feedback[1] = Posições, etc.
-                      const colunasData = ['Sexo', 'Posições', 'Altura', 'Papéis', 'Idade', 'Nacionalidade', 'Troféus', 'Período'];
+                      // Mapear diretamente pelo índice - feedback[0] = Jogos, feedback[1] = Posições, etc.
+                      const colunasData = ['Jogos', 'Posições', 'Altura', 'Papéis', 'Idade', 'Nacionalidade', 'Contribuições', 'Período'];
                       const coluna = colunasData[feedbackIndex];
                       
                       return (
@@ -1319,7 +1345,7 @@ const MaritodlePage = () => {
             </div>
             <div style={styles.legendItem}>
               {renderLegendIndicator('x', '#4CAF50')}
-              <span>X Verde: Sem troféus (correto) | X Vermelho: Troféus não coincidem</span>
+              <span>X Verde: Sem contribuições (correto) | X Vermelho: Contribuições não coincidem</span>
             </div>
           </div>
         </div>
