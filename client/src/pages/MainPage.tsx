@@ -351,6 +351,11 @@ const MainPage = () => {
       paddingBottom: "clamp(1rem, 2vh, 1.5rem)",
       position: "relative",
     },
+    sectionHeaderLeft: {
+      display: "flex",
+      flexDirection: "column",
+      gap: "clamp(0.5rem, 1vh, 0.75rem)",
+    },
     sectionTitle: {
       fontSize: "clamp(1.5rem, 3.5vw, 2rem)",
       fontWeight: "700",
@@ -367,6 +372,42 @@ const MainPage = () => {
       height: "3px",
       background: "linear-gradient(90deg, #4CAF50 0%, #FFD700 50%, #F44336 100%)",
       borderRadius: "2px",
+    },
+    totalVotesDisplay: {
+      display: "flex",
+      alignItems: "center",
+      gap: "0.5rem",
+    },
+    totalVotesLabel: {
+      fontSize: "clamp(0.875rem, 2vw, 0.975rem)",
+      fontWeight: "500",
+      color: "#B0BEC5",
+    },
+    totalVotesValue: {
+      fontSize: "clamp(1.125rem, 2.75vw, 1.375rem)",
+      fontWeight: "700",
+      color: "#FFD700",
+      textShadow: "0 0.125rem 0.25rem rgba(0, 0, 0, 0.2)",
+    },
+    transferStatsDisplay: {
+      display: "flex",
+      flexDirection: "column",
+      gap: "0.5rem",
+    },
+    transferStat: {
+      display: "flex",
+      alignItems: "center",
+      gap: "0.5rem",
+    },
+    transferStatLabel: {
+      fontSize: "clamp(0.75rem, 1.8vw, 0.875rem)",
+      fontWeight: "500",
+      color: "#B0BEC5",
+    },
+    transferStatValue: {
+      fontSize: "clamp(0.875rem, 2vw, 1rem)",
+      fontWeight: "700",
+      color: "#4CAF50",
     },
     playersGrid: {
       display: "grid",
@@ -980,9 +1021,15 @@ const MainPage = () => {
             {/* Top Voted Players Section */}
             <div style={styles.section}>
               <div style={styles.sectionHeader}>
-                <h2 style={styles.sectionTitle}>
-                  Jogadores Mais Votados para Sair
-                </h2>
+                <div style={styles.sectionHeaderLeft}>
+                  <h2 style={styles.sectionTitle}>
+                    Jogadores Mais Votados para Sair
+                  </h2>
+                  <div style={styles.totalVotesDisplay}>
+                    <span style={styles.totalVotesLabel}>Total de Votos:</span>
+                    <span style={styles.totalVotesValue}>{totalVotes.toLocaleString()}</span>
+                  </div>
+                </div>
                 <div style={styles.sectionTitleUnderline}></div>
               </div>
 
@@ -1033,9 +1080,23 @@ const MainPage = () => {
             {/* Transfer Rumors Section */}
             <div style={styles.section}>
               <div style={styles.sectionHeader}>
-                <h2 style={styles.sectionTitle}>
-                  Rumores de Transferências
-                </h2>
+                <div style={styles.sectionHeaderLeft}>
+                  <h2 style={styles.sectionTitle}>
+                    Rumores de Transferências
+                  </h2>
+                  <div style={styles.transferStatsDisplay}>
+                    <div style={styles.transferStat}>
+                      <span style={styles.transferStatLabel}>Transferências Ativas:</span>
+                      <span style={styles.transferStatValue}>{transferRumors.length}</span>
+                    </div>
+                    {transferStats && (
+                      <div style={styles.transferStat}>
+                        <span style={styles.transferStatLabel}>Confiabilidade Média:</span>
+                        <span style={styles.transferStatValue}>{transferStats.averageReliability}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
                 <button
                   style={styles.refreshButton}
                   className="hover-refresh"
@@ -1136,6 +1197,39 @@ const MainPage = () => {
 
           {/* Sidebar */}
           <div style={styles.sidebar}>
+            {/* Maritodle Game Section */}
+            <div style={styles.gameCard}>
+              <div style={styles.gameHeader}>
+                <h3 style={styles.gameTitle}>Maritodle</h3>
+                <div style={styles.gameBadge}>Novo!</div>
+              </div>
+              <p style={styles.gameDescription}>
+                Adivinha o jogador ou treinador do CS Marítimo! 
+                Um jogo inspirado no Wordle.
+              </p>
+              <div style={styles.gameFeatures}>
+                <div style={styles.gameFeature}>
+                  <span style={styles.gameFeatureIcon}>•</span>
+                  <span style={styles.gameFeatureText}>Tentativas ilimitadas</span>
+                </div>
+                <div style={styles.gameFeature}>
+                  <span style={styles.gameFeatureIcon}>•</span>
+                  <span style={styles.gameFeatureText}>Pistas após 6 e 9 tentativas</span>
+                </div>
+                <div style={styles.gameFeature}>
+                  <span style={styles.gameFeatureIcon}>•</span>
+                  <span style={styles.gameFeatureText}>9 atributos para comparar</span>
+                </div>
+              </div>
+              <button
+                style={styles.gameButton}
+                className="hover-button"
+                onClick={() => navigate("/maritodle")}
+              >
+                Jogar Maritodle
+              </button>
+            </div>
+
             {/* Poll Section */}
             <div style={styles.pollCard}>
               {!hasVoted ? (
@@ -1257,82 +1351,6 @@ const MainPage = () => {
                 )}
               </div>
             ))}
-
-            {/* Maritodle Game Section */}
-            <div style={styles.gameCard}>
-              <div style={styles.gameHeader}>
-                <h3 style={styles.gameTitle}>Maritodle</h3>
-                <div style={styles.gameBadge}>Novo!</div>
-              </div>
-              <p style={styles.gameDescription}>
-                Adivinha o jogador ou treinador do CS Marítimo! 
-                Um jogo inspirado no Wordle.
-              </p>
-              <div style={styles.gameFeatures}>
-                <div style={styles.gameFeature}>
-                  <span style={styles.gameFeatureIcon}>•</span>
-                  <span style={styles.gameFeatureText}>Tentativas ilimitadas</span>
-                </div>
-                <div style={styles.gameFeature}>
-                  <span style={styles.gameFeatureIcon}>•</span>
-                  <span style={styles.gameFeatureText}>Pistas após 6 e 9 tentativas</span>
-                </div>
-                <div style={styles.gameFeature}>
-                  <span style={styles.gameFeatureIcon}>•</span>
-                  <span style={styles.gameFeatureText}>9 atributos para comparar</span>
-                </div>
-              </div>
-              <button
-                style={styles.gameButton}
-                className="hover-button"
-                onClick={() => navigate("/maritodle")}
-              >
-                Jogar Maritodle
-              </button>
-            </div>
-
-            {/* Stats Section */}
-            <div style={styles.statsCard}>
-              <h3 style={styles.statsTitle}>Estatísticas</h3>
-              <div style={styles.statItem}>
-                <span style={styles.statLabel}>Total de Votos</span>
-                <span style={styles.statValue}>
-                  {totalVotes.toLocaleString()}
-                </span>
-              </div>
-              <div style={styles.statItem}>
-                <span style={styles.statLabel}>Jogadores Avaliados</span>
-                <span style={styles.statValue}>{topVotedPlayers.length}</span>
-              </div>
-              <div style={styles.statItem}>
-                <span style={styles.statLabel}>Transferências Ativas</span>
-                <span style={styles.statValue}>{transferRumors.length}</span>
-              </div>
-              {transferStats && (
-                <>
-                  <div style={styles.statItem}>
-                    <span style={styles.statLabel}>Rumores Recentes</span>
-                    <span style={styles.statValue}>{transferStats.recentRumors}</span>
-                  </div>
-                  <div style={styles.statItem}>
-                    <span style={styles.statLabel}>Confiabilidade Média</span>
-                    <span style={styles.statValue}>{transferStats.averageReliability}</span>
-                  </div>
-                </>
-              )}
-            </div>
-
-            {/* Quick Actions */}
-            <div style={styles.quickActionsCard}>
-              <h3 style={styles.statsTitle}>Ação Rápida</h3>
-              <button
-                style={styles.actionButton}
-                className="hover-button"
-                onClick={() => navigate("/voting")}
-              >
-                Ir para Votação
-              </button>
-            </div>
           </div>
         </div>
       </div>
