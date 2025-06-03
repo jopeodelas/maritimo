@@ -109,18 +109,23 @@ function gerarFeedback(palpite: any, segredo: any) {
     coluna: 'contribuicoes'
   };
   
-  if (segredo.trofeus.length === 0) {
-    contribuicoesItem.icone = 'x-branco';
-    contribuicoesItem.correto = true;
+  // Extrair número de contribuições dos arrays
+  const extrairNumeroContribuicoes = (trofeus: string[]): number => {
+    if (!trofeus || trofeus.length === 0) return 0;
+    const match = trofeus[0]?.match(/(\d+)/);
+    return match ? parseInt(match[1]) : 0;
+  };
+  
+  const contribuicoesPalpite = extrairNumeroContribuicoes(palpite.trofeus);
+  const contribuicoesSegredo = extrairNumeroContribuicoes(segredo.trofeus);
+  
+  if (contribuicoesPalpite === contribuicoesSegredo) {
+    contribuicoesItem.icone = 'verde';
+    contribuicoesItem.trofeus_match = palpite.trofeus;
   } else {
-    const intersecao = palpite.trofeus.filter((t: string) => segredo.trofeus.includes(t));
-    if (intersecao.length > 0) {
-      contribuicoesItem.icone = 'verde';
-      contribuicoesItem.trofeus_match = intersecao;
-    } else {
-      contribuicoesItem.icone = 'x-vermelho';
-    }
+    contribuicoesItem.icone = 'vermelho';
   }
+  
   feedback.push(contribuicoesItem);
   
   // 8. Período (combinando ano_entrada e ano_saida)
@@ -143,10 +148,7 @@ function gerarFeedback(palpite: any, segredo: any) {
 }
 
 function verificarVitoria(feedback: any[]) {
-  return feedback.every(f => 
-    f.icone === 'verde' || 
-    (f.coluna === 'contribuicoes' && f.icone === 'x-branco' && f.correto)
-  );
+  return feedback.every(f => f.icone === 'verde');
 }
 
 function gerarClue1(segredo: any) {
@@ -193,10 +195,13 @@ async function buscarJogadoresMaritimo(): Promise<MaritodlePlayer[]> {
     
     // Converter os dados da base para o formato esperado
     const jogadores: MaritodlePlayer[] = await Promise.all(result.rows.map(async row => {
-      // Determinar posição baseada no papel
-      let posicoes = [row.posicao_principal];
+      // Determinar posições baseada no papel
+      let posicoes: string[];
       if (row.papel === 'Treinador') {
         posicoes = ['X']; // Treinadores têm posição X
+      } else {
+        // Dividir posições múltiplas separadas por "/"
+        posicoes = row.posicao_principal ? row.posicao_principal.split('/').map((pos: string) => pos.trim()) : ['N/A'];
       }
       
       // Determinar papel baseado no histórico
