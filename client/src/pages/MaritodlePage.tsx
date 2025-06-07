@@ -50,6 +50,8 @@ const MaritodlePage = () => {
   const [flyingLogos, setFlyingLogos] = useState<Array<{id: number, x: number, y: number, vx: number, vy: number, rotation: number, scale: number}>>([]);
   const [showResult, setShowResult] = useState(false);
   const [logoAnimationActive, setLogoAnimationActive] = useState(false);
+  const [clue1Revealed, setClue1Revealed] = useState(false);
+  const [clue2Revealed, setClue2Revealed] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -239,6 +241,8 @@ const MaritodlePage = () => {
       setFlyingLogos([]);
       setShowResult(false);
       setLogoAnimationActive(false);
+      setClue1Revealed(false);
+      setClue2Revealed(false);
     } catch (error) {
       console.error('Erro ao iniciar novo jogo:', error);
     }
@@ -985,6 +989,29 @@ const MaritodlePage = () => {
       color: '#B0BEC5',
       fontWeight: '500',
     },
+    hiddenClueContainer: {
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      gap: '0.5rem',
+    },
+    hiddenClueText: {
+      color: '#B0BEC5',
+      fontSize: '0.9rem',
+    },
+    revealButton: {
+      padding: '0.75rem 1.5rem',
+      backgroundColor: '#4CAF50',
+      color: 'white',
+      border: 'none',
+      borderRadius: '0.5rem',
+      fontSize: '1rem',
+      fontWeight: '600',
+      cursor: 'pointer',
+      transition: 'all 0.3s ease',
+      boxShadow: '0 0.2rem 0.4rem rgba(76, 175, 80, 0.3)',
+      textTransform: 'none',
+    },
   });
 
   const colunas = [
@@ -1247,13 +1274,57 @@ const MaritodlePage = () => {
             {clue1 && (
               <div style={styles.clueCard}>
                 <div style={styles.clueTitle}>💡 Pista 1 (após 6 tentativas)</div>
-                <div style={styles.clueText}>{clue1}</div>
+                {clue1Revealed ? (
+                  <div style={styles.clueText}>{clue1}</div>
+                ) : (
+                  <div style={styles.hiddenClueContainer}>
+                    <div style={styles.hiddenClueText}>A primeira pista está disponível!</div>
+                    <button 
+                      style={styles.revealButton}
+                      onClick={() => setClue1Revealed(true)}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.backgroundColor = '#45A049';
+                        e.currentTarget.style.transform = 'translateY(-2px)';
+                        e.currentTarget.style.boxShadow = '0 0.4rem 0.8rem rgba(76, 175, 80, 0.4)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.backgroundColor = '#4CAF50';
+                        e.currentTarget.style.transform = 'translateY(0)';
+                        e.currentTarget.style.boxShadow = '0 0.2rem 0.4rem rgba(76, 175, 80, 0.3)';
+                      }}
+                    >
+                      🔍 Revelar Pista
+                    </button>
+                  </div>
+                )}
               </div>
             )}
             {clue2 && (
               <div style={styles.clueCard}>
                 <div style={styles.clueTitle}>🎯 Pista 2 (após 9 tentativas)</div>
-                <div style={styles.clueText}>{clue2}</div>
+                {clue2Revealed ? (
+                  <div style={styles.clueText}>{clue2}</div>
+                ) : (
+                  <div style={styles.hiddenClueContainer}>
+                    <div style={styles.hiddenClueText}>A segunda pista está disponível!</div>
+                    <button 
+                      style={styles.revealButton}
+                      onClick={() => setClue2Revealed(true)}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.backgroundColor = '#45A049';
+                        e.currentTarget.style.transform = 'translateY(-2px)';
+                        e.currentTarget.style.boxShadow = '0 0.4rem 0.8rem rgba(76, 175, 80, 0.4)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.backgroundColor = '#4CAF50';
+                        e.currentTarget.style.transform = 'translateY(0)';
+                        e.currentTarget.style.boxShadow = '0 0.2rem 0.4rem rgba(76, 175, 80, 0.3)';
+                      }}
+                    >
+                      🔍 Revelar Pista
+                    </button>
+                  </div>
+                )}
               </div>
             )}
           </div>

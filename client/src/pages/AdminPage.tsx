@@ -25,7 +25,15 @@ interface User {
   created_at: string;
 }
 
-type TabType = 'polls' | 'users' | 'banned';
+interface Player {
+  id: number;
+  name: string;
+  position: string;
+  image_url: string;
+  vote_count: number;
+}
+
+type TabType = 'polls' | 'users' | 'banned' | 'players';
 
 const AdminPage = () => {
   const { user } = useAuth();
@@ -46,6 +54,16 @@ const AdminPage = () => {
   const [loadingUsers, setLoadingUsers] = useState(false);
   const [loadingBannedUsers, setLoadingBannedUsers] = useState(false);
 
+  // Player management states
+  const [players, setPlayers] = useState<Player[]>([]);
+  const [loadingPlayers, setLoadingPlayers] = useState(false);
+  const [showPlayerModal, setShowPlayerModal] = useState(false);
+  const [editingPlayer, setEditingPlayer] = useState<Player | null>(null);
+  const [newPlayerName, setNewPlayerName] = useState('');
+  const [newPlayerPosition, setNewPlayerPosition] = useState('');
+  const [newPlayerImage, setNewPlayerImage] = useState('');
+  const [creatingPlayer, setCreatingPlayer] = useState(false);
+
   useEffect(() => {
     // Check if user is admin
     if (!user?.is_admin) {
@@ -58,6 +76,8 @@ const AdminPage = () => {
       fetchUsers();
     } else if (activeTab === 'banned') {
       fetchBannedUsers();
+    } else if (activeTab === 'players') {
+      fetchPlayers();
     }
   }, [user, navigate, activeTab]);
 
@@ -102,6 +122,21 @@ const AdminPage = () => {
       console.error('Error fetching banned users:', error);
     } finally {
       setLoadingBannedUsers(false);
+    }
+  };
+
+  const fetchPlayers = async () => {
+    setLoadingPlayers(true);
+    try {
+      const response = await api.get('/players');
+      console.log('Players response:', response);
+      console.log('Players data:', response.data);
+      setPlayers(response.data.players || response.data);
+    } catch (error) {
+      console.error('Error fetching players:', error);
+      alert('Erro ao carregar jogadores: ' + (error as any)?.response?.data?.message || (error as any)?.message);
+    } finally {
+      setLoadingPlayers(false);
     }
   };
 
@@ -199,6 +234,72 @@ const AdminPage = () => {
       hour: '2-digit',
       minute: '2-digit'
     });
+  };
+
+  const openPlayerModal = (player?: Player) => {
+    if (player) {
+      setEditingPlayer(player);
+      setNewPlayerName(player.name);
+      setNewPlayerPosition(player.position);
+      setNewPlayerImage(player.image_url);
+    } else {
+      setEditingPlayer(null);
+      setNewPlayerName('');
+      setNewPlayerPosition('');
+      setNewPlayerImage('');
+    }
+    setShowPlayerModal(true);
+  };
+
+  const closePlayerModal = () => {
+    setShowPlayerModal(false);
+    setEditingPlayer(null);
+    setNewPlayerName('');
+    setNewPlayerPosition('');
+    setNewPlayerImage('');
+  };
+
+  const createOrUpdatePlayer = async () => {
+    if (!newPlayerName.trim() || !newPlayerPosition.trim() || !newPlayerImage.trim()) {
+      alert('Por favor, preencha todos os campos');
+      return;
+    }
+
+    setCreatingPlayer(true);
+    try {
+      const playerData = {
+        name: newPlayerName.trim(),
+        position: newPlayerPosition.trim(),
+        image_url: newPlayerImage.trim()
+      };
+
+      if (editingPlayer) {
+        await api.put(`/players/${editingPlayer.id}`, playerData);
+      } else {
+        await api.post('/players', playerData);
+      }
+      
+      closePlayerModal();
+      fetchPlayers();
+    } catch (error: any) {
+      console.error('Error creating/updating player:', error);
+      alert(error.response?.data?.message || 'Erro ao salvar jogador');
+    } finally {
+      setCreatingPlayer(false);
+    }
+  };
+
+  const deletePlayer = async (playerId: number) => {
+    if (window.confirm('Tem a certeza que deseja remover este jogador?')) {
+      try {
+        await api.delete(`/players/${playerId}`);
+        fetchPlayers();
+        alert('Jogador removido com sucesso');
+      } catch (error: any) {
+        console.error('Error deleting player:', error);
+        alert(error.response?.data?.message || 'Erro ao remover jogador');
+      }
+    }
   };
 
   const styles = createStyles({
@@ -631,6 +732,80 @@ const AdminPage = () => {
           </div>
         );
 
+      case 'players':
+        return (
+          <div style={styles.section}>
+            <div style={styles.sectionHeader}>
+              <h2 style={styles.sectionTitle}>Gerir Jogadores</h2>
+              <div style={{ display: 'flex', gap: '1rem' }}>
+                <button 
+                  style={styles.button} 
+                  onClick={() => openPlayerModal()}
+                >
+                  + Novo Jogador
+                </button>
+                <button 
+                  style={styles.button} 
+                  onClick={fetchPlayers}
+                  disabled={loadingPlayers}
+                >
+                  {loadingPlayers ? 'A carregar...' : 'Atualizar'}
+                </button>
+              </div>
+            </div>
+            
+            {loadingPlayers ? (
+              <div style={styles.loading}>A carregar jogadores...</div>
+            ) : players.length === 0 ? (
+              <div style={styles.emptyState}>Nenhum jogador encontrado</div>
+            ) : (
+              <table style={styles.table}>
+                <thead style={styles.tableHeader}>
+                  <tr>
+                    <th style={styles.tableHeaderCell}>ID</th>
+                    <th style={styles.tableHeaderCell}>Nome</th>
+                    <th style={styles.tableHeaderCell}>Posição</th>
+                    <th style={styles.tableHeaderCell}>Imagem</th>
+                    <th style={styles.tableHeaderCell}>Votos</th>
+                    <th style={styles.tableHeaderCell}>Ações</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {players.map(player => (
+                    <tr key={player.id} style={styles.tableRow}>
+                      <td style={styles.tableCell}>{player.id}</td>
+                      <td style={styles.tableCell}>{player.name}</td>
+                      <td style={styles.tableCell}>{player.position}</td>
+                      <td style={styles.tableCell}>
+                        <img
+                          src={player.image_url}
+                          alt={player.name}
+                          style={{ width: '50px', height: '50px', objectFit: 'cover' }}
+                        />
+                      </td>
+                      <td style={styles.tableCell}>{player.vote_count}</td>
+                      <td style={styles.tableCell}>
+                        <button 
+                          style={styles.button} 
+                          onClick={() => openPlayerModal(player)}
+                        >
+                          Editar
+                        </button>
+                        <button 
+                          style={{...styles.button, ...styles.dangerButton}}
+                          onClick={() => deletePlayer(player.id)}
+                        >
+                          Remover
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
+        );
+
       default:
         return null;
     }
@@ -676,6 +851,15 @@ const AdminPage = () => {
             onClick={() => setActiveTab('banned')}
           >
             Utilizadores Banidos
+          </button>
+          <button 
+            style={{
+              ...styles.tab,
+              ...(activeTab === 'players' ? styles.activeTab : {})
+            }}
+            onClick={() => setActiveTab('players')}
+          >
+            Jogadores
           </button>
         </div>
 
@@ -741,6 +925,57 @@ const AdminPage = () => {
                   disabled={creatingPoll}
                 >
                   {creatingPoll ? 'A criar...' : 'Criar Poll'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Player Modal */}
+        {showPlayerModal && (
+          <div style={styles.modal} onClick={(e) => {
+            if (e.target === e.currentTarget) closePlayerModal();
+          }}>
+            <div style={styles.modalContent}>
+              <h2 style={styles.modalTitle}>{editingPlayer ? 'Editar Jogador' : 'Novo Jogador'}</h2>
+              
+              <input
+                style={styles.input}
+                type="text"
+                placeholder="Nome"
+                value={newPlayerName}
+                onChange={(e) => setNewPlayerName(e.target.value)}
+              />
+              
+              <input
+                style={styles.input}
+                type="text"
+                placeholder="Posição"
+                value={newPlayerPosition}
+                onChange={(e) => setNewPlayerPosition(e.target.value)}
+              />
+              
+              <input
+                style={styles.input}
+                type="text"
+                placeholder="Imagem URL"
+                value={newPlayerImage}
+                onChange={(e) => setNewPlayerImage(e.target.value)}
+              />
+              
+              <div style={styles.modalActions}>
+                <button 
+                  style={styles.cancelButton} 
+                  onClick={closePlayerModal}
+                >
+                  Cancelar
+                </button>
+                <button 
+                  style={styles.button} 
+                  onClick={createOrUpdatePlayer}
+                  disabled={creatingPlayer}
+                >
+                  {creatingPlayer ? 'A salvar...' : 'Salvar'}
                 </button>
               </div>
             </div>

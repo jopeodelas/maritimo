@@ -151,17 +151,176 @@ function verificarVitoria(feedback: any[]) {
   return feedback.every(f => f.icone === 'verde');
 }
 
-function gerarClue1(segredo: any) {
-  // Opção A: Década de nascimento
+// Função para analisar o histórico e identificar atributos não descobertos
+function analisarHistoricoTentativas(historico: any[], segredo: any) {
+  if (!historico || historico.length === 0) {
+    return {
+      vermelhos: ['sexo', 'posicoes', 'altura_cm', 'papeis', 'idade', 'nacionalidade', 'trofeus', 'ano_entrada'],
+      amarelos: []
+    };
+  }
+
+  // Mapear as colunas de feedback para os atributos correspondentes
+  const mapeamentoColunas = [
+    'sexo',        // Jogos
+    'posicoes',    // Posições  
+    'altura_cm',   // Altura
+    'papeis',      // Papéis
+    'idade',       // Idade
+    'nacionalidade', // Nacionalidade
+    'trofeus',     // Contribuições
+    'ano_entrada'  // Período (ano_entrada)
+  ];
+
+  const statusAtributos: { [key: string]: string } = {};
+  
+  // Inicializar todos os atributos como desconhecidos
+  mapeamentoColunas.forEach(attr => {
+    statusAtributos[attr] = 'desconhecido';
+  });
+
+  // Analisar cada tentativa
+  historico.forEach(tentativa => {
+    if (tentativa.feedback) {
+      tentativa.feedback.forEach((feedback: any, index: number) => {
+        const atributo = mapeamentoColunas[index];
+        if (!atributo) return;
+
+        // Se já foi verde, marcar como conhecido
+        if (feedback.icone === 'verde') {
+          statusAtributos[atributo] = 'verde';
+        }
+        // Se nunca foi verde e agora é amarelo, marcar como amarelo
+        else if (statusAtributos[atributo] !== 'verde' && feedback.icone === 'amarelo') {
+          statusAtributos[atributo] = 'amarelo';
+        }
+        // Se nunca foi verde nem amarelo, marcar como vermelho
+        else if (statusAtributos[atributo] === 'desconhecido' && feedback.icone === 'vermelho') {
+          statusAtributos[atributo] = 'vermelho';
+        }
+      });
+    }
+  });
+
+  // Separar atributos por status
+  const vermelhos: string[] = [];
+  const amarelos: string[] = [];
+  
+  Object.entries(statusAtributos).forEach(([atributo, status]) => {
+    if (status === 'vermelho') {
+      vermelhos.push(atributo);
+    } else if (status === 'amarelo') {
+      amarelos.push(atributo);
+    }
+  });
+
+  return { vermelhos, amarelos };
+}
+
+// Função para gerar dica inteligente baseada no histórico
+function gerarDicaInteligente(segredo: any, historico: any[], tentativasRealizadas: number, atributoExcluido: string | null = null) {
+  const { vermelhos, amarelos } = analisarHistoricoTentativas(historico, segredo);
+  
+  // Filtrar o atributo já usado (se houver)
+  const vermelhosDisponiveis = atributoExcluido ? vermelhos.filter(attr => attr !== atributoExcluido) : vermelhos;
+  const amarelosDisponiveis = atributoExcluido ? amarelos.filter(attr => attr !== atributoExcluido) : amarelos;
+  
+  // Priorizar atributos sempre vermelhos (excluindo o já usado)
+  if (vermelhosDisponiveis.length > 0) {
+    const atributoEscolhido = vermelhosDisponiveis[Math.floor(Math.random() * vermelhosDisponiveis.length)];
+    return {
+      dica: gerarDicaPorAtributo(atributoEscolhido, segredo, 'vermelho'),
+      atributo: atributoEscolhido
+    };
+  }
+  
+  // Se não há vermelhos disponíveis, usar amarelos (excluindo o já usado)
+  if (amarelosDisponiveis.length > 0) {
+    const atributoEscolhido = amarelosDisponiveis[Math.floor(Math.random() * amarelosDisponiveis.length)];
+    return {
+      dica: gerarDicaPorAtributo(atributoEscolhido, segredo, 'amarelo'),
+      atributo: atributoEscolhido
+    };
+  }
+  
+  // Fallback para dicas genéricas se tudo foi descoberto ou usado
+  if (tentativasRealizadas >= 9) {
+    return {
+      dica: gerarClue2Generica(segredo),
+      atributo: 'generica_2'
+    };
+  } else {
+    return {
+      dica: gerarClue1Generica(segredo),
+      atributo: 'generica_1'
+    };
+  }
+}
+
+// Função para gerar dica específica por atributo
+function gerarDicaPorAtributo(atributo: string, segredo: any, status: 'vermelho' | 'amarelo') {
+  const prefixo = status === 'vermelho' ? '🔴' : '🟡';
+  
+  switch (atributo) {
+    case 'sexo':
+      return `${prefixo} O número de jogos do jogador secreto no Marítimo é: ${segredo.sexo}`;
+    
+    case 'posicoes':
+      const posicoes = Array.isArray(segredo.posicoes) ? segredo.posicoes.join(', ') : segredo.posicoes;
+      return `${prefixo} O jogador secreto joga na(s) posição(ões): ${posicoes}`;
+    
+    case 'altura_cm':
+      return `${prefixo} A altura do jogador secreto é: ${segredo.altura_cm}cm`;
+    
+    case 'papeis':
+      const papeis = Array.isArray(segredo.papeis) ? segredo.papeis.join(', ') : segredo.papeis;
+      return `${prefixo} O papel do jogador secreto no clube: ${papeis}`;
+    
+    case 'idade':
+      return `${prefixo} A idade do jogador secreto é: ${segredo.idade} anos`;
+    
+    case 'nacionalidade':
+      return `${prefixo} A nacionalidade do jogador secreto é: ${segredo.nacionalidade}`;
+    
+    case 'trofeus':
+      if (!segredo.trofeus || segredo.trofeus.length === 0) {
+        return `${prefixo} O jogador secreto não tem contribuições registadas`;
+      } else {
+        const contribuicoes = Array.isArray(segredo.trofeus) ? segredo.trofeus.join(', ') : segredo.trofeus;
+        return `${prefixo} As contribuições do jogador secreto: ${contribuicoes}`;
+      }
+    
+    case 'ano_entrada':
+      const saida = segredo.ano_saida === 9999 ? 'presente' : segredo.ano_saida;
+      return `${prefixo} O período do jogador secreto no Marítimo: ${segredo.ano_entrada}-${saida}`;
+    
+    default:
+      return gerarClue1Generica(segredo);
+  }
+}
+
+// Funções de fallback (antigas dicas genéricas)
+function gerarClue1Generica(segredo: any) {
   const anoAtual = new Date().getFullYear();
   const anoNascimento = anoAtual - segredo.idade;
   const decada = Math.floor(anoNascimento / 10) * 10;
-  return `Nasceu entre ${decada} e ${decada + 9}.`;
+  return `💡 Nasceu entre ${decada} e ${decada + 9}`;
 }
 
-function gerarClue2(segredo: any) {
-  // Opção A: Ano de entrada exato
-  return `Entrou no Marítimo no ano de ${segredo.ano_entrada}.`;
+function gerarClue2Generica(segredo: any) {
+  return `💡 Entrou no Marítimo no ano de ${segredo.ano_entrada}`;
+}
+
+// Função pública para gerar a primeira dica
+function gerarClue1(segredo: any, historico: any[] = []) {
+  const resultado = gerarDicaInteligente(segredo, historico, 6);
+  return resultado;
+}
+
+// Função pública para gerar a segunda dica  
+function gerarClue2(segredo: any, historico: any[] = [], atributoClue1: string | null = null) {
+  const resultado = gerarDicaInteligente(segredo, historico, 9, atributoClue1);
+  return resultado;
 }
 
 // Função para buscar jogadores da nova tabela maritodle_players
@@ -285,7 +444,9 @@ export const novoJogo = async (req: Request, res: Response, next: NextFunction) 
       tentativas: 0,
       clue1_mostrada: false,
       clue2_mostrada: false,
-      finalizado: false
+      finalizado: false,
+      historico: [],
+      atributo_clue1: null  // Para garantir que clue2 seja diferente
     };
     
     res.json({ 
@@ -336,6 +497,13 @@ export const submeterPalpite = async (req: Request, res: Response, next: NextFun
     // Gerar feedback
     const feedback = gerarFeedback(palpite, jogo.segredo);
     
+    // Armazenar tentativa no histórico antes de verificar dicas
+    jogo.historico.push({
+      nome: nome,
+      palpite: palpite,
+      feedback: feedback
+    });
+    
     // Verificar vitória
     const venceu = verificarVitoria(feedback);
     
@@ -352,16 +520,19 @@ export const submeterPalpite = async (req: Request, res: Response, next: NextFun
       response.estatisticas = { tentativas: jogo.tentativas };
       jogo.finalizado = true;
     } else {
-      // Verificar clues
+      // Verificar clues (agora com o histórico atualizado)
       if (jogo.tentativas === 6 && !jogo.clue1_mostrada) {
         response.mostrar_clue1 = true;
-        response.clue1 = gerarClue1(jogo.segredo);
+        const clue1 = gerarClue1(jogo.segredo, jogo.historico);
+        response.clue1 = clue1.dica;
+        jogo.atributo_clue1 = clue1.atributo; // Armazenar no estado do jogo
         jogo.clue1_mostrada = true;
       }
       
       if (jogo.tentativas === 9 && !jogo.clue2_mostrada) {
         response.mostrar_clue2 = true;
-        response.clue2 = gerarClue2(jogo.segredo);
+        const clue2 = gerarClue2(jogo.segredo, jogo.historico, jogo.atributo_clue1);
+        response.clue2 = clue2.dica;
         jogo.clue2_mostrada = true;
       }
     }

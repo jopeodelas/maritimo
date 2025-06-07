@@ -40,3 +40,36 @@ export const createPlayer = async (req: Request, res: Response, next: NextFuncti
     next(error);
   }
 };
+
+export const updatePlayer = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const id = parseInt(req.params.id);
+    const { name, position, image_url } = req.body;
+    
+    const player = await PlayerModel.update(id, { name, position, image_url });
+    
+    if (!player) {
+      throw new NotFoundError('Player not found');
+    }
+    
+    res.json(player);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const deletePlayer = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const id = parseInt(req.params.id);
+    
+    const deleted = await PlayerModel.delete(id);
+    
+    if (!deleted) {
+      throw new NotFoundError('Player not found');
+    }
+    
+    res.status(204).send();
+  } catch (error) {
+    next(error);
+  }
+};

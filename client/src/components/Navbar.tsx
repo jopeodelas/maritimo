@@ -235,6 +235,15 @@ const Navbar = () => {
             Votação
           </Link>
           <Link
+            to="/squad"
+            style={styles.navLink}
+            className="hover-nav-link"
+            role="menuitem"
+            aria-label="Ir para página do plantel"
+          >
+            Plantel
+          </Link>
+          <Link
             to="/news"
             style={styles.navLink}
             className="hover-nav-link"
