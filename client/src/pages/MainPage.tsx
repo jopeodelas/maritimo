@@ -162,11 +162,11 @@ const MainPage = () => {
     const date = new Date(dateString);
     const now = new Date();
     const diffTime = Math.abs(now.getTime() - date.getTime());
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    
-    if (diffDays === 1) return "Hoje";
-    if (diffDays === 2) return "Ontem";
-    if (diffDays <= 7) return `Há ${diffDays - 1} dias`;
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+
+    if (diffDays === 0) return "Hoje";
+    if (diffDays === 1) return "Ontem";
+    if (diffDays < 7) return `Há ${diffDays} dias`;
     return date.toLocaleDateString("pt-PT");
   };
 
