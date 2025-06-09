@@ -79,6 +79,10 @@ const login = (req, res, next) => __awaiter(void 0, void 0, void 0, function* ()
         if (!isMatch) {
             throw new errorTypes_1.UnauthorizedError('Invalid credentials');
         }
+        // Check if user is banned
+        if (user.is_banned) {
+            throw new errorTypes_1.UnauthorizedError('A sua conta foi banida por um administrador do CS Marítimo for fans. Se acredita que isto foi um erro, entre em contacto connosco.');
+        }
         // Create JWT
         const token = jsonwebtoken_1.default.sign({ id: user.id }, config_1.default.jwtSecret, { expiresIn: config_1.default.jwtExpiry });
         // Set JWT as HttpOnly cookie
@@ -167,11 +171,18 @@ const handleGoogleCallback = (req, res, next) => __awaiter(void 0, void 0, void 
                 email, randomPassword, googleId);
                 console.log('New user created with ID:', user.id);
             }
-            else if (!user.google_id) {
-                // Update existing user with Google ID if they don't have one
-                console.log('Updating existing user with Google ID...');
-                user = yield user_model_1.UserModel.updateGoogleId(user.id, googleId);
-                console.log('User updated with Google ID');
+            else {
+                // Check if existing user is banned
+                if (user.is_banned) {
+                    console.log('User is banned, blocking Google login');
+                    throw new errorTypes_1.UnauthorizedError('A sua conta foi banida por um administrador do CS Marítimo for fans. Se acredita que isto foi um erro, entre em contacto connosco.');
+                }
+                if (!user.google_id) {
+                    // Update existing user with Google ID if they don't have one
+                    console.log('Updating existing user with Google ID...');
+                    user = yield user_model_1.UserModel.updateGoogleId(user.id, googleId);
+                    console.log('User updated with Google ID');
+                }
             }
             // Create JWT
             console.log('Creating JWT token...');

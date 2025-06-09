@@ -1,8 +1,11 @@
 import { useState, useEffect } from 'react';
-import axios from 'axios';
+import { useAuth } from '../contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import OptimizedImage from '../components/OptimizedImage';
 import { createStyles } from '../styles/styleUtils';
+import { getPlayerImageUrl } from '../utils/imageUtils';
+import api from '../services/api';
 
 interface Player {
   id: number;
@@ -316,8 +319,8 @@ const VotingPage = () => {
     const fetchData = async () => {
       try {
         const [playersRes, votesRes] = await Promise.all([
-          axios.get('/api/players', { withCredentials: true }),
-          axios.get('/api/votes/user', { withCredentials: true })
+          api.get('/players'),
+          api.get('/votes/user')
         ]);
         
         setPlayers(playersRes.data.players || playersRes.data);
@@ -349,7 +352,7 @@ const VotingPage = () => {
     try {
       await Promise.all(
         selectedPlayers.map(playerId => 
-          axios.post('/api/votes', { playerId }, { withCredentials: true })
+          api.post('/votes', { playerId })
         )
       );
       
@@ -433,12 +436,16 @@ const VotingPage = () => {
           {isVoted && <div style={styles.votedBadge}>VOTED</div>}
           
           <OptimizedImage 
-            src={`/images/${player.image_url.replace('/images/', '')}`}
+            src={getPlayerImageUrl(player.image_url)}
             alt={player.name} 
             style={styles.playerImage}
             loading="lazy"
             width="200"
             height="200"
+            onError={(e) => {
+              console.error('Error loading player image:', player.image_url);
+              e.currentTarget.src = '/images/default-player.jpg';
+            }}
           />
           
           <div style={{

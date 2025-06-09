@@ -3,6 +3,8 @@ import axios from 'axios';
 import Navbar from '../components/Navbar';
 import OptimizedImage from '../components/OptimizedImage';
 import { createStyles } from '../styles/styleUtils';
+import { getPlayerImageUrl } from '../utils/imageUtils';
+import api from '../services/api';
 
 interface Player {
   id: number;
@@ -375,7 +377,7 @@ const Squad = () => {
     }, 250);
   };
 
-  const renderPlayerCard = (player: Player, index: number) => (
+  const renderPlayerCard = (player: Player) => (
     <div 
       key={player.id} 
       style={styles.playerCard}
@@ -399,12 +401,16 @@ const Squad = () => {
       
       <div style={styles.playerImageContainer}>
         <OptimizedImage 
-          src={`/images/${player.image_url.replace('/images/', '')}`}
+          src={getPlayerImageUrl(player.image_url)}
           alt={player.name} 
           style={styles.playerImage}
           loading="lazy"
           width="200"
           height="200"
+          onError={(e) => {
+            console.error('Error loading player image:', player.image_url);
+            e.currentTarget.src = '/images/default-player.jpg';
+          }}
         />
       </div>
       
@@ -508,7 +514,7 @@ const Squad = () => {
                 ...(isAnimating ? styles.playersGridAnimating : {})
               }}
             >
-              {currentPosition.players.map((player, index) => renderPlayerCard(player, index))}
+              {currentPosition.players.map((player) => renderPlayerCard(player))}
             </div>
           ) : (
             <div style={styles.emptyState}>

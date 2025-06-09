@@ -9,6 +9,7 @@ import api from "../services/api";
 import { transferService } from "../services/transferService";
 import type { TransferRumor, TransferStats } from "../services/transferService";
 import type { Player } from "../types";
+import { getPlayerImageUrl } from '../utils/imageUtils';
 
 interface CustomPoll {
   id: number;
@@ -1048,12 +1049,16 @@ const MainPage = () => {
                         className="image-container"
                       >
                         <OptimizedImage
-                          src={player.image_url || "/images/default-player.jpg"}
+                          src={getPlayerImageUrl(player.image_url)}
                           alt={player.name}
                           style={styles.playerImage}
                           loading="lazy"
                           width="88"
                           height="88"
+                          onError={(e) => {
+                            console.error('Error loading player image:', player.image_url);
+                            e.currentTarget.src = '/images/default-player.jpg';
+                          }}
                         />
                       </LayoutStabilizer>
                       <h3 style={styles.playerName}>{player.name}</h3>

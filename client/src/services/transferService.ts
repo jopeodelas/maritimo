@@ -3,7 +3,7 @@ import api from './api';
 export interface TransferRumor {
   id: string;
   player_name: string;
-  type: "compra" | "venda";
+  type: "compra" | "venda" | "renovação";
   club: string;
   value: string;
   status: "rumor" | "negociação" | "confirmado";

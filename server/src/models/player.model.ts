@@ -71,13 +71,23 @@ export class PlayerModel {
 
   static async create(player: Omit<Player, 'id' | 'created_at'>): Promise<Player> {
     try {
+      console.log('=== PLAYER MODEL CREATE ===');
+      console.log('Input data:', player);
+      
       const { name, position, image_url } = player;
+      console.log('Executing SQL query with values:', [name, position, image_url]);
+      
       const result = await db.query(
         'INSERT INTO players (name, position, image_url) VALUES ($1, $2, $3) RETURNING *',
         [name, position, image_url]
       );
+      
+      console.log('Database query result:', result.rows);
+      console.log('Created player:', result.rows[0]);
+      
       return result.rows[0];
     } catch (error) {
+      console.error('Error in PlayerModel.create:', error);
       throw error;
     }
   }

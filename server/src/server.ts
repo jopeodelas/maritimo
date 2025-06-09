@@ -5,18 +5,18 @@ import helmet from 'helmet';
 import compression from 'compression';
 import cookieParser from 'cookie-parser';
 import path from 'path';
-import config from './src/config';
-import authRoutes from './src/routes/auth.routes';
-import playersRoutes from './src/routes/players.routes';
-import votesRoutes from './src/routes/votes.routes';
-import transferRoutes from './src/routes/transfer.routes';
-import newsRoutes from './src/routes/news.routes';
-import pollRoutes from './src/routes/poll.routes';
-import customPollsRoutes from './src/routes/custom-polls.routes';
-import discussionsRoutes from './src/routes/discussions.routes';
-import userManagementRoutes from './src/routes/user-management.routes';
-import maritodleRoutes from './src/routes/maritodle.routes';
-import { errorHandler, notFoundHandler } from './src/middleware/error.middleware';
+import config from './config';
+import authRoutes from './routes/auth.routes';
+import playersRoutes from './routes/players.routes';
+import votesRoutes from './routes/votes.routes';
+import transferRoutes from './routes/transfer.routes';
+import newsRoutes from './routes/news.routes';
+import pollRoutes from './routes/poll.routes';
+import customPollsRoutes from './routes/custom-polls.routes';
+import discussionsRoutes from './routes/discussions.routes';
+import userManagementRoutes from './routes/user-management.routes';
+import maritodleRoutes from './routes/maritodle.routes';
+import { errorHandler, notFoundHandler } from './middleware/error.middleware';
 
 const app = express();
 
@@ -55,19 +55,30 @@ app.use(cors({
     'http://localhost:5173/',
     config.clientUrl
   ],
-  credentials: true
+  credentials: true,
+  optionsSuccessStatus: 200 // For legacy browser support
 }));
 
 app.use(cookieParser(config.cookieSecret));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// Static files with caching headers
-app.use('/images', express.static(path.join(__dirname, 'public/images'), {
+// Static files with caching headers and CORS
+app.use('/images', (req, res, next) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'GET');
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+  next();
+}, express.static(path.resolve(__dirname, '../../public/images'), {
   maxAge: '1y', // Cache images for 1 year
   etag: true,
   lastModified: true,
 }));
+
+// Debug: Log the images directory path
+const imagesPath = path.resolve(__dirname, '../../public/images');
+console.log('Images directory path:', imagesPath);
+console.log('Directory exists:', require('fs').existsSync(imagesPath));
 
 // Routes
 app.use('/api/auth', authRoutes);

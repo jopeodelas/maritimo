@@ -57,19 +57,6 @@ const ChatPage = () => {
   const chatInputRef = useRef<HTMLInputElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Profanity filter - lista de slurs que não são permitidos
-  const bannedWords = [
-    'nigger', 'nigga', 'faggot', 'retard', 'spic', 'chink', 'gook', 'kike', 
-    'wetback', 'towelhead', 'raghead', 'sandnigger', 'beaner', 'coon',
-    'preto', 'pretas', 'pretos', 'cigano', 'ciganos', 'cigana', 'ciganas',
-    'judeu', 'judeus', 'judia', 'judias', 'mouro', 'mouros', 'moura', 'mouras'
-  ];
-
-  const containsBannedWords = (text: string): boolean => {
-    const lowerText = text.toLowerCase();
-    return bannedWords.some(word => lowerText.includes(word.toLowerCase()));
-  };
-
   useEffect(() => {
     fetchDiscussions();
   }, [sortBy]);
@@ -104,11 +91,6 @@ const ChatPage = () => {
   const handleCreateDiscussion = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newDiscussionTitle.trim() || !newDiscussionDescription.trim()) return;
-    
-    if (containsBannedWords(newDiscussionTitle) || containsBannedWords(newDiscussionDescription)) {
-      alert('O seu texto contém palavras não permitidas. Por favor, revise o conteúdo.');
-      return;
-    }
 
     try {
       setSubmitting(true);
@@ -132,11 +114,6 @@ const ChatPage = () => {
   const handleSendMessage = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     if (!newComment.trim() || !selectedDiscussion || submitting) return;
-    
-    if (containsBannedWords(newComment)) {
-      alert('O seu comentário contém palavras não permitidas. Por favor, revise o conteúdo.');
-      return;
-    }
 
     try {
       setSubmitting(true);

@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import { createStyles } from '../styles/styleUtils';
+import { getPlayerImageUrl } from '../utils/imageUtils';
 import api from '../services/api';
 
 interface CustomPoll {
@@ -61,7 +62,7 @@ const AdminPage = () => {
   const [editingPlayer, setEditingPlayer] = useState<Player | null>(null);
   const [newPlayerName, setNewPlayerName] = useState('');
   const [newPlayerPosition, setNewPlayerPosition] = useState('');
-  const [newPlayerImage, setNewPlayerImage] = useState('');
+  const [newPlayerImageFile, setNewPlayerImageFile] = useState<File | null>(null);
   const [creatingPlayer, setCreatingPlayer] = useState(false);
 
   useEffect(() => {
@@ -241,12 +242,12 @@ const AdminPage = () => {
       setEditingPlayer(player);
       setNewPlayerName(player.name);
       setNewPlayerPosition(player.position);
-      setNewPlayerImage(player.image_url);
+      setNewPlayerImageFile(null);
     } else {
       setEditingPlayer(null);
       setNewPlayerName('');
       setNewPlayerPosition('');
-      setNewPlayerImage('');
+      setNewPlayerImageFile(null);
     }
     setShowPlayerModal(true);
   };
@@ -256,27 +257,38 @@ const AdminPage = () => {
     setEditingPlayer(null);
     setNewPlayerName('');
     setNewPlayerPosition('');
-    setNewPlayerImage('');
+    setNewPlayerImageFile(null);
   };
 
   const createOrUpdatePlayer = async () => {
-    if (!newPlayerName.trim() || !newPlayerPosition.trim() || !newPlayerImage.trim()) {
-      alert('Por favor, preencha todos os campos');
+    if (!newPlayerName.trim() || !newPlayerPosition.trim()) {
+      alert('Por favor, preencha todos os campos obrigatórios');
+      return;
+    }
+
+    if (!editingPlayer && !newPlayerImageFile) {
+      alert('Por favor, selecione uma imagem para o jogador');
       return;
     }
 
     setCreatingPlayer(true);
     try {
-      const playerData = {
-        name: newPlayerName.trim(),
-        position: newPlayerPosition.trim(),
-        image_url: newPlayerImage.trim()
-      };
+      const formData = new FormData();
+      formData.append('name', newPlayerName.trim());
+      formData.append('position', newPlayerPosition.trim());
+      
+      if (newPlayerImageFile) {
+        formData.append('image', newPlayerImageFile);
+      }
 
       if (editingPlayer) {
-        await api.put(`/players/${editingPlayer.id}`, playerData);
+        await api.put(`/players/${editingPlayer.id}`, formData, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        });
       } else {
-        await api.post('/players', playerData);
+        await api.post('/players', formData, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        });
       }
       
       closePlayerModal();
@@ -443,6 +455,7 @@ const AdminPage = () => {
       justifyContent: "space-between",
       padding: "0.5rem 0",
       borderBottom: "1px solid rgba(255, 255, 255, 0.1)",
+      color: "#FFFFFF",
     },
     modal: {
       position: "fixed" as const,
@@ -778,9 +791,19 @@ const AdminPage = () => {
                       <td style={styles.tableCell}>{player.position}</td>
                       <td style={styles.tableCell}>
                         <img
-                          src={player.image_url}
+                          src={getPlayerImageUrl(player.image_url)}
                           alt={player.name}
-                          style={{ width: '50px', height: '50px', objectFit: 'cover' }}
+                          style={{ 
+                            width: '50px', 
+                            height: '50px', 
+                            objectFit: 'cover',
+                            borderRadius: '50%',
+                            border: '2px solid rgba(76, 175, 80, 0.3)'
+                          }}
+                          onError={(e) => {
+                            console.error('Error loading player image:', player.image_url);
+                            e.currentTarget.src = '/images/default-player.jpg';
+                          }}
                         />
                       </td>
                       <td style={styles.tableCell}>{player.vote_count}</td>
@@ -955,13 +978,50 @@ const AdminPage = () => {
                 onChange={(e) => setNewPlayerPosition(e.target.value)}
               />
               
-              <input
-                style={styles.input}
-                type="text"
-                placeholder="Imagem URL"
-                value={newPlayerImage}
-                onChange={(e) => setNewPlayerImage(e.target.value)}
-              />
+              <div style={{ marginBottom: '1rem' }}>
+                <label style={{ 
+                  color: '#B0BEC5', 
+                  marginBottom: '0.5rem', 
+                  display: 'block',
+                  fontSize: '0.9rem'
+                }}>
+                  Imagem do Jogador:
+                </label>
+                <input
+                  style={{
+                    ...styles.input,
+                    padding: '0.5rem',
+                    backgroundColor: 'rgba(40, 55, 70, 0.8)',
+                    border: '2px dashed rgba(76, 175, 80, 0.3)',
+                    borderRadius: '0.5rem',
+                    color: '#FFFFFF',
+                    cursor: 'pointer'
+                  }}
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => setNewPlayerImageFile(e.target.files?.[0] || null)}
+                />
+                {newPlayerImageFile && (
+                  <p style={{
+                    color: '#4CAF50',
+                    fontSize: '0.8rem',
+                    marginTop: '0.5rem',
+                    marginBottom: '0'
+                  }}>
+                    Ficheiro selecionado: {newPlayerImageFile.name}
+                  </p>
+                )}
+                {editingPlayer && !newPlayerImageFile && (
+                  <p style={{
+                    color: '#78909C',
+                    fontSize: '0.8rem',
+                    marginTop: '0.5rem',
+                    marginBottom: '0'
+                  }}>
+                    Deixe em branco para manter a imagem atual
+                  </p>
+                )}
+              </div>
               
               <div style={styles.modalActions}>
                 <button 

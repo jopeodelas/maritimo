@@ -435,23 +435,19 @@ class RealNewsService {
       'interessado', 'interesse', 'sondagem', 'mercado',
       'empréstimo', 'emprestimo', 'cedido', 'cedência', 'cedencia',
       'renovação', 'renovacao', 'contrato', 'assinou', 'assinatura',
-      'rescisão', 'rescisao', 'rescinde', 'deixa o clube'
+      'rescisão', 'rescisao', 'rescinde', 'deixa o clube',
+      'treinador', 'técnico', 'staff', 'equipa técnica', 'diretor'
     ];
-
+    
     const lowerText = text.toLowerCase();
     
     // Para ser considerado rumor de transferência, deve:
     // 1. Mencionar o Marítimo diretamente
-    // 2. Ter palavras-chave de transferência
-    // 3. NÃO ser sobre treinadores/staff
+    // 2. Ter palavras-chave de transferência/contratação
     const hasMaritimoKeyword = this.isMaritimoRelated(text);
     const hasTransferKeyword = transferKeywords.some(keyword => lowerText.includes(keyword));
     
-    // Excluir notícias sobre treinadores/staff
-    const staffKeywords = ['treinador', 'técnico', 'diretor', 'presidente', 'staff', 'equipa técnica'];
-    const isAboutStaff = staffKeywords.some(keyword => lowerText.includes(keyword));
-    
-    return hasMaritimoKeyword && hasTransferKeyword && !isAboutStaff;
+    return hasMaritimoKeyword && hasTransferKeyword;
   }
 
   private convertNewsToRumors(newsItems: NewsItem[], sourceType: string): TransferRumor[] {
@@ -483,7 +479,7 @@ class RealNewsService {
 
   private extractTransferInfoFromNews(item: NewsItem): {
     playerName: string;
-    type: "compra" | "venda";
+    type: "compra" | "venda" | "renovação";
     club: string;
     value: string;
     status: "rumor" | "negociação" | "confirmado";
@@ -495,10 +491,18 @@ class RealNewsService {
     
     // Se não conseguir identificar um jogador específico, mas for claramente sobre transferência do Marítimo, aceitar
     if (!playerName || playerName === 'Jogador não identificado') {
-      // Verificar se é sobre treinador/staff (não queremos estes)
+      // Verificar se é sobre treinador/staff (agora aceitar também)
       const staffKeywords = ['treinador', 'técnico', 'diretor', 'presidente', 'staff', 'equipa técnica'];
       if (staffKeywords.some(keyword => fullText.toLowerCase().includes(keyword))) {
-        return null;
+        // Se for sobre staff, extrair nome do staff
+        const staffName = this.extractStaffNameFromText(fullText);
+        return {
+          playerName: staffName || 'Novo elemento técnico',
+          type: 'compra', // Staff hires are treated as purchases
+          club: 'CS Marítimo',
+          value: 'Valor não revelado',
+          status: this.determineStatusFromText(fullText)
+        };
       }
       
       // Se não mencionar jogador específico mas falar de transferência, pode ser rumor geral
@@ -511,7 +515,7 @@ class RealNewsService {
     const type = this.determineTransferType(fullText);
     
     // Extract club
-    const club = this.extractClubFromText(fullText);
+    const club = this.extractClubFromText(fullText, type);
     
     // Extract value
     const value = this.extractValueFromText(fullText);
@@ -621,11 +625,48 @@ class RealNewsService {
     return null; // Retorna null em vez de string para melhor controle
   }
 
-  private determineTransferType(text: string): "compra" | "venda" {
-    const buyKeywords = ['contratação', 'contratacao', 'chegada', 'reforço', 'reforco', 'assinou'];
-    const sellKeywords = ['saída', 'saida', 'deixa', 'abandona', 'venda'];
+  private extractStaffNameFromText(text: string): string | null {
+    // Patterns for extracting staff names
+    const staffPatterns = [
+      /(?:treinador|técnico|diretor)\s+([A-ZÁÀÂÃÉÈÊÍÌÎÓÒÔÕÚÙÛÇ][a-záàâãéèêíìîóòôõúùûç]+(?:\s+[A-ZÁÀÂÃÉÈÊÍÌÎÓÒÔÕÚÙÛÇ][a-záàâãéèêíìîóòôõúùûç]+)+)/gi,
+      /"([A-ZÁÀÂÃÉÈÊÍÌÎÓÒÔÕÚÙÛÇ][a-záàâãéèêíìîóòôõúùûç]+(?:\s+[A-ZÁÀÂÃÉÈÊÍÌÎÓÒÔÕÚÙÛÇ][a-záàâãéèêíìîóòôõúùûç]+)+)"/g
+    ];
+    
+    for (const pattern of staffPatterns) {
+      const matches = text.match(pattern);
+      if (matches && matches.length > 0) {
+        const name = matches[0].replace(/^(treinador|técnico|diretor)\s+/i, '').replace(/"/g, '').trim();
+        if (name && name.length > 3) {
+          return name;
+        }
+      }
+    }
+    
+    return null;
+  }
+
+  private determineTransferType(text: string): "compra" | "venda" | "renovação" {
+    const renewalKeywords = [
+      'renovação', 'renovacao', 'renova', 'prolonga', 'estende', 
+      'permanece', 'fica', 'continua', 'acordo de renovação',
+      'extensão', 'extensao', 'renegociação'
+    ];
+    
+    const buyKeywords = [
+      'contratação', 'contratacao', 'chegada', 'reforço', 'reforco', 
+      'assinou', 'novo jogador', 'apresentado', 'chega ao'
+    ];
+    
+    const sellKeywords = [
+      'saída', 'saida', 'deixa', 'abandona', 'venda', 
+      'transfere-se', 'sai do', 'despede-se'
+    ];
 
     const lowerText = text.toLowerCase();
+    
+    // Check for renewal first
+    const hasRenewalKeyword = renewalKeywords.some(keyword => lowerText.includes(keyword));
+    if (hasRenewalKeyword) return 'renovação';
     
     const hasBuyKeyword = buyKeywords.some(keyword => lowerText.includes(keyword));
     const hasSellKeyword = sellKeywords.some(keyword => lowerText.includes(keyword));
@@ -633,21 +674,53 @@ class RealNewsService {
     if (hasBuyKeyword && !hasSellKeyword) return 'compra';
     if (hasSellKeyword && !hasBuyKeyword) return 'venda';
     
-    return 'venda'; // Default assumption for Marítimo
+    // Context-based detection
+    if (lowerText.includes('para o marítimo') || lowerText.includes('ao marítimo')) {
+      return 'compra';
+    }
+    
+    if (lowerText.includes('do marítimo') || lowerText.includes('deixa o marítimo')) {
+      return 'venda';
+    }
+    
+    return 'compra'; // Default - assume it's a new arrival
   }
 
-  private extractClubFromText(text: string): string {
+  private extractClubFromText(text: string, transferType?: "compra" | "venda" | "renovação"): string {
+    // If it's a renewal, the player stays with Marítimo
+    if (transferType === 'renovação') {
+      return 'CS Marítimo';
+    }
+    
     const portugueseClubs = [
-      'FC Porto', 'Sporting CP', 'SL Benfica', 'SC Braga', 'Vitória SC',
-      'Gil Vicente', 'Boavista FC', 'Rio Ave FC', 'CD Santa Clara',
-      'Portimonense', 'Famalicão', 'Paços de Ferreira', 'Arouca',
-      'Chaves', 'Vizela', 'Casa Pia', 'Estoril'
+      { pattern: /sporting(?:\s+cp|\s+clube\s+de\s+portugal)?/i, name: 'Sporting CP' },
+      { pattern: /benfica(?:\s+sl)?/i, name: 'SL Benfica' },
+      { pattern: /fc\s+porto|porto\s+fc/i, name: 'FC Porto' },
+      { pattern: /sc\s+braga|braga\s+sc/i, name: 'SC Braga' },
+      { pattern: /vitória(?:\s+sc|\s+guimarães)/i, name: 'Vitória SC' },
+      { pattern: /gil\s+vicente/i, name: 'Gil Vicente FC' },
+      { pattern: /boavista\s+fc/i, name: 'Boavista FC' },
+      { pattern: /rio\s+ave/i, name: 'Rio Ave FC' },
+      { pattern: /cd\s+santa\s+clara/i, name: 'CD Santa Clara' },
+      { pattern: /portimonense/i, name: 'Portimonense SC' },
+      { pattern: /famalicão/i, name: 'FC Famalicão' },
+      { pattern: /paços\s+de\s+ferreira/i, name: 'FC Paços de Ferreira' },
+      { pattern: /arouca/i, name: 'FC Arouca' },
+      { pattern: /chaves/i, name: 'GD Chaves' },
+      { pattern: /vizela/i, name: 'FC Vizela' },
+      { pattern: /casa\s+pia/i, name: 'Casa Pia AC' },
+      { pattern: /estoril/i, name: 'GD Estoril Praia' }
     ];
 
     for (const club of portugueseClubs) {
-      if (text.toLowerCase().includes(club.toLowerCase())) {
-        return club;
+      if (club.pattern.test(text)) {
+        return club.name;
       }
+    }
+
+    // For sales, if no specific club is mentioned
+    if (transferType === 'venda') {
+      return 'Destino a confirmar';
     }
 
     return 'Clube não especificado';

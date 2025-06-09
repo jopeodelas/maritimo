@@ -73,10 +73,10 @@ export const addManualTransferRumor = async (req: Request, res: Response) => {
     }
 
     // Validate type
-    if (!['compra', 'venda'].includes(type)) {
+    if (!['compra', 'venda', 'renovação'].includes(type)) {
       return res.status(400).json({
         error: 'Invalid transfer type',
-        message: 'type must be either "compra" or "venda"'
+        message: 'type must be either "compra", "venda", or "renovação"'
       });
     }
 
