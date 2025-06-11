@@ -970,13 +970,17 @@ const AdminPage = () => {
                 onChange={(e) => setNewPlayerName(e.target.value)}
               />
               
-              <input
+              <select
                 style={styles.input}
-                type="text"
-                placeholder="Posição"
                 value={newPlayerPosition}
                 onChange={(e) => setNewPlayerPosition(e.target.value)}
-              />
+              >
+                <option value="">Selecionar Posição</option>
+                <option value="Guarda-redes">Guarda-redes</option>
+                <option value="Defesa">Defesa</option>
+                <option value="Médio">Médio</option>
+                <option value="Atacante">Atacante</option>
+              </select>
               
               <div style={{ marginBottom: '1rem' }}>
                 <label style={{ 

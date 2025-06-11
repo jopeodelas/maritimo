@@ -376,9 +376,10 @@ const VotingPage = () => {
       players: players.filter(player => 
         player.position.toLowerCase().includes('goalkeeper') || 
         player.position.toLowerCase().includes('gk') ||
-        player.position.toLowerCase().includes('guarda-redes')
+        player.position.toLowerCase().includes('guarda-redes') ||
+        player.position.toLowerCase() === 'guarda-redes'
       ),
-      title: 'Goalkeepers',
+      title: 'Guarda-redes',
       icon: ''
     },
     defenders: {
@@ -387,9 +388,10 @@ const VotingPage = () => {
         player.position.toLowerCase().includes('defence') ||
         player.position.toLowerCase().includes('defesa') ||
         player.position.toLowerCase().includes('central') ||
-        player.position.toLowerCase().includes('lateral')
+        player.position.toLowerCase().includes('lateral') ||
+        player.position.toLowerCase() === 'defesa'
       ),
-      title: 'Defenders',
+      title: 'Defesas',
       icon: ''
     },
     midfielders: {
@@ -398,9 +400,10 @@ const VotingPage = () => {
         player.position.toLowerCase().includes('midfield') ||
         player.position.toLowerCase().includes('médio') ||
         player.position.toLowerCase().includes('meio') ||
-        player.position.toLowerCase().includes('medio')
+        player.position.toLowerCase().includes('medio') ||
+        player.position.toLowerCase() === 'médio'
       ),
-      title: 'Midfielders',
+      title: 'Médios',
       icon: ''
     },
     forwards: {
@@ -410,9 +413,10 @@ const VotingPage = () => {
         player.position.toLowerCase().includes('winger') ||
         player.position.toLowerCase().includes('extremo') ||
         player.position.toLowerCase().includes('atacante') ||
-        player.position.toLowerCase().includes('avançado')
+        player.position.toLowerCase().includes('avançado') ||
+        player.position.toLowerCase() === 'atacante'
       ),
-      title: 'Forwards',
+      title: 'Atacantes',
       icon: ''
     }
   };
