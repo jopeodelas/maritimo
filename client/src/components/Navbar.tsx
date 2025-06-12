@@ -37,7 +37,7 @@ const Navbar = () => {
     logoSection: {
       display: 'flex',
       alignItems: 'center',
-      gap: '1vw',
+      gap: '0.8vw',
       cursor: 'pointer',
       transition: 'transform 0.3s ease',
       textDecoration: 'none',
@@ -45,8 +45,8 @@ const Navbar = () => {
       minWidth: 'fit-content',
     },
     logoImage: {
-      width: '3vw',
-      height: '3vw',
+      width: '2.8vw',
+      height: '2.8vw',
       borderRadius: '50%',
       backgroundColor: 'white',
       padding: '0.2vw',
@@ -60,7 +60,7 @@ const Navbar = () => {
     },
     logoText: {
       color: 'white',
-      fontSize: '1.6vw',
+      fontSize: '1.4vw',
       fontWeight: '700',
       margin: 0,
       fontFamily: '"Shockwave", cursive',
@@ -79,7 +79,7 @@ const Navbar = () => {
     },
     navLinks: {
       display: 'flex',
-      gap: '2vw',
+      gap: '1.5vw',
       alignItems: 'center',
       flex: '1 1 auto',
       justifyContent: 'center',
@@ -87,9 +87,9 @@ const Navbar = () => {
     navLink: {
       color: 'white',
       textDecoration: 'none',
-      fontSize: '1.1vw',
+      fontSize: '1vw',
       fontWeight: '600',
-      padding: '1vh 1.5vw',
+      padding: '1vh 1.2vw',
       borderRadius: '0.6vw',
       transition: 'all 0.3s ease',
       cursor: 'pointer',
@@ -102,7 +102,7 @@ const Navbar = () => {
     },
     rightSection: {
       display: 'flex',
-      gap: '1.5vw',
+      gap: '1vw',
       alignItems: 'center',
       flex: '0 0 auto',
     },
@@ -110,9 +110,9 @@ const Navbar = () => {
       backgroundColor: 'rgba(254, 0, 0, 0.1)',
       color: 'white',
       border: '2px solid rgba(254, 0, 0, 0.5)',
-      padding: '1vh 2vw',
+      padding: '1vh 1.5vw',
       borderRadius: '0.6vw',
-      fontSize: '1vw',
+      fontSize: '0.9vw',
       fontWeight: '600',
       cursor: 'pointer',
       transition: 'all 0.3s ease',
@@ -127,10 +127,10 @@ const Navbar = () => {
         fontSize: '0.9vw',
       },
       navLink: {
-        fontSize: '1.3vw',
+        fontSize: '1.2vw',
       },
       logoutButton: {
-        fontSize: '1.2vw',
+        fontSize: '1.1vw',
       },
     } as any,
     '@media (max-width: 768px)': {
@@ -151,7 +151,7 @@ const Navbar = () => {
         fontSize: '1.5vw',
       },
       navLinks: {
-        gap: '2vw',
+        gap: '1.5vw',
       },
       navLink: {
         fontSize: '2.5vw',
@@ -253,6 +253,15 @@ const Navbar = () => {
             aria-label="Ir para página de notícias"
           >
             Notícias
+          </Link>
+          <Link
+            to="/schedule"
+            style={styles.navLink}
+            className="hover-nav-link"
+            role="menuitem"
+            aria-label="Ir para página de calendário"
+          >
+            Calendário
           </Link>
           <Link
             to="/history"

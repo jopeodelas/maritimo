@@ -19,6 +19,7 @@ const ChatPage = lazy(() => import('./pages/ChatPage'));
 const AdminPage = lazy(() => import('./pages/AdminPage'));
 const MaritodlePage = lazy(() => import('./pages/MaritodlePage'));
 const Squad = lazy(() => import('./pages/Squad'));
+const Schedule = lazy(() => import('./pages/Schedule'));
 
 // Loading fallback component
 const LoadingFallback = () => (
@@ -130,6 +131,14 @@ function App() {
                 element={
                   <ProtectedRoute>
                     <ChatPage />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/schedule" 
+                element={
+                  <ProtectedRoute>
+                    <Schedule />
                   </ProtectedRoute>
                 } 
               />
