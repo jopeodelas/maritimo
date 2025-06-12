@@ -3,10 +3,48 @@ import { transferService } from '../services/transferService';
 
 export const getTransferRumors = async (req: Request, res: Response) => {
   try {
-    const rumors = await transferService.getRumors();
+    const { 
+      includeYouth = 'false', 
+      includeStaff = 'false',
+      includeCoaches = 'true',
+      minReliability = '0',
+      category 
+    } = req.query;
+
+    let rumors = await transferService.getRumors();
+
+    // Apply additional filters based on query parameters
+    if (includeYouth === 'false') {
+      rumors = rumors.filter(rumor => rumor.category !== 'youth');
+    }
+
+    if (includeStaff === 'false') {
+      rumors = rumors.filter(rumor => rumor.category !== 'staff');
+    }
+
+    if (includeCoaches === 'false') {
+      rumors = rumors.filter(rumor => rumor.category !== 'coach');
+    }
+
+    if (minReliability) {
+      const minRel = parseInt(minReliability as string);
+      rumors = rumors.filter(rumor => rumor.reliability >= minRel);
+    }
+
+    if (category) {
+      rumors = rumors.filter(rumor => rumor.category === category);
+    }
+
     res.json({
       success: true,
-      data: rumors
+      data: rumors,
+      filters: {
+        includeYouth: includeYouth === 'true',
+        includeStaff: includeStaff === 'true',
+        includeCoaches: includeCoaches === 'true',
+        minReliability: parseInt(minReliability as string),
+        category: category || 'all'
+      }
     });
   } catch (error) {
     console.error('Error fetching transfer rumors:', error);
@@ -20,15 +58,20 @@ export const getTransferRumors = async (req: Request, res: Response) => {
 export const getTransferStats = async (req: Request, res: Response) => {
   try {
     const stats = await transferService.getStats();
+    const detailedStats = await transferService.getDetailedStats();
+    
     res.json({
       success: true,
-      data: stats
+      data: {
+        ...stats,
+        detailed: detailedStats
+      }
     });
   } catch (error) {
     console.error('Error fetching transfer stats:', error);
     res.status(500).json({ 
       error: 'Failed to fetch transfer statistics',
-      message: 'Unable to retrieve transfer statistics at this time'
+      message: 'Unable to retrieve statistics at this time'
     });
   }
 };
@@ -53,16 +96,7 @@ export const refreshTransferRumors = async (req: Request, res: Response) => {
 
 export const addManualTransferRumor = async (req: Request, res: Response) => {
   try {
-    const {
-      player_name,
-      type,
-      club,
-      value,
-      status,
-      source,
-      reliability,
-      description
-    } = req.body;
+    const { player_name, type, club, value, status, source, reliability, description } = req.body;
 
     // Validate required fields
     if (!player_name || !type || !club) {
@@ -114,9 +148,49 @@ export const addManualTransferRumor = async (req: Request, res: Response) => {
     });
   } catch (error) {
     console.error('Error adding manual transfer rumor:', error);
-    res.status(500).json({ 
+    res.status(500).json({
       error: 'Failed to add transfer rumor',
-      message: 'Unable to add transfer rumor at this time'
+      message: 'Unable to add rumor at this time'
+    });
+  }
+};
+
+// NEW: Get rumor quality report
+export const getQualityReport = async (req: Request, res: Response) => {
+  try {
+    const report = await transferService.getQualityReport();
+    
+    res.json({
+      success: true,
+      data: report
+    });
+  } catch (error) {
+    console.error('Error fetching quality report:', error);
+    res.status(500).json({
+      error: 'Failed to fetch quality report',
+      message: 'Unable to retrieve quality information at this time'
+    });
+  }
+};
+
+// NEW: Clean duplicate rumors
+export const cleanDuplicates = async (req: Request, res: Response) => {
+  try {
+    const result = await transferService.cleanDuplicateRumors();
+    
+    res.json({
+      success: true,
+      message: `Removed ${result.removedCount} duplicate rumors`,
+      data: {
+        removedCount: result.removedCount,
+        remainingCount: result.remainingCount
+      }
+    });
+  } catch (error) {
+    console.error('Error cleaning duplicates:', error);
+    res.status(500).json({
+      error: 'Failed to clean duplicates',
+      message: 'Unable to clean duplicates at this time'
     });
   }
 }; 

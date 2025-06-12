@@ -51,7 +51,7 @@ const VotingPage = () => {
     content: {
       maxWidth: '1400px',
       margin: '0 auto',
-      padding: '3vh 2vw',
+      padding: 'clamp(8rem, 10vh, 10rem) 2vw 3vh',
       position: "relative",
       zIndex: 2,
     },

@@ -20,8 +20,8 @@ class RealNewsService {
       // Get all Marítimo news first
       const allNews = await this.fetchAllMaritimoNews();
       
-      // Filter only transfer-related news
-      const transferNews = allNews.filter(item => this.isTransferRelated(item.title + ' ' + item.description));
+              // Filter only transfer-related news
+        const transferNews = allNews.filter(item => this.isTransferRelated(item.title + ' ' + item.description));
       
       // Convert transfer news to rumors
       transferNews.forEach((item, index) => {
@@ -413,41 +413,181 @@ class RealNewsService {
   }
 
   private isMaritimoRelated(text: string): boolean {
-    const maritimoKeywords = [
-      'marítimo', 'maritimo', 'cs marítimo', 'cs maritimo',
-      'clube sport marítimo', 'verde-rubro', 'verde rubro'
-    ];
-
     const lowerText = text.toLowerCase();
     
+    // Main Marítimo keywords
+    const maritimoKeywords = [
+      'cs marítimo', 'maritimo', 'marítimo', 'clube sport marítimo',
+      'cs maritimo'
+    ];
+    
+    // Check if it mentions Marítimo
     const hasMaritimoKeyword = maritimoKeywords.some(keyword => 
       lowerText.includes(keyword)
     );
+    
+    if (!hasMaritimoKeyword) {
+      return false;
+    }
 
-    return hasMaritimoKeyword;
+    // RELAXED: For coach/staff news, be more permissive
+    const coachKeywords = ['treinador', 'técnico', 'comandante', 'staff técnico'];
+    const hasCoachKeyword = coachKeywords.some(keyword => lowerText.includes(keyword));
+
+    if (hasCoachKeyword) {
+      // For coach news, just check if it's not clearly about leaving
+      const clearlyLeavingIndicators = [
+        'deixa o marítimo', 'sai do marítimo', 'rescinde com o marítimo',
+        'despedido do marítimo', 'ex-treinador', 'antigo técnico'
+      ];
+
+      const isClearlyLeaving = clearlyLeavingIndicators.some(indicator => 
+        lowerText.includes(indicator)
+      );
+
+      // If it's clearly about leaving, reject it
+      if (isClearlyLeaving) {
+        return false;
+      }
+
+      // For other coach news, be permissive - let it through for further processing
+      return true;
+    }
+
+    // ENHANCED: Filter out non-main team content
+    const nonMainTeamKeywords = [
+      'sub-15', 'sub-17', 'sub-19', 'sub-21', 'sub-23', 
+      'juvenis', 'juniores', 'academia', 'formação',
+      'escalões jovens', 'youth', 'academy',
+      // Staff keywords that we want to filter out unless high relevance
+      'massagista', 'kitman', 'segurança', 'jardineiro',
+      'administrativa', 'secretária', 'rececionista'
+    ];
+
+    // If it's about youth/academy, require it to be transfer-related and high quality
+    const hasNonMainTeamKeywords = nonMainTeamKeywords.some(keyword => 
+      lowerText.includes(keyword)
+    );
+
+    if (hasNonMainTeamKeywords) {
+      // Only allow if it's clearly about transfers and high quality source
+      const transferKeywords = ['transfere', 'contrata', 'assina', 'sai', 'renova'];
+      const hasTransferKeyword = transferKeywords.some(keyword => 
+        lowerText.includes(keyword)
+      );
+      
+      // Require both transfer keywords and quality indicators
+      const qualityIndicators = ['oficial', 'confirmado', 'comunicado'];
+      const hasQualityIndicator = qualityIndicators.some(indicator => 
+        lowerText.includes(indicator)
+      );
+
+      return hasTransferKeyword && hasQualityIndicator;
+    }
+
+    // Enhanced filtering for irrelevant content
+    const irrelevantKeywords = [
+      'cinema', 'música', 'festa', 'concerto', 'teatro',
+      'política', 'eleições', 'economia', 'covid', 'pandemia',
+      'temperatura', 'meteorologia', 'trânsito', 'acidentes',
+      'crime', 'polícia', 'tribunal', 'hospital',
+      'supermercado', 'loja', 'restaurante', 'hotel'
+    ];
+
+    const hasIrrelevantContent = irrelevantKeywords.some(keyword => 
+      lowerText.includes(keyword)
+    );
+
+    if (hasIrrelevantContent) {
+      return false;
+    }
+
+    return true;
   }
 
   private isTransferRelated(text: string): boolean {
-    const transferKeywords = [
-      'transferência', 'transferencias', 'contratação', 'contratacao',
-      'saída', 'saida', 'chegada', 'reforço', 'reforco',
-      'negociação', 'negociacao', 'acordo', 'proposta',
-      'interessado', 'interesse', 'sondagem', 'mercado',
-      'empréstimo', 'emprestimo', 'cedido', 'cedência', 'cedencia',
-      'renovação', 'renovacao', 'contrato', 'assinou', 'assinatura',
-      'rescisão', 'rescisao', 'rescinde', 'deixa o clube',
-      'treinador', 'técnico', 'staff', 'equipa técnica', 'diretor'
-    ];
-    
     const lowerText = text.toLowerCase();
     
-    // Para ser considerado rumor de transferência, deve:
-    // 1. Mencionar o Marítimo diretamente
-    // 2. Ter palavras-chave de transferência/contratação
-    const hasMaritimoKeyword = this.isMaritimoRelated(text);
-    const hasTransferKeyword = transferKeywords.some(keyword => lowerText.includes(keyword));
-    
-    return hasMaritimoKeyword && hasTransferKeyword;
+    // Enhanced transfer keywords
+    const transferKeywords = [
+      // Portuguese transfer terms
+      'transferência', 'transferencia', 'contratação', 'contratacao',
+      'renovação', 'renovacao', 'saída', 'saida', 'chegada',
+      'reforço', 'reforco', 'mercado', 'acordo', 'negociação',
+      'negociacao', 'proposta', 'interessado', 'sondagem',
+      
+      // Action verbs
+      'assina', 'renova', 'contrata', 'sai', 'deixa', 'chega',
+      'prolonga', 'estende', 'rescinde', 'termina',
+      
+      // Status terms
+      'confirmado', 'oficial', 'rumor', 'especulação', 'especulacao',
+      'próximo', 'proximo', 'perto de', 'em vias de',
+      
+      // Financial terms
+      'valor', 'euros', 'milhões', 'milhoes', 'empréstimo', 'emprestimo',
+      'cedência', 'cedencia', 'gratuito', 'livre',
+
+      // NEW: Coach-specific terms (more relaxed)
+      'treinador', 'técnico', 'comandante técnico', 'mister',
+      'comando técnico', 'staff técnico', 'equipa técnica',
+      'assume', 'apresentado', 'nomeado', 'escolhido', 'novo',
+      
+      // ULTRA-PERMISSIVE for coaches
+      'é o novo', 'será o', 'foi nomeado', 'foi escolhido',
+      'apresenta', 'apresentação', 'oficializado', 'oficialização'
+    ];
+
+    const hasTransferKeyword = transferKeywords.some(keyword => 
+      lowerText.includes(keyword)
+    );
+
+    if (!hasTransferKeyword) {
+      return false;
+    }
+
+    // RELAXED: For coach-related news, be more permissive
+    const coachIndicators = ['treinador', 'técnico', 'comandante', 'mister', 'coach'];
+    const hasCoachIndicator = coachIndicators.some(indicator => 
+      lowerText.includes(indicator)
+    );
+
+    if (hasCoachIndicator) {
+      // For coach news, just require Marítimo mention + coach keyword
+      const maritimoMentions = [
+        'marítimo', 'maritimo', 'cs marítimo', 'cs maritimo'
+      ];
+      
+      // ULTRA-PERMISSIVE: Just check if it mentions coach terms and CS Marítimo
+      return maritimoMentions.some(mention => lowerText.includes(mention));
+    }
+
+    // ENHANCED: Additional validation for quality
+    // Must mention player names, positions OR coach-related terms
+    const playerIndicators = [
+      'jogador', 'atleta', 'futebolista', 'internacional',
+      'avançado', 'medio', 'médio', 'defesa', 'guarda-redes',
+      'extremo', 'lateral', 'central', 'capitão', 'capitao',
+      // NEW: Coach indicators
+      'treinador', 'técnico', 'comandante', 'mister', 'coach'
+    ];
+
+    const hasPlayerIndicator = playerIndicators.some(indicator => 
+      lowerText.includes(indicator)
+    );
+
+    // Must be about players/coaches, not just general club news
+    if (!hasPlayerIndicator) {
+      // Allow if it mentions specific contract terms
+      const contractTerms = ['contrato', 'vínculo', 'vinculo', 'clausula', 'cláusula'];
+      const hasContractTerm = contractTerms.some(term => lowerText.includes(term));
+      
+      if (!hasContractTerm) {
+        return false;
+      }
+    }
+
+    return true;
   }
 
   private convertNewsToRumors(newsItems: NewsItem[], sourceType: string): TransferRumor[] {
@@ -485,24 +625,77 @@ class RealNewsService {
     status: "rumor" | "negociação" | "confirmado";
   } | null {
     const fullText = item.title + ' ' + item.description;
+    const lowerText = fullText.toLowerCase();
     
+    // ENHANCED: Check if this is about someone COMING TO Marítimo vs LEAVING Marítimo
+    const comingToMaritimoIndicators = [
+      'novo treinador do marítimo', 'novo técnico do marítimo',
+      'treinador do marítimo', 'técnico do marítimo',
+      'assume o comando do marítimo', 'assume o marítimo',
+      'contratado pelo marítimo', 'assina pelo marítimo',
+      'é o novo treinador', 'será o treinador',
+      'nomeado treinador do marítimo', 'escolhido para o marítimo'
+    ];
+
+    const leavingMaritimoIndicators = [
+      'ex-treinador do marítimo', 'antigo técnico do marítimo',
+      'deixa o marítimo', 'sai do marítimo',
+      'rescinde com o marítimo', 'despedido do marítimo',
+      'assina por', 'contratado pelo', 'novo clube',
+      'treinador assina por'
+    ];
+
+    const isComingToMaritimo = comingToMaritimoIndicators.some(indicator => 
+      lowerText.includes(indicator)
+    );
+
+    const isLeavingMaritimo = leavingMaritimoIndicators.some(indicator => 
+      lowerText.includes(indicator)
+    );
+
+    // ENHANCED: Try to extract coach/staff name first - but only if coming TO Marítimo
+    if (isComingToMaritimo && !isLeavingMaritimo) {
+      const coachName = this.extractCoachNameFromText(fullText);
+      if (coachName && coachName !== 'Novo elemento técnico') {
+        return {
+          playerName: coachName,
+          type: 'compra', // Coach hires are treated as acquisitions
+          club: 'CS Marítimo',
+          value: 'Valor não revelado',
+          status: this.determineStatusFromText(fullText)
+        };
+      }
+    }
+
+    // If it's about someone leaving Marítimo, don't include in transfers
+    if (isLeavingMaritimo) {
+      return null;
+    }
+
     // Extract player name
     const playerName = this.extractPlayerNameFromText(fullText);
     
     // Se não conseguir identificar um jogador específico, mas for claramente sobre transferência do Marítimo, aceitar
     if (!playerName || playerName === 'Jogador não identificado') {
+      // Only process if it's clearly about someone coming TO Marítimo
+      if (!isComingToMaritimo) {
+        return null;
+      }
+
       // Verificar se é sobre treinador/staff (agora aceitar também)
       const staffKeywords = ['treinador', 'técnico', 'diretor', 'presidente', 'staff', 'equipa técnica'];
       if (staffKeywords.some(keyword => fullText.toLowerCase().includes(keyword))) {
         // Se for sobre staff, extrair nome do staff
         const staffName = this.extractStaffNameFromText(fullText);
-        return {
-          playerName: staffName || 'Novo elemento técnico',
-          type: 'compra', // Staff hires are treated as purchases
-          club: 'CS Marítimo',
-          value: 'Valor não revelado',
-          status: this.determineStatusFromText(fullText)
-        };
+        if (staffName && staffName !== 'Novo elemento técnico') {
+          return {
+            playerName: staffName,
+            type: 'compra', // Staff hires are treated as purchases
+            club: 'CS Marítimo',
+            value: 'Valor não revelado',
+            status: this.determineStatusFromText(fullText)
+          };
+        }
       }
       
       // Se não mencionar jogador específico mas falar de transferência, pode ser rumor geral
@@ -626,22 +819,74 @@ class RealNewsService {
   }
 
   private extractStaffNameFromText(text: string): string | null {
-    // Patterns for extracting staff names
-    const staffPatterns = [
-      /(?:treinador|técnico|diretor)\s+([A-ZÁÀÂÃÉÈÊÍÌÎÓÒÔÕÚÙÛÇ][a-záàâãéèêíìîóòôõúùûç]+(?:\s+[A-ZÁÀÂÃÉÈÊÍÌÎÓÒÔÕÚÙÛÇ][a-záàâãéèêíìîóòôõúùûç]+)+)/gi,
-      /"([A-ZÁÀÂÃÉÈÊÍÌÎÓÒÔÕÚÙÛÇ][a-záàâãéèêíìîóòôõúùûç]+(?:\s+[A-ZÁÀÂÃÉÈÊÍÌÎÓÒÔÕÚÙÛÇ][a-záàâãéèêíìîóòôõúùûç]+)+)"/g
-    ];
+    const lowerText = text.toLowerCase();
     
+    // Known staff members and coaches
+    const knownStaff = [
+      'vítor matos', 'vitor matos', 'vasco santos', 'joão henriques', 
+      'ricardo sousa', 'carlos daniel', 'nuno faria', 'hugo vieira',
+      'ivo vieira', 'albano oliveira'
+    ];
+
+    // Check for known staff first
+    for (const staff of knownStaff) {
+      if (lowerText.includes(staff)) {
+        // Return properly capitalized
+        return staff.split(' ')
+          .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+          .join(' ');
+      }
+    }
+
+    // ENHANCED: Use the same patterns as coach extraction for consistency
+    const staffPatterns = [
+      // Pattern 1: "Vítor Matos é o novo diretor"
+      /([A-ZÁÊÇÕÜ][a-záêçõü]+(?:\s+[A-ZÁÊÇÕÜ][a-záêçõü]+)*)\s+(?:é|será|foi|assume)\s+o\s+(?:novo\s+)?(?:diretor|presidente|secretário|administrador|gerente|treinador|técnico)/gi,
+      
+      // Pattern 2: "novo diretor Vítor Matos"
+      /(?:novo|ex-)\s+(?:diretor|presidente|secretário|administrador|gerente|treinador|técnico)\s+([A-ZÁÊÇÕÜ][a-záêçõü]+(?:\s+[A-ZÁÊÇÕÜ][a-záêçõü]+)*)/gi,
+      
+      // Pattern 3: "diretor Vítor Matos"
+      /(?:diretor|presidente|secretário|administrador|gerente|treinador|técnico)\s+([A-ZÁÊÇÕÜ][a-záêçõü]+(?:\s+[A-ZÁÊÇÕÜ][a-záêçõü]+)*)/gi,
+      
+      // Pattern 4: "Vítor Matos assume/nomeado"
+      /([A-ZÁÊÇÕÜ][a-záêçõü]+(?:\s+[A-ZÁÊÇÕÜ][a-záêçõü]+)*)\s+(?:assume|assinou|nomeado|eleito|contratado)/gi,
+      
+      // Pattern 5: "novo X do Marítimo"
+      /novo\s+([A-ZÁÊÇÕÜ][a-záêçõü]+(?:\s+[A-ZÁÊÇÕÜ][a-záêçõü]+)*)\s+(?:do|no|para o)\s+marítimo/gi,
+
+      // Pattern 6: In quotes
+      /"([A-ZÁÊÇÕÜ][a-záêçõü]+(?:\s+[A-ZÁÊÇÕÜ][a-záêçõü]+)*)"/g
+    ];
+
     for (const pattern of staffPatterns) {
-      const matches = text.match(pattern);
-      if (matches && matches.length > 0) {
-        const name = matches[0].replace(/^(treinador|técnico|diretor)\s+/i, '').replace(/"/g, '').trim();
-        if (name && name.length > 3) {
-          return name;
+      const matches = [...text.matchAll(pattern)];
+      if (matches.length > 0) {
+        for (const match of matches) {
+          const extractedName = match[1]?.trim();
+          if (extractedName) {
+            // Filter out common non-names and club names
+            const excludeWords = [
+              'Marítimo', 'Maritimo', 'Clube', 'Sport', 'Técnico', 'Treinador',
+              'Diretor', 'Presidente', 'Futebol', 'Desporto', 'Oficial', 
+              'Comunicado', 'Notícias', 'Record', 'Bola', 'Jogo', 'Sapo', 
+              'Google', 'News', 'Elemento', 'Novo'
+            ];
+            
+            if (!excludeWords.some(word => extractedName.includes(word)) && 
+                extractedName.length > 3 && extractedName.length < 30) {
+              
+              // Check if it looks like a real name (has at least 2 words)
+              const nameParts = extractedName.split(' ').filter(part => part.length > 1);
+              if (nameParts.length >= 2) {
+                return extractedName;
+              }
+            }
+          }
         }
       }
     }
-    
+
     return null;
   }
 
@@ -845,18 +1090,18 @@ class RealNewsService {
   }
 
   private calculateReliability(source: string, title: string): number {
-    let baseReliability = 3;
+    let baseReliability = 1;
     
     switch (source.toLowerCase()) {
       case 'record':
       case 'a bola':
-        baseReliability = 4;
+        baseReliability = 3;
         break;
       case 'o jogo':
-        baseReliability = 3;
+        baseReliability = 2;
         break;
       default:
-        baseReliability = 3;
+        baseReliability = 1;
     }
 
     if (title.toLowerCase().includes('confirmado') || title.toLowerCase().includes('oficial')) {
@@ -957,6 +1202,85 @@ class RealNewsService {
       case 'google news': return 3;
       default: return 2;
     }
+  }
+
+  // ENHANCED: Extract coach names specifically
+  private extractCoachNameFromText(text: string): string | null {
+    const lowerText = text.toLowerCase();
+    
+    // Known coaches and potential coaches
+    const knownCoaches = [
+      'vítor matos', 'vitor matos', 'ivo vieira', 'vasco santos',
+      'joão henriques', 'joao henriques', 'ricardo sousa', 'albano oliveira',
+      'sérgio conceição', 'sergio conceicao', 'rui jorge', 'carlos carvalhal',
+      'miguel cardoso', 'pedro martins', 'luis castro', 'luís castro',
+      'jorge jesus', 'leonardo jardim', 'bruno lage', 'abel ferreira',
+      // Add more common Portuguese coach names
+      'josé mourinho', 'fernando santos', 'paulo sousa', 'marco silva',
+      'nuno espírito santo', 'pedro caixinha', 'pepa', 'silas',
+      // Add more potential names
+      'paulo', 'miguel', 'carlos', 'joão', 'pedro', 'josé', 'luis',
+      'francisco', 'ricardo', 'fernando', 'manuel', 'bruno', 'andre'
+    ];
+
+    // Check for known coaches first
+    for (const coach of knownCoaches) {
+      if (lowerText.includes(coach)) {
+        // Return properly capitalized name
+        return this.capitalizeCoachName(coach);
+      }
+    }
+
+    // ULTRA-RELAXED: Try to extract coach name using very simple patterns
+    const coachPatterns = [
+      // Pattern 1: Very simple - any name with capital letter
+      /\b([A-ZÁÊÇÕÜ][a-záêçõü]+(?:\s+[A-ZÁÊÇÕÜ][a-záêçõü]+)*)\b/g,
+    ];
+
+    for (const pattern of coachPatterns) {
+      const matches = [...text.matchAll(pattern)];
+      if (matches.length > 0) {
+        for (const match of matches) {
+          const extractedName = match[1]?.trim();
+          if (extractedName) {
+            // ULTRA-RELAXED: Filter out only the most obvious non-names
+            const excludeWords = [
+              'Marítimo', 'Maritimo', 'Clube', 'Sport', 'Futebol', 'Desporto',
+              'Record', 'Bola', 'Jogo', 'Sapo', 'Google', 'News', 'Portugal',
+              'Oficial', 'Comunicado', 'Nacional', 'Liga', 'Primeira',
+              'Transferências', 'Mercado', 'Janeiro', 'Fevereiro', 'Março',
+              'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro',
+              'Outubro', 'Novembro', 'Dezembro'
+            ];
+            
+            if (!excludeWords.some(word => extractedName.includes(word)) && 
+                extractedName.length >= 2 && extractedName.length < 30) {
+              
+              // ULTRA-RELAXED: Accept even single names
+              const nameParts = extractedName.split(' ').filter(part => part.length > 1);
+              if (nameParts.length >= 1) {
+                // Check if it looks like a reasonable name
+                const hasNumbers = /\d/.test(extractedName);
+                const hasSpecialChars = /[^a-zA-ZÀ-ÿ\s]/.test(extractedName);
+                
+                if (!hasNumbers && !hasSpecialChars) {
+                  return extractedName;
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+
+    return null;
+  }
+
+  // Helper method to capitalize coach names properly
+  private capitalizeCoachName(name: string): string {
+    return name.split(' ')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(' ');
   }
 }
 

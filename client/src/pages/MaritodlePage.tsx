@@ -416,6 +416,7 @@ const MaritodlePage = () => {
 
   const styles = createStyles({
     container: {
+      height: tentativas.length === 0 ? '100vh' : 'auto',
       minHeight: '100vh',
       background: `
         radial-gradient(circle at 20% 50%, rgba(76, 175, 80, 0.1) 0%, transparent 50%),
@@ -425,7 +426,7 @@ const MaritodlePage = () => {
       `,
       fontFamily: '"Roboto", "Inter", -apple-system, BlinkMacSystemFont, sans-serif',
       position: "relative",
-      overflow: "hidden",
+      overflow: tentativas.length === 0 ? "hidden" : "auto",
     },
     backgroundPattern: {
       position: "absolute",
@@ -443,7 +444,7 @@ const MaritodlePage = () => {
     content: {
       maxWidth: '1400px',
       margin: '0 auto',
-      padding: '3vh 2vw',
+      padding: tentativas.length === 0 ? 'clamp(8rem, 10vh, 10rem) 2vw clamp(12rem, 15vh, 15rem)' : 'clamp(8rem, 10vh, 10rem) 2vw clamp(8rem, 10vh, 10rem)',
       position: "relative",
       zIndex: 2,
     },
@@ -629,8 +630,8 @@ const MaritodlePage = () => {
     legend: {
       background: 'rgba(30, 40, 50, 0.95)',
       borderRadius: '1rem',
-      padding: '2rem',
-      marginBottom: '2rem',
+      padding: '1.5rem',
+      marginBottom: tentativas.length === 0 ? '6rem' : '2rem',
       border: '1px solid rgba(76, 175, 80, 0.3)',
       boxShadow: '0 0.5rem 1.5rem rgba(0, 0, 0, 0.3)',
     },

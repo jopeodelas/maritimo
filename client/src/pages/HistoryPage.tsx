@@ -626,8 +626,8 @@ const HistoryPage = () => {
       <div style={styles.container}>
         <div style={styles.backgroundPattern}></div>
         <Navbar />
-        
-        <div style={styles.content}>
+                  
+          <div style={{...styles.content, paddingTop: "clamp(8rem, 10vh, 10rem)"}}>
           {/* Hero Section */}
           <div style={styles.heroSection}>
             <div style={styles.heroAccent}></div>

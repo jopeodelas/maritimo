@@ -9,14 +9,39 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.addManualTransferRumor = exports.refreshTransferRumors = exports.getTransferStats = exports.getTransferRumors = void 0;
+exports.cleanDuplicates = exports.getQualityReport = exports.addManualTransferRumor = exports.refreshTransferRumors = exports.getTransferStats = exports.getTransferRumors = void 0;
 const transferService_1 = require("../services/transferService");
 const getTransferRumors = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const rumors = yield transferService_1.transferService.getRumors();
+        const { includeYouth = 'false', includeStaff = 'false', includeCoaches = 'true', minReliability = '1', category } = req.query;
+        let rumors = yield transferService_1.transferService.getRumors();
+        // Apply additional filters based on query parameters
+        if (includeYouth === 'false') {
+            rumors = rumors.filter(rumor => rumor.category !== 'youth');
+        }
+        if (includeStaff === 'false') {
+            rumors = rumors.filter(rumor => rumor.category !== 'staff');
+        }
+        if (includeCoaches === 'false') {
+            rumors = rumors.filter(rumor => rumor.category !== 'coach');
+        }
+        if (minReliability) {
+            const minRel = parseInt(minReliability);
+            rumors = rumors.filter(rumor => rumor.reliability >= minRel);
+        }
+        if (category) {
+            rumors = rumors.filter(rumor => rumor.category === category);
+        }
         res.json({
             success: true,
-            data: rumors
+            data: rumors,
+            filters: {
+                includeYouth: includeYouth === 'true',
+                includeStaff: includeStaff === 'true',
+                includeCoaches: includeCoaches === 'true',
+                minReliability: parseInt(minReliability),
+                category: category || 'all'
+            }
         });
     }
     catch (error) {
@@ -31,16 +56,17 @@ exports.getTransferRumors = getTransferRumors;
 const getTransferStats = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const stats = yield transferService_1.transferService.getStats();
+        const detailedStats = yield transferService_1.transferService.getDetailedStats();
         res.json({
             success: true,
-            data: stats
+            data: Object.assign(Object.assign({}, stats), { detailed: detailedStats })
         });
     }
     catch (error) {
         console.error('Error fetching transfer stats:', error);
         res.status(500).json({
             error: 'Failed to fetch transfer statistics',
-            message: 'Unable to retrieve transfer statistics at this time'
+            message: 'Unable to retrieve statistics at this time'
         });
     }
 });
@@ -115,8 +141,48 @@ const addManualTransferRumor = (req, res) => __awaiter(void 0, void 0, void 0, f
         console.error('Error adding manual transfer rumor:', error);
         res.status(500).json({
             error: 'Failed to add transfer rumor',
-            message: 'Unable to add transfer rumor at this time'
+            message: 'Unable to add rumor at this time'
         });
     }
 });
 exports.addManualTransferRumor = addManualTransferRumor;
+// NEW: Get rumor quality report
+const getQualityReport = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const report = yield transferService_1.transferService.getQualityReport();
+        res.json({
+            success: true,
+            data: report
+        });
+    }
+    catch (error) {
+        console.error('Error fetching quality report:', error);
+        res.status(500).json({
+            error: 'Failed to fetch quality report',
+            message: 'Unable to retrieve quality information at this time'
+        });
+    }
+});
+exports.getQualityReport = getQualityReport;
+// NEW: Clean duplicate rumors
+const cleanDuplicates = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const result = yield transferService_1.transferService.cleanDuplicateRumors();
+        res.json({
+            success: true,
+            message: `Removed ${result.removedCount} duplicate rumors`,
+            data: {
+                removedCount: result.removedCount,
+                remainingCount: result.remainingCount
+            }
+        });
+    }
+    catch (error) {
+        console.error('Error cleaning duplicates:', error);
+        res.status(500).json({
+            error: 'Failed to clean duplicates',
+            message: 'Unable to clean duplicates at this time'
+        });
+    }
+});
+exports.cleanDuplicates = cleanDuplicates;

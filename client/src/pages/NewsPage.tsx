@@ -97,7 +97,7 @@ const NewsPage = () => {
     content: {
       maxWidth: "min(98vw, 110rem)",
       margin: "0 auto",
-      padding: "clamp(1rem, 2vh, 2rem) clamp(0.5rem, 1vw, 1.5rem)",
+      padding: "clamp(8rem, 10vh, 10rem) clamp(0.5rem, 1vw, 1.5rem) clamp(1rem, 2vh, 2rem)",
       position: "relative",
       zIndex: 2,
     },

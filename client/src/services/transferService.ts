@@ -11,6 +11,9 @@ export interface TransferRumor {
   source: string;
   reliability: number;
   description?: string;
+  isMainTeam?: boolean;
+  category?: 'senior' | 'youth' | 'staff' | 'coach' | 'other';
+  position?: string;
 }
 
 export interface TransferStats {
@@ -21,9 +24,40 @@ export interface TransferStats {
 }
 
 class TransferService {
-  async getRumors(): Promise<TransferRumor[]> {
+  async getRumors(filters?: {
+    includeYouth?: boolean;
+    includeStaff?: boolean;
+    includeCoaches?: boolean;
+    minReliability?: number;
+    category?: string;
+  }): Promise<TransferRumor[]> {
     try {
-      const response = await api.get('/transfer/rumors');
+      const params = new URLSearchParams();
+      
+      if (filters?.includeYouth !== undefined) {
+        params.append('includeYouth', filters.includeYouth.toString());
+      }
+      
+      if (filters?.includeStaff !== undefined) {
+        params.append('includeStaff', filters.includeStaff.toString());
+      }
+      
+      if (filters?.includeCoaches !== undefined) {
+        params.append('includeCoaches', filters.includeCoaches.toString());
+      }
+      
+      if (filters?.minReliability !== undefined) {
+        params.append('minReliability', filters.minReliability.toString());
+      }
+      
+      if (filters?.category) {
+        params.append('category', filters.category);
+      }
+
+      const queryString = params.toString();
+      const url = `/transfer/rumors${queryString ? `?${queryString}` : ''}`;
+      
+      const response = await api.get(url);
       return response.data.data || [];
     } catch (error) {
       console.error('Error fetching transfer rumors:', error);
@@ -60,6 +94,26 @@ class TransferService {
       throw error;
     }
   }
+
+  async getQualityReport(): Promise<any> {
+    try {
+      const response = await api.get('/transfer/quality-report');
+      return response.data.data;
+    } catch (error) {
+      console.error('Error fetching quality report:', error);
+      throw error;
+    }
+  }
+
+  async cleanDuplicates(): Promise<{ removedCount: number; remainingCount: number }> {
+    try {
+      const response = await api.post('/transfer/clean-duplicates');
+      return response.data.data;
+    } catch (error) {
+      console.error('Error cleaning duplicates:', error);
+      throw error;
+    }
+  }
 }
 
-export const transferService = new TransferService(); 
+export default new TransferService(); 

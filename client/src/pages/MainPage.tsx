@@ -6,7 +6,7 @@ import OptimizedImage from "../components/OptimizedImage";
 import LayoutStabilizer from "../components/LayoutStabilizer";
 import { createStyles } from "../styles/styleUtils";
 import api from "../services/api";
-import { transferService } from "../services/transferService";
+import transferService from "../services/transferService";
 import type { TransferRumor, TransferStats } from "../services/transferService";
 import type { Player } from "../types";
 import { getPlayerImageUrl } from '../utils/imageUtils';
@@ -272,7 +272,7 @@ const MainPage = () => {
     content: {
       maxWidth: "min(98vw, 110rem)",
       margin: "0 auto",
-      padding: "clamp(1rem, 2vh, 2rem) clamp(0.5rem, 1vw, 1.5rem)",
+      padding: "clamp(8rem, 10vh, 10rem) clamp(0.5rem, 1vw, 1.5rem) clamp(1rem, 2vh, 2rem)",
       position: "relative",
       zIndex: 2,
     },

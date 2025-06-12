@@ -328,7 +328,7 @@ const AdminPage = () => {
     content: {
       maxWidth: "1200px",
       margin: "0 auto",
-      padding: "2rem 1rem",
+      padding: "clamp(8rem, 10vh, 10rem) 1rem 2rem",
     },
     header: {
       textAlign: "center" as const,

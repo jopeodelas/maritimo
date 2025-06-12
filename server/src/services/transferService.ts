@@ -12,6 +12,12 @@ export interface TransferRumor {
   source: string;
   reliability: number; // 1-5 scale
   description?: string;
+  // New fields for better filtering
+  isMainTeam?: boolean;
+  category?: 'senior' | 'youth' | 'staff' | 'coach' | 'other';
+  duplicateSignature?: string;
+  // New field for coach specific info
+  position?: string; // For coaches: 'treinador principal', 'adjunto', etc.
 }
 
 export interface TransferStats {
@@ -26,10 +32,51 @@ export interface TransferStats {
   averageReliability: number;
 }
 
+const RELIABILITY_THRESHOLD = 0;
+
 class TransferService {
   private rumors: TransferRumor[] = [];
   private lastUpdate: Date | null = null;
   private isUpdating = false;
+  // Cache for duplicate detection
+  private rumorSignatures = new Set<string>();
+  private contentHashes = new Set<string>();
+
+  // Known main team players (should be moved to database in future)
+  private readonly CURRENT_MAIN_TEAM_PLAYERS = [
+    'romain correia', 'rodrigo borges', 'afonso freitas', 'igor julião', 
+    'noah madsen', 'tomas domingos', 'fábio china', 'carlos daniel',
+    'pedro silva', 'michel costa', 'rodrigo andrade', 'vladan danilovic',
+    'ibrahima guirassy', 'fabio blanco', 'preslav borukov', 'alexandre guedes',
+    'vitor costa', 'joão afonso', 'josé brígido', 'diogo mendes',
+    'edgar costa', 'martim tavares', 'renato alves', 'bruno gomes'
+  ];
+
+  // Staff and management names to filter out (UPDATED - separated coaches from staff)
+  private readonly STAFF_AND_MANAGEMENT = [
+    'administração', 'direção', 'presidente', 'adjunto',
+    'preparador físico', 'fisioterapeuta', 'team manager',
+    'massagista', 'kitman', 'segurança', 'jardineiro',
+    'administrativa', 'secretária', 'rececionista'
+  ];
+
+  // NEW: Main team coaches (current and potential)
+  private readonly MAIN_TEAM_COACHES = [
+    'vitor matos', 'vítor matos', 'vasco santos', 'joão henriques', 
+    'ricardo sousa', 'treinador principal', 'técnico principal'
+  ];
+
+  // Youth/academy keywords to filter appropriately
+  private readonly YOUTH_KEYWORDS = [
+    'sub-15', 'sub-17', 'sub-19', 'sub-21', 'sub-23', 'juvenis', 'juniores',
+    'academia', 'formação', 'escalões jovens', 'youth', 'academy'
+  ];
+
+  // NEW: Coach-related keywords
+  private readonly COACH_KEYWORDS = [
+    'treinador', 'técnico', 'comandante técnico', 'mister',
+    'comando técnico', 'staff técnico', 'equipa técnica'
+  ];
 
   constructor() {
     this.initializeDefaultRumors();
@@ -39,18 +86,25 @@ class TransferService {
   private initializeDefaultRumors(): void {
     // Initialize with some realistic rumors
     this.rumors = [];
+    this.rumorSignatures.clear();
+    this.contentHashes.clear();
   }
 
   async getRumors(): Promise<TransferRumor[]> {
     if (!this.lastUpdate || Date.now() - this.lastUpdate.getTime() > 60 * 60 * 1000) {
       await this.updateRumors();
     }
-    return this.rumors;
+    // Return main team rumors including coaches
+    return this.rumors.filter(rumor => 
+      rumor.isMainTeam !== false || rumor.category === 'coach'
+    );
   }
 
   async refreshRumors(): Promise<TransferRumor[]> {
     await this.updateRumors();
-    return this.rumors;
+    return this.rumors.filter(rumor => 
+      rumor.isMainTeam !== false || rumor.category === 'coach'
+    );
   }
 
   async getStats(): Promise<TransferStats> {
@@ -76,14 +130,22 @@ class TransferService {
       ...rumor,
       id: `manual_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       date: new Date().toISOString().split('T')[0],
-      source: 'Manual'
+      source: 'Manual',
+      isMainTeam: this.isMainTeamRelated(rumor.player_name, rumor.description || ''),
+      category: this.categorizeRumor(rumor.player_name, rumor.description || ''),
+      duplicateSignature: this.createAdvancedRumorSignature(rumor.player_name, rumor.club, rumor.type, rumor.description || '')
     };
 
-    this.rumors.unshift(newRumor);
-    
-    // Keep only the most recent 50 rumors
-    if (this.rumors.length > 50) {
-      this.rumors = this.rumors.slice(0, 50);
+    // Check for duplicates before adding
+    if (!this.isDuplicateRumor(newRumor)) {
+      this.rumors.unshift(newRumor);
+      this.updateSignatureCaches(newRumor);
+      
+      // Keep only the most recent 50 rumors
+      if (this.rumors.length > 50) {
+        this.rumors = this.rumors.slice(0, 50);
+        this.rebuildCaches();
+      }
     }
 
     return newRumor;
@@ -93,37 +155,27 @@ class TransferService {
     if (this.isUpdating) return;
     
     this.isUpdating = true;
-    console.log('Starting enhanced transfer rumors update from real news sources...');
+    console.log('Starting enhanced transfer rumors update with improved filtering...');
     
     try {
       // Scrape real news from Portuguese sports websites
       const scrapedRumors = await realNewsService.fetchRealTransferNews();
       
       if (scrapedRumors.length > 0) {
-        console.log(`Successfully scraped ${scrapedRumors.length} real transfer rumors`);
+        console.log(`Successfully scraped ${scrapedRumors.length} potential transfer rumors`);
         
-        // Enhanced processing of scraped rumors
+        // Enhanced processing with strict filtering
         const processedRumors = this.enhanceRumorAnalysis(scrapedRumors);
         
-        // Create a more sophisticated duplicate detection
-        const existingRumorsMap = new Map<string, TransferRumor>();
+        // Apply strict filtering for quality and relevance
+        const filteredRumors = this.applyStrictFiltering(processedRumors);
         
-        // Map existing rumors by content signature
-        this.rumors.forEach(rumor => {
-          const signature = this.createRumorSignature(rumor);
-          existingRumorsMap.set(signature, rumor);
-        });
+        console.log(`${filteredRumors.length} rumors passed strict filtering (${processedRumors.length - filteredRumors.length} filtered out)`);
         
-        // Filter out duplicates from scraped rumors
-        const newRumors = processedRumors.filter(rumor => {
-          const signature = this.createRumorSignature(rumor);
-          const idExists = this.rumors.some(existing => existing.id === rumor.id);
-          const contentExists = existingRumorsMap.has(signature);
-          
-          return !idExists && !contentExists;
-        });
+        // Advanced duplicate detection
+        const newRumors = this.advancedDuplicateFilter(filteredRumors);
         
-        console.log(`Found ${newRumors.length} new rumors after duplicate filtering and enhancement`);
+        console.log(`Found ${newRumors.length} new unique rumors after advanced duplicate detection`);
         
         // Add new rumors to the beginning
         this.rumors = [...newRumors, ...this.rumors];
@@ -132,8 +184,11 @@ class TransferService {
         this.rumors.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
         this.rumors = this.rumors.slice(0, 50);
         
+        // Rebuild caches for duplicate detection
+        this.rebuildCaches();
+        
         this.lastUpdate = new Date();
-        console.log(`Transfer rumors updated successfully. Total: ${this.rumors.length}`);
+        console.log(`Transfer rumors updated successfully. Total: ${this.rumors.length} (Main team: ${this.rumors.filter(r => r.isMainTeam).length})`);
       }
     } catch (error) {
       console.error('Error updating transfer rumors:', error);
@@ -162,20 +217,319 @@ class TransferService {
       // Enhanced status detection
       enhancedRumor.status = this.detectTransferStatus(rumor.description || '', rumor.source);
       
+      // New: Categorize and check if main team related
+      enhancedRumor.isMainTeam = this.isMainTeamRelated(rumor.player_name, rumor.description || '');
+      enhancedRumor.category = this.categorizeRumor(rumor.player_name, rumor.description || '');
+      
+      // NEW: Add position for coaches
+      if (enhancedRumor.category === 'coach') {
+        enhancedRumor.position = this.extractCoachPosition(rumor.description || '');
+      }
+      
+      enhancedRumor.duplicateSignature = this.createAdvancedRumorSignature(
+        rumor.player_name, 
+        enhancedRumor.club, 
+        enhancedRumor.type, 
+        rumor.description || ''
+      );
+      
       return enhancedRumor;
     });
+  }
+
+  // NEW METHOD: Strict filtering for quality and relevance
+  private applyStrictFiltering(rumors: TransferRumor[]): TransferRumor[] {
+    return rumors.filter(rumor => {
+      // Filter 1: Must have a valid player name
+      if (!rumor.player_name || rumor.player_name.length < 3) {
+        console.log(`Filtered out: Invalid player name - ${rumor.player_name}`);
+        return false;
+      }
+
+      // Filter 2: Must be clearly transfer-related
+      if (!this.isValidTransferRumor(rumor)) {
+        console.log(`Filtered out: Not a valid transfer rumor - ${rumor.description}`);
+        return false;
+      }
+
+      // Filter 3: Filter out obvious non-football content
+      if (this.isNonFootballContent(rumor.description || '')) {
+        console.log(`Filtered out: Non-football content - ${rumor.description}`);
+        return false;
+      }
+
+      // Filter 4: Minimum reliability threshold
+      if (rumor.reliability < 2) {
+        console.log(`Filtered out: Low reliability (${rumor.reliability}) - ${rumor.player_name}`);
+        return false;
+      }
+
+      // Filter 5: UPDATED - Allow coaches even with medium reliability
+      if (!rumor.isMainTeam && rumor.category !== 'coach' && rumor.reliability < 4) {
+        console.log(`Filtered out: Non-main team with low reliability - ${rumor.player_name}`);
+        return false;
+      }
+
+      return true;
+    });
+  }
+
+  // NEW METHOD: Advanced duplicate detection
+  private advancedDuplicateFilter(rumors: TransferRumor[]): TransferRumor[] {
+    const uniqueRumors: TransferRumor[] = [];
+    
+    for (const rumor of rumors) {
+      if (!this.isDuplicateRumor(rumor)) {
+        uniqueRumors.push(rumor);
+        this.updateSignatureCaches(rumor);
+      } else {
+        console.log(`Filtered duplicate: ${rumor.player_name} - ${rumor.type} - ${rumor.club}`);
+      }
+    }
+
+    return uniqueRumors;
+  }
+
+  // NEW METHOD: Check if rumor is duplicate using multiple methods
+  private isDuplicateRumor(rumor: TransferRumor): boolean {
+    // Method 1: Check signature
+    if (this.rumorSignatures.has(rumor.duplicateSignature || '')) {
+      return true;
+    }
+
+    // Method 2: Check content hash
+    const contentHash = this.createContentHash(rumor.description || '');
+    if (this.contentHashes.has(contentHash)) {
+      return true;
+    }
+
+    // Method 3: Check similar rumors (fuzzy matching)
+    const similarRumor = this.rumors.find(existing => 
+      this.areSimilarRumors(existing, rumor)
+    );
+
+    return !!similarRumor;
+  }
+
+  // NEW METHOD: Check if two rumors are similar
+  private areSimilarRumors(rumor1: TransferRumor, rumor2: TransferRumor): boolean {
+    // Same player and same type within 3 days
+    if (rumor1.player_name.toLowerCase() === rumor2.player_name.toLowerCase() &&
+        rumor1.type === rumor2.type) {
+      
+      const date1 = new Date(rumor1.date);
+      const date2 = new Date(rumor2.date);
+      const daysDiff = Math.abs((date1.getTime() - date2.getTime()) / (1000 * 60 * 60 * 24));
+      
+      return daysDiff <= 3;
+    }
+
+    return false;
+  }
+
+  // NEW METHOD: Determine if rumor is about main team (UPDATED for coaches)
+  private isMainTeamRelated(playerName: string, description: string): boolean {
+    const lowerName = playerName.toLowerCase();
+    const lowerDesc = description.toLowerCase();
+
+    // Check if it's a known main team player
+    if (this.CURRENT_MAIN_TEAM_PLAYERS.some(player => 
+      lowerName.includes(player) || lowerDesc.includes(player)
+    )) {
+      return true;
+    }
+
+    // NEW: Check if it's about main team coach
+    if (this.isMainTeamCoach(playerName, description)) {
+      return true;
+    }
+
+    // Check if it's staff/management (not main team players or coaches)
+    if (this.STAFF_AND_MANAGEMENT.some(staff => 
+      lowerName.includes(staff) || lowerDesc.includes(staff)
+    )) {
+      return false;
+    }
+
+    // Check for youth team indicators
+    if (this.YOUTH_KEYWORDS.some(keyword => 
+      lowerDesc.includes(keyword)
+    )) {
+      return false;
+    }
+
+    // Check for main team indicators
+    const mainTeamKeywords = [
+      'equipa principal', 'equipa sénior', 'plantel principal', 
+      'primeira equipa', 'equipe principal'
+    ];
+
+    if (mainTeamKeywords.some(keyword => lowerDesc.includes(keyword))) {
+      return true;
+    }
+
+    // Default: assume main team for senior age players with transfer activity
+    return !this.isYouthPlayer(playerName, description);
+  }
+
+  // NEW METHOD: Check if it's about main team coach
+  private isMainTeamCoach(playerName: string, description: string): boolean {
+    const lowerName = playerName.toLowerCase();
+    const lowerDesc = description.toLowerCase();
+
+    // Check for known main team coaches
+    if (this.MAIN_TEAM_COACHES.some(coach => 
+      lowerName.includes(coach) || lowerDesc.includes(coach)
+    )) {
+      return true;
+    }
+
+    // Check if it mentions coach keywords + main team context
+    const hasCoachKeyword = this.COACH_KEYWORDS.some(keyword => 
+      lowerName.includes(keyword) || lowerDesc.includes(keyword)
+    );
+
+    if (hasCoachKeyword) {
+      // Must be about main team, not youth teams
+      const mainTeamContext = [
+        'equipa principal', 'primeira equipa', 'plantel principal',
+        'marítimo', 'maritimo', 'cs marítimo'
+      ];
+
+      const hasMainTeamContext = mainTeamContext.some(context => 
+        lowerDesc.includes(context)
+      );
+
+      // Exclude youth team coaches
+      const youthContext = this.YOUTH_KEYWORDS.some(keyword => 
+        lowerDesc.includes(keyword)
+      );
+
+      return hasMainTeamContext && !youthContext;
+    }
+
+    return false;
+  }
+
+  // NEW METHOD: Categorize rumor type (UPDATED for coaches)
+  private categorizeRumor(playerName: string, description: string): 'senior' | 'youth' | 'staff' | 'coach' | 'other' {
+    const lowerName = playerName.toLowerCase();
+    const lowerDesc = description.toLowerCase();
+
+    // NEW: Check for coaches first
+    if (this.isMainTeamCoach(playerName, description)) {
+      return 'coach';
+    }
+
+    // Check for staff (excluding coaches)
+    if (this.STAFF_AND_MANAGEMENT.some(staff => 
+      lowerName.includes(staff) || lowerDesc.includes(staff)
+    )) {
+      return 'staff';
+    }
+
+    // Check for youth
+    if (this.YOUTH_KEYWORDS.some(keyword => lowerDesc.includes(keyword)) ||
+        this.isYouthPlayer(playerName, description)) {
+      return 'youth';
+    }
+
+    // Check for senior/main team
+    if (this.CURRENT_MAIN_TEAM_PLAYERS.some(player => 
+      lowerName.includes(player) || lowerDesc.includes(player)
+    )) {
+      return 'senior';
+    }
+
+    return 'senior'; // Default to senior for unknown players
+  }
+
+  // NEW METHOD: Check if player is youth
+  private isYouthPlayer(playerName: string, description: string): boolean {
+    const lowerDesc = description.toLowerCase();
+    
+    // Age indicators for youth
+    const youthAgePatterns = [
+      /\b1[6-9] anos?\b/, /\b20 anos?\b/, /\b21 anos?\b/
+    ];
+
+    return youthAgePatterns.some(pattern => pattern.test(lowerDesc)) ||
+           this.YOUTH_KEYWORDS.some(keyword => lowerDesc.includes(keyword));
+  }
+
+  // NEW METHOD: Check if content is valid transfer rumor
+  private isValidTransferRumor(rumor: TransferRumor): boolean {
+    const desc = rumor.description?.toLowerCase() || '';
+    
+    // Must contain transfer-related keywords
+    const transferKeywords = [
+      'transfer', 'contrat', 'assina', 'renova', 'saída', 'chegada',
+      'reforço', 'venda', 'compra', 'renovação', 'acordo', 'negociação'
+    ];
+
+    return transferKeywords.some(keyword => desc.includes(keyword));
+  }
+
+  // NEW METHOD: Check if content is non-football
+  private isNonFootballContent(description: string): boolean {
+    const lowerDesc = description.toLowerCase();
+    
+    const nonFootballKeywords = [
+      'política', 'economia', 'covid', 'pandemia', 'eleições',
+      'temperatura', 'tempo', 'trânsito', 'acidentes', 'crime',
+      'música', 'filme', 'teatro', 'festival', 'concerto'
+    ];
+
+    return nonFootballKeywords.some(keyword => lowerDesc.includes(keyword));
+  }
+
+  // NEW METHOD: Create advanced rumor signature
+  private createAdvancedRumorSignature(playerName: string, club: string, type: string, description: string): string {
+    const normalizedName = playerName.toLowerCase().trim().replace(/\s+/g, ' ');
+    const normalizedClub = club.toLowerCase().trim();
+    const descHash = this.createContentHash(description).substring(0, 8);
+    return `${normalizedName}|${normalizedClub}|${type}|${descHash}`;
+  }
+
+  // NEW METHOD: Update signature caches
+  private updateSignatureCaches(rumor: TransferRumor): void {
+    if (rumor.duplicateSignature) {
+      this.rumorSignatures.add(rumor.duplicateSignature);
+    }
+    
+    const contentHash = this.createContentHash(rumor.description || '');
+    this.contentHashes.add(contentHash);
+  }
+
+  // NEW METHOD: Rebuild all caches
+  private rebuildCaches(): void {
+    this.rumorSignatures.clear();
+    this.contentHashes.clear();
+
+    this.rumors.forEach(rumor => {
+      this.updateSignatureCaches(rumor);
+    });
+  }
+
+  // NEW METHOD: Create content hash
+  private createContentHash(content: string): string {
+    let hash = 0;
+    if (content.length === 0) return hash.toString();
+    
+    for (let i = 0; i < content.length; i++) {
+      const char = content.charCodeAt(i);
+      hash = ((hash << 5) - hash) + char;
+      hash = hash & hash; // Convert to 32bit integer
+    }
+    
+    return Math.abs(hash).toString(36);
   }
 
   private detectTransferType(description: string, playerName: string): "compra" | "venda" | "renovação" {
     const lowerDesc = description.toLowerCase();
     
     // Known current Marítimo players (this should ideally come from a database)
-    const currentPlayers = [
-      'romain correia', 'rodrigo borges', 'afonso freitas', 'igor julião', 
-      'noah madsen', 'tomas domingos', 'fábio china', 'carlos daniel',
-      'pedro silva', 'michel costa', 'rodrigo andrade', 'vladan danilovic',
-      'ibrahima guirassy', 'fabio blanco', 'preslav borukov', 'alexandre guedes'
-    ];
+    const currentPlayers = this.CURRENT_MAIN_TEAM_PLAYERS;
     
     const isCurrentPlayer = currentPlayers.some(player => 
       lowerDesc.includes(player.toLowerCase()) || 
@@ -329,12 +683,210 @@ class TransferService {
     return Math.round((totalReliability / rumors.length) * 10) / 10;
   }
 
-  private createRumorSignature(rumor: TransferRumor): string {
-    // Create a signature based on player name, club, and type to detect content duplicates
-    const playerName = rumor.player_name.toLowerCase().trim();
-    const club = rumor.club.toLowerCase().trim();
-    const type = rumor.type;
-    return `${playerName}_${club}_${type}`;
+  // NEW METHOD: Get detailed statistics (UPDATED for coaches)
+  async getDetailedStats(): Promise<any> {
+    const rumors = this.rumors; // Get all rumors including filtered ones
+    
+    return {
+      byCategory: {
+        senior: rumors.filter(r => r.category === 'senior').length,
+        youth: rumors.filter(r => r.category === 'youth').length,
+        staff: rumors.filter(r => r.category === 'staff').length,
+        coach: rumors.filter(r => r.category === 'coach').length,
+        other: rumors.filter(r => r.category === 'other').length
+      },
+      byReliability: {
+        high: rumors.filter(r => r.reliability >= 4).length,
+        medium: rumors.filter(r => r.reliability === 3).length,
+        low: rumors.filter(r => r.reliability <= 2).length
+      },
+      mainTeamVsOthers: {
+        mainTeam: rumors.filter(r => r.isMainTeam === true).length,
+        coaches: rumors.filter(r => r.category === 'coach').length,
+        others: rumors.filter(r => r.isMainTeam === false && r.category !== 'coach').length
+      },
+      duplicateSignatures: this.rumorSignatures.size,
+      contentHashes: this.contentHashes.size,
+      lastUpdate: this.lastUpdate?.toISOString() || 'Never'
+    };
+  }
+
+  // NEW METHOD: Get quality report
+  async getQualityReport(): Promise<any> {
+    const rumors = this.rumors;
+    
+    // Find potential duplicates by similar content
+    const potentialDuplicates = this.findPotentialDuplicates();
+    
+    // Quality metrics
+    const lowReliabilityRumors = rumors.filter(r => r.reliability <= 2);
+    const nonMainTeamRumors = rumors.filter(r => r.isMainTeam === false);
+    const oldRumors = rumors.filter(r => {
+      const rumorDate = new Date(r.date);
+      const weekAgo = new Date();
+      weekAgo.setDate(weekAgo.getDate() - 7);
+      return rumorDate < weekAgo;
+    });
+
+    return {
+      totalRumors: rumors.length,
+      qualityIssues: {
+        potentialDuplicates: potentialDuplicates.length,
+        lowReliability: lowReliabilityRumors.length,
+        nonMainTeam: nonMainTeamRumors.length,
+        oldRumors: oldRumors.length
+      },
+      recommendations: this.generateQualityRecommendations(
+        potentialDuplicates,
+        lowReliabilityRumors,
+        nonMainTeamRumors,
+        oldRumors
+      ),
+      cacheStats: {
+        signaturesCached: this.rumorSignatures.size,
+        contentHashesCached: this.contentHashes.size
+      }
+    };
+  }
+
+  // NEW METHOD: Clean duplicate rumors
+  async cleanDuplicateRumors(): Promise<{ removedCount: number; remainingCount: number }> {
+    const originalCount = this.rumors.length;
+    const potentialDuplicates = this.findPotentialDuplicates();
+    
+    // Remove duplicates - keep the one with highest reliability
+    const duplicateGroups = this.groupDuplicates(potentialDuplicates);
+    let removedCount = 0;
+
+    for (const group of duplicateGroups) {
+      if (group.length > 1) {
+        // Sort by reliability descending and keep the best one
+        group.sort((a, b) => b.reliability - a.reliability);
+        const toKeep = group[0];
+        const toRemove = group.slice(1);
+
+        // Remove duplicates from main array
+        toRemove.forEach(rumor => {
+          const index = this.rumors.findIndex(r => r.id === rumor.id);
+          if (index !== -1) {
+            this.rumors.splice(index, 1);
+            removedCount++;
+          }
+        });
+      }
+    }
+
+    // Rebuild caches after cleaning
+    this.rebuildCaches();
+
+    return {
+      removedCount,
+      remainingCount: this.rumors.length
+    };
+  }
+
+  // Helper method: Find potential duplicates
+  private findPotentialDuplicates(): TransferRumor[] {
+    const duplicates: TransferRumor[] = [];
+    const checked = new Set<string>();
+
+    for (const rumor of this.rumors) {
+      if (checked.has(rumor.id)) continue;
+
+      const similarRumors = this.rumors.filter(other => 
+        other.id !== rumor.id && this.areSimilarRumors(rumor, other)
+      );
+
+      if (similarRumors.length > 0) {
+        duplicates.push(rumor, ...similarRumors);
+        checked.add(rumor.id);
+        similarRumors.forEach(r => checked.add(r.id));
+      }
+    }
+
+    return duplicates;
+  }
+
+  // Helper method: Group duplicates
+  private groupDuplicates(duplicates: TransferRumor[]): TransferRumor[][] {
+    const groups: TransferRumor[][] = [];
+    const processed = new Set<string>();
+
+    for (const rumor of duplicates) {
+      if (processed.has(rumor.id)) continue;
+
+      const group = [rumor];
+      processed.add(rumor.id);
+
+      // Find all similar rumors for this group
+      for (const other of duplicates) {
+        if (!processed.has(other.id) && this.areSimilarRumors(rumor, other)) {
+          group.push(other);
+          processed.add(other.id);
+        }
+      }
+
+      if (group.length > 1) {
+        groups.push(group);
+      }
+    }
+
+    return groups;
+  }
+
+  // Helper method: Generate quality recommendations
+  private generateQualityRecommendations(
+    potentialDuplicates: TransferRumor[],
+    lowReliabilityRumors: TransferRumor[],
+    nonMainTeamRumors: TransferRumor[],
+    oldRumors: TransferRumor[]
+  ): string[] {
+    const recommendations: string[] = [];
+
+    if (potentialDuplicates.length > 0) {
+      recommendations.push(`Considere limpar ${potentialDuplicates.length} rumores potencialmente duplicados`);
+    }
+
+    if (lowReliabilityRumors.length > 5) {
+      recommendations.push(`${lowReliabilityRumors.length} rumores têm baixa confiabilidade - considere filtrar`);
+    }
+
+    if (nonMainTeamRumors.length > this.rumors.length * 0.3) {
+      recommendations.push(`${nonMainTeamRumors.length} rumores não são sobre a equipa principal`);
+    }
+
+    if (oldRumors.length > 10) {
+      recommendations.push(`${oldRumors.length} rumores são antigos (mais de 1 semana)`);
+    }
+
+    if (recommendations.length === 0) {
+      recommendations.push('A qualidade dos rumores está boa!');
+    }
+
+    return recommendations;
+  }
+
+  // NEW METHOD: Extract coach position from description
+  private extractCoachPosition(description: string): string {
+    const lowerDesc = description.toLowerCase();
+    
+    if (lowerDesc.includes('treinador principal') || lowerDesc.includes('técnico principal')) {
+      return 'Treinador Principal';
+    }
+    
+    if (lowerDesc.includes('treinador adjunto') || lowerDesc.includes('adjunto')) {
+      return 'Treinador Adjunto';
+    }
+    
+    if (lowerDesc.includes('preparador físico')) {
+      return 'Preparador Físico';
+    }
+    
+    if (lowerDesc.includes('treinador') || lowerDesc.includes('técnico')) {
+      return 'Treinador';
+    }
+    
+    return 'Staff Técnico';
   }
 }
 
