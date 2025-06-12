@@ -155,16 +155,23 @@ const Squad = () => {
       flex: "1",
     },
     positionTitle: {
-      fontSize: "clamp(1.4rem, 3.5vw, 2rem)",
-      fontWeight: "700",
+      fontSize: "clamp(1.8rem, 4.5vw, 2.5rem)",
+      fontWeight: "800",
       color: "#FFFFFF",
       margin: 0,
+      textShadow: "0 3px 6px rgba(0, 0, 0, 0.6), 0 0 20px rgba(76, 175, 80, 0.3)",
+      background: "linear-gradient(135deg, #FFFFFF 0%, #FFD700 50%, #4CAF50 100%)",
+      WebkitBackgroundClip: "text",
+      WebkitTextFillColor: "transparent",
+      backgroundClip: "text",
+      letterSpacing: "-0.02em",
     },
     positionCount: {
-      fontSize: "clamp(0.8rem, 1.8vw, 1rem)",
+      fontSize: "clamp(1rem, 2.2vw, 1.3rem)",
       color: "#B0BEC5",
-      fontWeight: "500",
-      marginTop: "0.5vh",
+      fontWeight: "600",
+      marginTop: "clamp(0.5rem, 1vh, 0.8rem)",
+      textShadow: "0 2px 4px rgba(0, 0, 0, 0.5)",
     },
     navigationControls: {
       display: "flex",
@@ -190,37 +197,36 @@ const Squad = () => {
     },
     playersGrid: {
       display: "grid",
-      gridTemplateColumns: "repeat(auto-fit, minmax(clamp(12rem, 20vw, 15rem), 1fr))",
-      gap: "clamp(0.8rem, 1.8vw, 1.2rem)",
-      padding: "1% 0",
+      gridAutoRows: "1fr",
+      gap: "2%",
+      padding: "2%",
+      height: "70vh",
       opacity: 1,
       transform: "translateX(0)",
-      transition: "all 0.5s cubic-bezier(0.4, 0, 0.2, 1)",
-      flex: 1,
-      alignContent: 'center',
+      transition: "all 0.3s ease",
+      alignContent: 'stretch',
       justifyContent: 'center',
     },
     playersGridAnimating: {
-      opacity: 0,
-      transform: "translateX(5%)",
+      opacity: 0.7,
+      transform: "translateX(2%)",
     },
     playerCard: {
-      background: "linear-gradient(135deg, rgba(40, 55, 70, 0.95) 0%, rgba(30, 40, 50, 0.95) 100%)",
-      border: "2px solid rgba(76, 175, 80, 0.3)",
-      borderRadius: "clamp(0.6rem, 1.5vw, 1rem)",
-      padding: "clamp(0.8rem, 2vh, 1.4rem)",
+      background: "rgba(40, 55, 70, 0.95)",
+      border: "2px solid rgba(76, 175, 80, 0.6)",
+      borderRadius: "8px",
+      padding: "3%",
       textAlign: "center",
       color: "white",
-      boxShadow: "0 0.6vh 1.5vh rgba(0, 0, 0, 0.4)",
-      transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
+      boxShadow: "0 4px 12px rgba(0, 0, 0, 0.4)",
+      transition: "all 0.2s ease",
       cursor: "pointer",
       position: "relative",
       overflow: "hidden",
-      transform: "translateY(0) rotateX(0deg)",
-      transformStyle: "preserve-3d",
-      perspective: "1000px",
-      height: 'fit-content',
-      maxHeight: '100%',
+      height: "100%",
+      display: "flex",
+      flexDirection: "column",
+      justifyContent: "space-between",
     },
     playerCardGlow: {
       position: "absolute",
@@ -228,42 +234,42 @@ const Squad = () => {
       left: 0,
       right: 0,
       bottom: 0,
-      background: "linear-gradient(135deg, rgba(76, 175, 80, 0.1) 0%, rgba(255, 215, 0, 0.1) 100%)",
-      borderRadius: "clamp(0.6rem, 1.5vw, 1rem)",
+      background: "linear-gradient(135deg, rgba(76, 175, 80, 0.2) 0%, rgba(255, 215, 0, 0.2) 100%)",
+      borderRadius: "8px",
       opacity: 0,
-      transition: "opacity 0.3s ease",
+      transition: "opacity 0.2s ease",
+      zIndex: -1,
     },
     playerImageContainer: {
       position: "relative",
-      width: "clamp(4.5rem, 10vw, 6.5rem)",
-      height: "clamp(4.5rem, 10vw, 6.5rem)",
-      margin: "0 auto 1vh",
-      borderRadius: "50%",
+      width: "100%",
+      height: "0",
+      marginBottom: "3%",
+      borderRadius: "6px",
       overflow: "hidden",
       border: "2px solid rgba(76, 175, 80, 0.6)",
-      boxShadow: "0 0.4vh 1vh rgba(0, 0, 0, 0.4)",
+      background: "rgba(20, 30, 40, 0.8)",
     },
     playerImage: {
+      position: "absolute",
+      top: "0",
+      left: "0",
       width: "100%",
       height: "100%",
       objectFit: "cover",
-      transition: "transform 0.3s ease",
+      objectPosition: "center top",
+      transition: "transform 0.2s ease",
     },
     playerName: {
-      fontSize: "clamp(0.8rem, 1.8vw, 1rem)",
+      fontSize: "clamp(0.8rem, 1.5vh, 1.1rem)",
       fontWeight: "700",
-      margin: "0 0 0.5vh 0",
+      margin: "0",
       color: "#FFFFFF",
       lineHeight: "1.2",
+      textAlign: "center",
+      padding: "0 2%",
     },
-    playerPosition: {
-      fontSize: "clamp(0.7rem, 1.5vw, 0.9rem)",
-      color: "#FFD700",
-      fontWeight: "600",
-      margin: 0,
-      textTransform: "uppercase",
-      letterSpacing: "0.05em",
-    },
+
     loading: {
       display: 'flex',
       flexDirection: 'column',
@@ -359,6 +365,27 @@ const Squad = () => {
 
   const currentPosition = groupedPositions[currentPositionIndex];
 
+  // Calcular número ideal de colunas baseado no número de jogadores
+  const getOptimalColumns = (playerCount: number): number => {
+    if (playerCount <= 3) return 3;
+    if (playerCount <= 6) return 4;
+    if (playerCount <= 8) return 4;
+    if (playerCount <= 12) return 4;
+    return 5;
+  };
+
+  const optimalColumns = getOptimalColumns(currentPosition.players.length);
+
+  // Calcular altura da imagem baseada no número de jogadores
+  const getImagePadding = (playerCount: number): string => {
+    if (playerCount <= 3) return "100%"; // Aproveita mais espaço para 3 jogadores - não deixa vazio
+    if (playerCount <= 6) return "80%"; // Meio termo para 6 jogadores
+    if (playerCount <= 8) return "80%"; // Já está perfeito para 8 jogadores
+    return "50%"; // Bem compacto para muitos jogadores
+  };
+
+  const imagePadding = getImagePadding(currentPosition.players.length);
+
   const navigatePosition = (direction: 'next' | 'prev') => {
     if (isAnimating) return;
     
@@ -384,22 +411,31 @@ const Squad = () => {
       className="hover-player-card"
       onMouseEnter={(e) => {
         const card = e.currentTarget;
-        card.style.transform = 'translateY(-0.8vh) rotateX(8deg)';
-        card.style.boxShadow = '0 2.5vh 5vh rgba(76, 175, 80, 0.3)';
+        card.style.transform = 'translateY(-1vh) scale(1.02)';
+        card.style.boxShadow = '0 6px 20px rgba(76, 175, 80, 0.4)';
+        card.style.borderColor = 'rgba(76, 175, 80, 1)';
         const glow = card.querySelector('.player-glow') as HTMLElement;
         if (glow) glow.style.opacity = '1';
+        const image = card.querySelector('img') as HTMLElement;
+        if (image) image.style.transform = 'scale(1.05)';
       }}
       onMouseLeave={(e) => {
         const card = e.currentTarget;
-        card.style.transform = 'translateY(0) rotateX(0deg)';
-        card.style.boxShadow = '0 0.8vh 2vh rgba(0, 0, 0, 0.4)';
+        card.style.transform = 'translateY(0) scale(1)';
+        card.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.4)';
+        card.style.borderColor = 'rgba(76, 175, 80, 0.6)';
         const glow = card.querySelector('.player-glow') as HTMLElement;
         if (glow) glow.style.opacity = '0';
+        const image = card.querySelector('img') as HTMLElement;
+        if (image) image.style.transform = 'scale(1)';
       }}
     >
       <div style={styles.playerCardGlow} className="player-glow"></div>
       
-      <div style={styles.playerImageContainer}>
+      <div style={{
+        ...styles.playerImageContainer,
+        paddingBottom: imagePadding
+      }}>
         <OptimizedImage 
           src={getPlayerImageUrl(player.image_url)}
           alt={player.name} 
@@ -415,7 +451,6 @@ const Squad = () => {
       </div>
       
       <h3 style={styles.playerName}>{player.name}</h3>
-      <p style={styles.playerPosition}>{player.position}</p>
     </div>
   );
 
@@ -511,6 +546,7 @@ const Squad = () => {
             <div 
               style={{
                 ...styles.playersGrid,
+                gridTemplateColumns: `repeat(${optimalColumns}, 1fr)`,
                 ...(isAnimating ? styles.playersGridAnimating : {})
               }}
             >
