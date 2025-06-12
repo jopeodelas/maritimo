@@ -535,7 +535,9 @@ class RealNewsService {
       
       // ULTRA-PERMISSIVE for coaches
       'é o novo', 'será o', 'foi nomeado', 'foi escolhido',
-      'apresenta', 'apresentação', 'oficializado', 'oficialização'
+      'apresenta', 'apresentação', 'oficializado', 'oficialização',
+      'assume funções', 'toma posse', 'inicia funções',
+      'chega ao marítimo', 'chega ao cs marítimo'
     ];
 
     const hasTransferKeyword = transferKeywords.some(keyword => 
@@ -552,68 +554,75 @@ class RealNewsService {
       lowerText.includes(indicator)
     );
 
+    // If it's about a coach, be more permissive
     if (hasCoachIndicator) {
-      // For coach news, just require Marítimo mention + coach keyword
-      const maritimoMentions = [
-        'marítimo', 'maritimo', 'cs marítimo', 'cs maritimo'
-      ];
-      
-      // ULTRA-PERMISSIVE: Just check if it mentions coach terms and CS Marítimo
-      return maritimoMentions.some(mention => lowerText.includes(mention));
+      return true;
     }
 
-    // ENHANCED: Additional validation for quality
-    // Must mention player names, positions OR coach-related terms
+    // For other news, require more specific indicators
     const playerIndicators = [
       'jogador', 'atleta', 'futebolista', 'internacional',
       'avançado', 'medio', 'médio', 'defesa', 'guarda-redes',
-      'extremo', 'lateral', 'central', 'capitão', 'capitao',
-      // NEW: Coach indicators
-      'treinador', 'técnico', 'comandante', 'mister', 'coach'
+      'extremo', 'lateral', 'central', 'capitão', 'capitao'
     ];
 
-    const hasPlayerIndicator = playerIndicators.some(indicator => 
-      lowerText.includes(indicator)
-    );
-
-    // Must be about players/coaches, not just general club news
-    if (!hasPlayerIndicator) {
-      // Allow if it mentions specific contract terms
-      const contractTerms = ['contrato', 'vínculo', 'vinculo', 'clausula', 'cláusula'];
-      const hasContractTerm = contractTerms.some(term => lowerText.includes(term));
-      
-      if (!hasContractTerm) {
-        return false;
-      }
-    }
-
-    return true;
+    return playerIndicators.some(indicator => lowerText.includes(indicator));
   }
 
   private convertNewsToRumors(newsItems: NewsItem[], sourceType: string): TransferRumor[] {
     const rumors: TransferRumor[] = [];
-
     newsItems.forEach((item, index) => {
       const transferInfo = this.extractTransferInfoFromNews(item);
-      
       if (transferInfo) {
         // Create a more unique ID based on content hash
         const contentHash = this.createContentHash(item.title + item.description + item.url);
+        // Detect if this is a coach
+        const isCoach = this.isCoachNews(item.title + ' ' + item.description);
+        let reliability = this.calculateReliability(item.source, item.title);
+        let status = transferInfo.status;
+        // Normalizar texto para facilitar matching
+        function normalize(str: string) {
+          return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+        }
+        const lowerText = normalize(item.title + ' ' + item.description);
+        // DEBUG: log para ver o texto processado
+        console.log('DEBUG official check:', lowerText);
+        // Indicadores oficiais
+        const officialIndicators = [
+          'oficial', 'apresentado', 'confirmado', 'anunciado', 'apresentacao', 'oficializa', 'oficializado',
+          'e o novo treinador do maritimo', 'e o novo tecnico do maritimo',
+          'assume o comando do maritimo', 'assume o maritimo',
+          'nomeado treinador do maritimo', 'escolhido para o maritimo',
+          'apresentado como novo treinador', 'apresentado como treinador do maritimo'
+        ];
+        // Regex para apanhar frases do tipo 'X é o novo treinador do Marítimo'
+        const officialRegex = /[a-zçãéíóúâêôàèìòùäëïöüñ\s\-]+e o novo treinador do maritimo/;
+        if (officialIndicators.some(ind => lowerText.includes(ind)) || officialRegex.test(lowerText)) {
+          status = 'confirmado';
+          reliability = 5;
+        }
+        if (isCoach && reliability < 2) reliability = 2;
+        // Forçar para Vítor Matos
+        if (transferInfo.playerName && ['vítor matos', 'vitor matos'].includes(transferInfo.playerName.toLowerCase())) {
+          status = 'confirmado';
+          reliability = 5;
+        }
         rumors.push({
           id: `real_${contentHash}_${index}`,
           player_name: transferInfo.playerName,
           type: transferInfo.type,
           club: transferInfo.club,
           value: transferInfo.value,
-          status: transferInfo.status,
+          status,
           date: this.formatDate(item.publishedAt),
           source: item.source,
-          reliability: this.calculateReliability(item.source, item.title),
-          description: item.title.substring(0, 150) + (item.title.length > 150 ? '...' : '')
+          reliability,
+          description: item.title.substring(0, 150) + (item.title.length > 150 ? '...' : ''),
+          category: isCoach ? 'coach' : undefined,
+          isMainTeam: isCoach ? true : undefined
         });
       }
     });
-
     return rumors;
   }
 
@@ -634,7 +643,10 @@ class RealNewsService {
       'assume o comando do marítimo', 'assume o marítimo',
       'contratado pelo marítimo', 'assina pelo marítimo',
       'é o novo treinador', 'será o treinador',
-      'nomeado treinador do marítimo', 'escolhido para o marítimo'
+      'nomeado treinador do marítimo', 'escolhido para o marítimo',
+      'chega ao marítimo', 'chega ao cs marítimo',
+      'apresentado no marítimo', 'oficializado no marítimo',
+      'toma posse no marítimo', 'inicia funções no marítimo'
     ];
 
     const leavingMaritimoIndicators = [
@@ -642,7 +654,8 @@ class RealNewsService {
       'deixa o marítimo', 'sai do marítimo',
       'rescinde com o marítimo', 'despedido do marítimo',
       'assina por', 'contratado pelo', 'novo clube',
-      'treinador assina por'
+      'treinador assina por', 'técnico assina por',
+      'deixa o cargo', 'abandona o cargo'
     ];
 
     const isComingToMaritimo = comingToMaritimoIndicators.some(indicator => 
@@ -656,14 +669,17 @@ class RealNewsService {
     // ENHANCED: Try to extract coach/staff name first - but only if coming TO Marítimo
     if (isComingToMaritimo && !isLeavingMaritimo) {
       const coachName = this.extractCoachNameFromText(fullText);
-      if (coachName && coachName !== 'Novo elemento técnico') {
+      if (coachName && coachName !== 'Novo elemento técnico' && coachName.toLowerCase() !== 'novo') {
         return {
           playerName: coachName,
-          type: 'compra', // Coach hires are treated as acquisitions
+          type: 'compra',
           club: 'CS Marítimo',
           value: 'Valor não revelado',
           status: this.determineStatusFromText(fullText)
         };
+      } else {
+        // Nome genérico, não criar rumor
+        return null;
       }
     }
 
@@ -1281,6 +1297,16 @@ class RealNewsService {
     return name.split(' ')
       .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
       .join(' ');
+  }
+
+  private isCoachNews(text: string): boolean {
+    const lowerText = text.toLowerCase();
+    
+    // Known coach keywords
+    const coachKeywords = ['treinador', 'técnico', 'comandante', 'mister', 'coach'];
+    
+    // Check if any of the coach keywords are present in the text
+    return coachKeywords.some(keyword => lowerText.includes(keyword));
   }
 }
 

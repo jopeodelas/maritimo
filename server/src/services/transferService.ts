@@ -62,8 +62,9 @@ class TransferService {
 
   // NEW: Main team coaches (current and potential)
   private readonly MAIN_TEAM_COACHES = [
-    'vitor matos', 'vítor matos', 'vasco santos', 'joão henriques', 
-    'ricardo sousa', 'treinador principal', 'técnico principal'
+    'vitor matos', 'vítor matos', 'vasco santos', 'joão henriques',
+    'ricardo sousa', 'treinador principal', 'técnico principal',
+    'novo treinador', 'novo técnico', 'comandante técnico'
   ];
 
   // Youth/academy keywords to filter appropriately
@@ -75,7 +76,9 @@ class TransferService {
   // NEW: Coach-related keywords
   private readonly COACH_KEYWORDS = [
     'treinador', 'técnico', 'comandante técnico', 'mister',
-    'comando técnico', 'staff técnico', 'equipa técnica'
+    'comando técnico', 'staff técnico', 'equipa técnica',
+    'assume funções', 'toma posse', 'inicia funções',
+    'apresentado', 'oficializado', 'nomeado', 'escolhido'
   ];
 
   constructor() {
@@ -377,38 +380,38 @@ class TransferService {
     const lowerName = playerName.toLowerCase();
     const lowerDesc = description.toLowerCase();
 
-    // Check for known main team coaches
+    // Excluir treinadores de equipas femininas e formação
+    const excludeKeywords = [
+      'feminino', 'feminina', 'equipa feminina', 'equipa das mulheres',
+      'sub-15', 'sub-17', 'sub-19', 'sub-21', 'sub-23', 'juniores', 'juvenis',
+      'formação', 'academia', 'escalão', 'escalões', 'youth', 'academy'
+    ];
+    if (excludeKeywords.some(keyword => lowerName.includes(keyword) || lowerDesc.includes(keyword))) {
+      return false;
+    }
+
+    // Check if it's a known main team coach
     if (this.MAIN_TEAM_COACHES.some(coach => 
       lowerName.includes(coach) || lowerDesc.includes(coach)
     )) {
       return true;
     }
 
-    // Check if it mentions coach keywords + main team context
+    // Check for coach-related keywords
     const hasCoachKeyword = this.COACH_KEYWORDS.some(keyword => 
-      lowerName.includes(keyword) || lowerDesc.includes(keyword)
+      lowerDesc.includes(keyword)
     );
-
-    if (hasCoachKeyword) {
-      // Must be about main team, not youth teams
-      const mainTeamContext = [
-        'equipa principal', 'primeira equipa', 'plantel principal',
-        'marítimo', 'maritimo', 'cs marítimo'
-      ];
-
-      const hasMainTeamContext = mainTeamContext.some(context => 
-        lowerDesc.includes(context)
-      );
-
-      // Exclude youth team coaches
-      const youthContext = this.YOUTH_KEYWORDS.some(keyword => 
-        lowerDesc.includes(keyword)
-      );
-
-      return hasMainTeamContext && !youthContext;
+    if (!hasCoachKeyword) {
+      return false;
     }
 
-    return false;
+    // Check for main team indicators
+    const mainTeamKeywords = [
+      'equipa principal', 'equipa sénior', 'plantel principal',
+      'primeira equipa', 'equipe principal', 'marítimo',
+      'cs marítimo', 'clube sport marítimo'
+    ];
+    return mainTeamKeywords.some(keyword => lowerDesc.includes(keyword));
   }
 
   // NEW METHOD: Categorize rumor type (UPDATED for coaches)
@@ -459,14 +462,16 @@ class TransferService {
 
   // NEW METHOD: Check if content is valid transfer rumor
   private isValidTransferRumor(rumor: TransferRumor): boolean {
+    // Aceitar sempre rumores de treinador principal com nome e clube
+    if (rumor.category === 'coach' && rumor.player_name && rumor.club) {
+      return true;
+    }
     const desc = rumor.description?.toLowerCase() || '';
-    
     // Must contain transfer-related keywords
     const transferKeywords = [
       'transfer', 'contrat', 'assina', 'renova', 'saída', 'chegada',
       'reforço', 'venda', 'compra', 'renovação', 'acordo', 'negociação'
     ];
-
     return transferKeywords.some(keyword => desc.includes(keyword));
   }
 
@@ -887,6 +892,33 @@ class TransferService {
     }
     
     return 'Staff Técnico';
+  }
+
+  private extractCoachNameFromText(text: string): string {
+    const lowerText = text.toLowerCase();
+    
+    // Common patterns for coach announcements
+    const patterns = [
+      /(?:novo|novo treinador|novo técnico|comandante técnico)\s+(?:do|do cs|do clube sport)?\s+marítimo\s+(?:é|será|foi)\s+([^,.]+)/i,
+      /(?:marítimo|cs marítimo)\s+(?:anuncia|apresenta|oficializa|nomeia|escolhe)\s+(?:o|a|como)\s+(?:novo|novo treinador|novo técnico)\s+([^,.]+)/i,
+      /(?:treinador|técnico)\s+(?:do|do cs|do clube sport)?\s+marítimo\s+(?:é|será|foi)\s+([^,.]+)/i,
+      /(?:assume|toma posse|inicia funções)\s+(?:como|no cargo de)\s+(?:treinador|técnico)\s+(?:do|do cs|do clube sport)?\s+marítimo\s+([^,.]+)/i
+    ];
+
+    for (const pattern of patterns) {
+      const match = text.match(pattern);
+      if (match && match[1]) {
+        const name = match[1].trim();
+        // Validate that it's actually a name (not just a title or description)
+        if (name.length > 3 && !this.STAFF_AND_MANAGEMENT.some(staff => 
+          name.toLowerCase().includes(staff)
+        )) {
+          return name;
+        }
+      }
+    }
+
+    return 'Novo elemento técnico';
   }
 }
 
