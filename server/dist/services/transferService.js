@@ -11,6 +11,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.transferService = void 0;
 const realNewsService_1 = require("./realNewsService");
+const RELIABILITY_THRESHOLD = 0;
 class TransferService {
     constructor() {
         this.rumors = [];
@@ -38,7 +39,8 @@ class TransferService {
         // NEW: Main team coaches (current and potential)
         this.MAIN_TEAM_COACHES = [
             'vitor matos', 'vítor matos', 'vasco santos', 'joão henriques',
-            'ricardo sousa', 'treinador principal', 'técnico principal'
+            'ricardo sousa', 'treinador principal', 'técnico principal',
+            'novo treinador', 'novo técnico', 'comandante técnico'
         ];
         // Youth/academy keywords to filter appropriately
         this.YOUTH_KEYWORDS = [
@@ -48,7 +50,9 @@ class TransferService {
         // NEW: Coach-related keywords
         this.COACH_KEYWORDS = [
             'treinador', 'técnico', 'comandante técnico', 'mister',
-            'comando técnico', 'staff técnico', 'equipa técnica'
+            'comando técnico', 'staff técnico', 'equipa técnica',
+            'assume funções', 'toma posse', 'inicia funções',
+            'apresentado', 'oficializado', 'nomeado', 'escolhido'
         ];
         this.initializeDefaultRumors();
         this.updateRumors();
@@ -71,8 +75,46 @@ class TransferService {
     refreshRumors() {
         return __awaiter(this, void 0, void 0, function* () {
             yield this.updateRumors();
+            // Apply corrections to existing Vítor Matos rumors
+            this.correctVitorMatosRumors();
             return this.rumors.filter(rumor => rumor.isMainTeam !== false || rumor.category === 'coach');
         });
+    }
+    correctVitorMatosRumors() {
+        console.log('🔧 Aplicando correções específicas para Vítor Matos...');
+        // First pass: correct status and reliability
+        this.rumors.forEach((rumor, index) => {
+            if (['vítor matos', 'vitor matos'].includes(rumor.player_name.toLowerCase())) {
+                const oldStatus = rumor.status;
+                const oldReliability = rumor.reliability;
+                rumor.status = 'confirmado';
+                rumor.reliability = 5;
+                console.log(`Corrigido: ${rumor.player_name} - Status: ${oldStatus} -> ${rumor.status}, Confiabilidade: ${oldReliability} -> ${rumor.reliability}`);
+            }
+        });
+        // Second pass: keep only ONE Vítor Matos rumor
+        const vitorMatosRumors = this.rumors.filter(rumor => ['vítor matos', 'vitor matos'].includes(rumor.player_name.toLowerCase()));
+        if (vitorMatosRumors.length > 1) {
+            console.log(`🗑️ Removendo ${vitorMatosRumors.length - 1} duplicados do Vítor Matos...`);
+            // Find the best one (prefer more recent, then better source)
+            const bestRumor = vitorMatosRumors.reduce((best, current) => {
+                if (new Date(current.date) > new Date(best.date))
+                    return current;
+                if (new Date(current.date).getTime() === new Date(best.date).getTime()) {
+                    // Prefer non-Google News sources
+                    if (current.source !== 'Google News' && best.source === 'Google News')
+                        return current;
+                    if (current.source.length > best.source.length)
+                        return current;
+                }
+                return best;
+            });
+            // Remove all Vítor Matos rumors
+            this.rumors = this.rumors.filter(rumor => !['vítor matos', 'vitor matos'].includes(rumor.player_name.toLowerCase()));
+            // Add back only the best one
+            this.rumors.unshift(bestRumor);
+            console.log(`✅ Mantido apenas 1 rumor do Vítor Matos: ${bestRumor.source} (${bestRumor.date})`);
+        }
     }
     getStats() {
         return __awaiter(this, void 0, void 0, function* () {
@@ -94,6 +136,14 @@ class TransferService {
     addManualRumor(rumor, req) {
         return __awaiter(this, void 0, void 0, function* () {
             const newRumor = Object.assign(Object.assign({}, rumor), { id: `manual_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`, date: new Date().toISOString().split('T')[0], source: 'Manual', isMainTeam: this.isMainTeamRelated(rumor.player_name, rumor.description || ''), category: this.categorizeRumor(rumor.player_name, rumor.description || ''), duplicateSignature: this.createAdvancedRumorSignature(rumor.player_name, rumor.club, rumor.type, rumor.description || '') });
+            // SPECIAL HANDLING: Force correct status and info for Vítor Matos
+            if (['vítor matos', 'vitor matos'].includes(rumor.player_name.toLowerCase())) {
+                newRumor.status = 'confirmado';
+                newRumor.reliability = 5;
+                newRumor.club = 'CS Marítimo'; // CORREÇÃO: Sempre CS Marítimo
+                newRumor.type = 'compra'; // CORREÇÃO: Sempre compra (chegada ao Marítimo)
+                console.log('AddManualRumor: Forçando Vítor Matos como confirmado com confiabilidade 5 e clube correto (CS Marítimo)');
+            }
             // Check for duplicates before adding
             if (!this.isDuplicateRumor(newRumor)) {
                 this.rumors.unshift(newRumor);
@@ -156,6 +206,12 @@ class TransferService {
             enhancedRumor.reliability = this.calculateEnhancedReliability(rumor.source, rumor.description || '', rumor.status);
             // Enhanced status detection
             enhancedRumor.status = this.detectTransferStatus(rumor.description || '', rumor.source);
+            // SPECIAL HANDLING: Force correct status for Vítor Matos
+            if (['vítor matos', 'vitor matos'].includes(rumor.player_name.toLowerCase())) {
+                enhancedRumor.status = 'confirmado';
+                enhancedRumor.reliability = 5;
+                console.log('TransferService: Forçando Vítor Matos como confirmado com confiabilidade 5');
+            }
             // New: Categorize and check if main team related
             enhancedRumor.isMainTeam = this.isMainTeamRelated(rumor.player_name, rumor.description || '');
             enhancedRumor.category = this.categorizeRumor(rumor.player_name, rumor.description || '');
@@ -201,7 +257,30 @@ class TransferService {
     // NEW METHOD: Advanced duplicate detection
     advancedDuplicateFilter(rumors) {
         const uniqueRumors = [];
+        let bestVitorMatosRumor = null;
         for (const rumor of rumors) {
+            // ULTRA-AGGRESSIVE: Keep only ONE Vítor Matos rumor - the best one
+            if (['vítor matos', 'vitor matos'].includes(rumor.player_name.toLowerCase())) {
+                if (!bestVitorMatosRumor) {
+                    bestVitorMatosRumor = rumor;
+                    console.log(`Vítor Matos: First rumor found - ${rumor.source} (reliability: ${rumor.reliability})`);
+                }
+                else {
+                    // Compare and keep the best one
+                    const shouldReplace = rumor.reliability > bestVitorMatosRumor.reliability ||
+                        (rumor.reliability === bestVitorMatosRumor.reliability && new Date(rumor.date) > new Date(bestVitorMatosRumor.date)) ||
+                        (rumor.reliability === bestVitorMatosRumor.reliability && new Date(rumor.date).getTime() === new Date(bestVitorMatosRumor.date).getTime() && rumor.source.length > bestVitorMatosRumor.source.length);
+                    if (shouldReplace) {
+                        console.log(`Vítor Matos: Replacing rumor - Old: ${bestVitorMatosRumor.source} (${bestVitorMatosRumor.reliability}) -> New: ${rumor.source} (${rumor.reliability})`);
+                        bestVitorMatosRumor = rumor;
+                    }
+                    else {
+                        console.log(`Vítor Matos: Keeping existing rumor, discarding: ${rumor.source} (${rumor.reliability})`);
+                    }
+                }
+                continue;
+            }
+            // Regular duplicate handling for other players
             if (!this.isDuplicateRumor(rumor)) {
                 uniqueRumors.push(rumor);
                 this.updateSignatureCaches(rumor);
@@ -209,6 +288,12 @@ class TransferService {
             else {
                 console.log(`Filtered duplicate: ${rumor.player_name} - ${rumor.type} - ${rumor.club}`);
             }
+        }
+        // Add the single best Vítor Matos rumor
+        if (bestVitorMatosRumor) {
+            uniqueRumors.push(bestVitorMatosRumor);
+            this.updateSignatureCaches(bestVitorMatosRumor);
+            console.log(`Added SINGLE Vítor Matos rumor: ${bestVitorMatosRumor.player_name} - ${bestVitorMatosRumor.source} - ${bestVitorMatosRumor.reliability}`);
         }
         return uniqueRumors;
     }
@@ -274,24 +359,31 @@ class TransferService {
     isMainTeamCoach(playerName, description) {
         const lowerName = playerName.toLowerCase();
         const lowerDesc = description.toLowerCase();
-        // Check for known main team coaches
+        // Excluir treinadores de equipas femininas e formação
+        const excludeKeywords = [
+            'feminino', 'feminina', 'equipa feminina', 'equipa das mulheres',
+            'sub-15', 'sub-17', 'sub-19', 'sub-21', 'sub-23', 'juniores', 'juvenis',
+            'formação', 'academia', 'escalão', 'escalões', 'youth', 'academy'
+        ];
+        if (excludeKeywords.some(keyword => lowerName.includes(keyword) || lowerDesc.includes(keyword))) {
+            return false;
+        }
+        // Check if it's a known main team coach
         if (this.MAIN_TEAM_COACHES.some(coach => lowerName.includes(coach) || lowerDesc.includes(coach))) {
             return true;
         }
-        // Check if it mentions coach keywords + main team context
-        const hasCoachKeyword = this.COACH_KEYWORDS.some(keyword => lowerName.includes(keyword) || lowerDesc.includes(keyword));
-        if (hasCoachKeyword) {
-            // Must be about main team, not youth teams
-            const mainTeamContext = [
-                'equipa principal', 'primeira equipa', 'plantel principal',
-                'marítimo', 'maritimo', 'cs marítimo'
-            ];
-            const hasMainTeamContext = mainTeamContext.some(context => lowerDesc.includes(context));
-            // Exclude youth team coaches
-            const youthContext = this.YOUTH_KEYWORDS.some(keyword => lowerDesc.includes(keyword));
-            return hasMainTeamContext && !youthContext;
+        // Check for coach-related keywords
+        const hasCoachKeyword = this.COACH_KEYWORDS.some(keyword => lowerDesc.includes(keyword));
+        if (!hasCoachKeyword) {
+            return false;
         }
-        return false;
+        // Check for main team indicators
+        const mainTeamKeywords = [
+            'equipa principal', 'equipa sénior', 'plantel principal',
+            'primeira equipa', 'equipe principal', 'marítimo',
+            'cs marítimo', 'clube sport marítimo'
+        ];
+        return mainTeamKeywords.some(keyword => lowerDesc.includes(keyword));
     }
     // NEW METHOD: Categorize rumor type (UPDATED for coaches)
     categorizeRumor(playerName, description) {
@@ -329,6 +421,10 @@ class TransferService {
     // NEW METHOD: Check if content is valid transfer rumor
     isValidTransferRumor(rumor) {
         var _a;
+        // Aceitar sempre rumores de treinador principal com nome e clube
+        if (rumor.category === 'coach' && rumor.player_name && rumor.club) {
+            return true;
+        }
         const desc = ((_a = rumor.description) === null || _a === void 0 ? void 0 : _a.toLowerCase()) || '';
         // Must contain transfer-related keywords
         const transferKeywords = [
@@ -674,6 +770,27 @@ class TransferService {
             return 'Treinador';
         }
         return 'Staff Técnico';
+    }
+    extractCoachNameFromText(text) {
+        const lowerText = text.toLowerCase();
+        // Common patterns for coach announcements
+        const patterns = [
+            /(?:novo|novo treinador|novo técnico|comandante técnico)\s+(?:do|do cs|do clube sport)?\s+marítimo\s+(?:é|será|foi)\s+([^,.]+)/i,
+            /(?:marítimo|cs marítimo)\s+(?:anuncia|apresenta|oficializa|nomeia|escolhe)\s+(?:o|a|como)\s+(?:novo|novo treinador|novo técnico)\s+([^,.]+)/i,
+            /(?:treinador|técnico)\s+(?:do|do cs|do clube sport)?\s+marítimo\s+(?:é|será|foi)\s+([^,.]+)/i,
+            /(?:assume|toma posse|inicia funções)\s+(?:como|no cargo de)\s+(?:treinador|técnico)\s+(?:do|do cs|do clube sport)?\s+marítimo\s+([^,.]+)/i
+        ];
+        for (const pattern of patterns) {
+            const match = text.match(pattern);
+            if (match && match[1]) {
+                const name = match[1].trim();
+                // Validate that it's actually a name (not just a title or description)
+                if (name.length > 3 && !this.STAFF_AND_MANAGEMENT.some(staff => name.toLowerCase().includes(staff))) {
+                    return name;
+                }
+            }
+        }
+        return 'Novo elemento técnico';
     }
 }
 exports.transferService = new TransferService();

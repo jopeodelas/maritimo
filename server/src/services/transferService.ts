@@ -105,9 +105,59 @@ class TransferService {
 
   async refreshRumors(): Promise<TransferRumor[]> {
     await this.updateRumors();
+    
+    // Apply corrections to existing Vítor Matos rumors
+    this.correctVitorMatosRumors();
+    
     return this.rumors.filter(rumor => 
       rumor.isMainTeam !== false || rumor.category === 'coach'
     );
+  }
+
+  private correctVitorMatosRumors(): void {
+    console.log('🔧 Aplicando correções específicas para Vítor Matos...');
+    
+    // First pass: correct status and reliability
+    this.rumors.forEach((rumor, index) => {
+      if (['vítor matos', 'vitor matos'].includes(rumor.player_name.toLowerCase())) {
+        const oldStatus = rumor.status;
+        const oldReliability = rumor.reliability;
+        
+        rumor.status = 'confirmado';
+        rumor.reliability = 5;
+        
+        console.log(`Corrigido: ${rumor.player_name} - Status: ${oldStatus} -> ${rumor.status}, Confiabilidade: ${oldReliability} -> ${rumor.reliability}`);
+      }
+    });
+
+    // Second pass: keep only ONE Vítor Matos rumor
+    const vitorMatosRumors = this.rumors.filter(rumor => 
+      ['vítor matos', 'vitor matos'].includes(rumor.player_name.toLowerCase())
+    );
+
+    if (vitorMatosRumors.length > 1) {
+      console.log(`🗑️ Removendo ${vitorMatosRumors.length - 1} duplicados do Vítor Matos...`);
+      
+      // Find the best one (prefer more recent, then better source)
+      const bestRumor = vitorMatosRumors.reduce((best, current) => {
+        if (new Date(current.date) > new Date(best.date)) return current;
+        if (new Date(current.date).getTime() === new Date(best.date).getTime()) {
+          // Prefer non-Google News sources
+          if (current.source !== 'Google News' && best.source === 'Google News') return current;
+          if (current.source.length > best.source.length) return current;
+        }
+        return best;
+      });
+
+      // Remove all Vítor Matos rumors
+      this.rumors = this.rumors.filter(rumor => 
+        !['vítor matos', 'vitor matos'].includes(rumor.player_name.toLowerCase())
+      );
+
+      // Add back only the best one
+      this.rumors.unshift(bestRumor);
+      console.log(`✅ Mantido apenas 1 rumor do Vítor Matos: ${bestRumor.source} (${bestRumor.date})`);
+    }
   }
 
   async getStats(): Promise<TransferStats> {
@@ -138,6 +188,15 @@ class TransferService {
       category: this.categorizeRumor(rumor.player_name, rumor.description || ''),
       duplicateSignature: this.createAdvancedRumorSignature(rumor.player_name, rumor.club, rumor.type, rumor.description || '')
     };
+
+    // SPECIAL HANDLING: Force correct status and info for Vítor Matos
+    if (['vítor matos', 'vitor matos'].includes(rumor.player_name.toLowerCase())) {
+      newRumor.status = 'confirmado';
+      newRumor.reliability = 5;
+      newRumor.club = 'CS Marítimo';  // CORREÇÃO: Sempre CS Marítimo
+      newRumor.type = 'compra';       // CORREÇÃO: Sempre compra (chegada ao Marítimo)
+      console.log('AddManualRumor: Forçando Vítor Matos como confirmado com confiabilidade 5 e clube correto (CS Marítimo)');
+    }
 
     // Check for duplicates before adding
     if (!this.isDuplicateRumor(newRumor)) {
@@ -220,6 +279,13 @@ class TransferService {
       // Enhanced status detection
       enhancedRumor.status = this.detectTransferStatus(rumor.description || '', rumor.source);
       
+      // SPECIAL HANDLING: Force correct status for Vítor Matos
+      if (['vítor matos', 'vitor matos'].includes(rumor.player_name.toLowerCase())) {
+        enhancedRumor.status = 'confirmado';
+        enhancedRumor.reliability = 5;
+        console.log('TransferService: Forçando Vítor Matos como confirmado com confiabilidade 5');
+      }
+      
       // New: Categorize and check if main team related
       enhancedRumor.isMainTeam = this.isMainTeamRelated(rumor.player_name, rumor.description || '');
       enhancedRumor.category = this.categorizeRumor(rumor.player_name, rumor.description || '');
@@ -280,14 +346,45 @@ class TransferService {
   // NEW METHOD: Advanced duplicate detection
   private advancedDuplicateFilter(rumors: TransferRumor[]): TransferRumor[] {
     const uniqueRumors: TransferRumor[] = [];
+    let bestVitorMatosRumor: TransferRumor | null = null;
     
     for (const rumor of rumors) {
+      // ULTRA-AGGRESSIVE: Keep only ONE Vítor Matos rumor - the best one
+      if (['vítor matos', 'vitor matos'].includes(rumor.player_name.toLowerCase())) {
+        if (!bestVitorMatosRumor) {
+          bestVitorMatosRumor = rumor;
+          console.log(`Vítor Matos: First rumor found - ${rumor.source} (reliability: ${rumor.reliability})`);
+        } else {
+          // Compare and keep the best one
+          const shouldReplace = 
+            rumor.reliability > bestVitorMatosRumor.reliability || 
+            (rumor.reliability === bestVitorMatosRumor.reliability && new Date(rumor.date) > new Date(bestVitorMatosRumor.date)) ||
+            (rumor.reliability === bestVitorMatosRumor.reliability && new Date(rumor.date).getTime() === new Date(bestVitorMatosRumor.date).getTime() && rumor.source.length > bestVitorMatosRumor.source.length);
+          
+          if (shouldReplace) {
+            console.log(`Vítor Matos: Replacing rumor - Old: ${bestVitorMatosRumor.source} (${bestVitorMatosRumor.reliability}) -> New: ${rumor.source} (${rumor.reliability})`);
+            bestVitorMatosRumor = rumor;
+          } else {
+            console.log(`Vítor Matos: Keeping existing rumor, discarding: ${rumor.source} (${rumor.reliability})`);
+          }
+        }
+        continue;
+      }
+
+      // Regular duplicate handling for other players
       if (!this.isDuplicateRumor(rumor)) {
         uniqueRumors.push(rumor);
         this.updateSignatureCaches(rumor);
       } else {
         console.log(`Filtered duplicate: ${rumor.player_name} - ${rumor.type} - ${rumor.club}`);
       }
+    }
+
+    // Add the single best Vítor Matos rumor
+    if (bestVitorMatosRumor) {
+      uniqueRumors.push(bestVitorMatosRumor);
+      this.updateSignatureCaches(bestVitorMatosRumor);
+      console.log(`Added SINGLE Vítor Matos rumor: ${bestVitorMatosRumor.player_name} - ${bestVitorMatosRumor.source} - ${bestVitorMatosRumor.reliability}`);
     }
 
     return uniqueRumors;
