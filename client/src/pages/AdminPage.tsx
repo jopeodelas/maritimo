@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
+import PlayerImage from '../components/PlayerImage';
 import { createStyles } from '../styles/styleUtils';
 import { getPlayerImageUrl } from '../utils/imageUtils';
 import api from '../services/api';
@@ -790,9 +791,9 @@ const AdminPage = () => {
                       <td style={styles.tableCell}>{player.name}</td>
                       <td style={styles.tableCell}>{player.position}</td>
                       <td style={styles.tableCell}>
-                        <img
-                          src={getPlayerImageUrl(player.image_url)}
-                          alt={player.name}
+                        <PlayerImage
+                          imageUrl={player.image_url}
+                          playerName={player.name}
                           style={{ 
                             width: '50px', 
                             height: '50px', 
@@ -800,10 +801,9 @@ const AdminPage = () => {
                             borderRadius: '50%',
                             border: '2px solid rgba(76, 175, 80, 0.3)'
                           }}
-                          onError={(e) => {
-                            console.error('Error loading player image:', player.image_url);
-                            e.currentTarget.src = '/images/default-player.jpg';
-                          }}
+                          width="50"
+                          height="50"
+                          showFallbackText={true}
                         />
                       </td>
                       <td style={styles.tableCell}>{player.vote_count}</td>

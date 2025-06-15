@@ -3,6 +3,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import OptimizedImage from '../components/OptimizedImage';
+import PlayerImage from '../components/PlayerImage';
 import { createStyles } from '../styles/styleUtils';
 import { getPlayerImageUrl } from '../utils/imageUtils';
 import api from '../services/api';
@@ -439,17 +440,14 @@ const VotingPage = () => {
         <div style={styles.playerImageContainer}>
           {isVoted && <div style={styles.votedBadge}>VOTED</div>}
           
-          <OptimizedImage 
-            src={getPlayerImageUrl(player.image_url)}
-            alt={player.name} 
+          <PlayerImage 
+            imageUrl={player.image_url}
+            playerName={player.name}
             style={styles.playerImage}
             loading="lazy"
             width="200"
             height="200"
-            onError={(e) => {
-              console.error('Error loading player image:', player.image_url);
-              e.currentTarget.src = '/images/default-player.jpg';
-            }}
+            showFallbackText={true}
           />
           
           <div style={{
