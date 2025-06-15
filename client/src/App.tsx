@@ -20,6 +20,7 @@ const AdminPage = lazy(() => import('./pages/AdminPage'));
 const MaritodlePage = lazy(() => import('./pages/MaritodlePage'));
 const Squad = lazy(() => import('./pages/Squad'));
 const Schedule = lazy(() => import('./pages/Schedule'));
+const PlayerRatings = lazy(() => import('./pages/PlayerRatings'));
 
 // Loading fallback component
 const LoadingFallback = () => (
@@ -155,6 +156,14 @@ function App() {
                 element={
                   <ProtectedRoute>
                     <MaritodlePage />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/player-ratings" 
+                element={
+                  <ProtectedRoute>
+                    <PlayerRatings />
                   </ProtectedRoute>
                 } 
               />

@@ -40,3 +40,46 @@ export interface User {
     created_at: string;
     updated_at: string;
   }
+
+  // New types for player ratings system
+  export interface PlayerRating {
+    id: number;
+    player_id: number;
+    user_id: number;
+    match_id: number;
+    rating: number;
+    created_at: string;
+  }
+
+  export interface MatchVoting {
+    id: number;
+    match_id: number;
+    home_team: string;
+    away_team: string;
+    match_date: string;
+    is_active: boolean;
+    players: Player[];
+    created_at: string;
+  }
+
+  export interface ManOfTheMatchVote {
+    id: number;
+    player_id: number;
+    user_id: number;
+    match_id: number;
+    created_at: string;
+  }
+
+  export interface PlayerAverageRating {
+    player_id: number;
+    player_name: string;
+    average_rating: number;
+    total_ratings: number;
+  }
+
+  export interface ManOfTheMatchResult {
+    player_id: number;
+    player_name: string;
+    vote_count: number;
+    percentage: number;
+  }

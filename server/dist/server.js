@@ -21,7 +21,9 @@ const custom_polls_routes_1 = __importDefault(require("./routes/custom-polls.rou
 const discussions_routes_1 = __importDefault(require("./routes/discussions.routes"));
 const user_management_routes_1 = __importDefault(require("./routes/user-management.routes"));
 const maritodle_routes_1 = __importDefault(require("./routes/maritodle.routes"));
+const player_ratings_routes_1 = __importDefault(require("./routes/player-ratings.routes"));
 const error_middleware_1 = require("./middleware/error.middleware");
+const scheduler_service_1 = __importDefault(require("./services/scheduler.service"));
 const app = (0, express_1.default)();
 // Compression middleware - should be early in the middleware stack
 app.use((0, compression_1.default)({
@@ -88,6 +90,7 @@ app.use('/api/custom-polls', custom_polls_routes_1.default);
 app.use('/api/discussions', discussions_routes_1.default);
 app.use('/api/admin', user_management_routes_1.default);
 app.use('/api/maritodle', maritodle_routes_1.default);
+app.use('/api/player-ratings', player_ratings_routes_1.default);
 // Error handling
 app.use(error_middleware_1.notFoundHandler);
 app.use(error_middleware_1.errorHandler);
@@ -96,5 +99,8 @@ const PORT = config_1.default.port;
 app.listen(PORT, () => {
     console.log(`Server running in ${config_1.default.nodeEnv} mode on port ${PORT}`);
     console.log(`Compression enabled for responses > 1KB`);
+    // Inicializar scheduler para verificação automática de novos jogos
+    console.log('🚀 Initializing automatic voting system...');
+    scheduler_service_1.default.startAutoVotingCheck();
 });
 exports.default = app;

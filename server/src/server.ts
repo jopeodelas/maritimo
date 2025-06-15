@@ -16,7 +16,9 @@ import customPollsRoutes from './routes/custom-polls.routes';
 import discussionsRoutes from './routes/discussions.routes';
 import userManagementRoutes from './routes/user-management.routes';
 import maritodleRoutes from './routes/maritodle.routes';
+import playerRatingsRoutes from './routes/player-ratings.routes';
 import { errorHandler, notFoundHandler } from './middleware/error.middleware';
+import schedulerService from './services/scheduler.service';
 
 const app = express();
 
@@ -91,6 +93,7 @@ app.use('/api/custom-polls', customPollsRoutes);
 app.use('/api/discussions', discussionsRoutes);
 app.use('/api/admin', userManagementRoutes);
 app.use('/api/maritodle', maritodleRoutes);
+app.use('/api/player-ratings', playerRatingsRoutes);
 
 // Error handling
 app.use(notFoundHandler);
@@ -101,6 +104,10 @@ const PORT = config.port;
 app.listen(PORT, () => {
   console.log(`Server running in ${config.nodeEnv} mode on port ${PORT}`);
   console.log(`Compression enabled for responses > 1KB`);
+  
+  // Inicializar scheduler para verificação automática de novos jogos
+  console.log('🚀 Initializing automatic voting system...');
+  schedulerService.startAutoVotingCheck();
 });
 
 export default app;
