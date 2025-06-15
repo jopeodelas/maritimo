@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { getPlayerImageUrl } from '../utils/imageUtils';
+import { getPlayerImageUrl, getWorkingImageUrl } from '../utils/imageUtils';
 
 interface PlayerImageProps {
   imageUrl?: string;
@@ -127,8 +127,11 @@ const PlayerImage = ({
       setImageSrc(nextUrl);
       setAttemptedUrls(newAttempted);
     } else {
-      console.log(`💥 TODOS os ${newAttempted.length + 1} URLs falharam para ${playerName}, usando template`);
+      console.log(`💥 TODOS os ${newAttempted.length + 1} URLs falharam para ${playerName}, usando default`);
       console.log(`💥 URLs testadas:`, [...newAttempted, imageSrc]);
+      
+      // Se não há imagem personalizada, usar a imagem default do utilizador
+      setImageSrc('/images/default-player.png');
       setUsesFallback(true);
       setIsLoaded(true);
     }
@@ -141,12 +144,13 @@ const PlayerImage = ({
     maxWidth: '100%',
     height: 'auto',
     borderRadius: style?.borderRadius || '50%',
-    objectFit: 'cover' as const,
+    objectFit: imageSrc.includes('default-player.png') ? 'contain' : 'cover' as const,
     background: 'transparent',
+    padding: imageSrc.includes('default-player.png') ? '0.2rem' : '0',
   };
 
-  // Template de fallback personalizado
-  if (usesFallback && showFallbackText) {
+  // Se estamos usando fallback e deve mostrar texto, renderizamos um componente customizado
+  if (usesFallback && showFallbackText && imageSrc.includes('default-player.png')) {
     const containerStyle: React.CSSProperties = {
       ...style,
       width,

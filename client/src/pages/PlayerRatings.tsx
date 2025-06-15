@@ -691,8 +691,8 @@ const PlayerRatings = () => {
               >
                 {playerRating?.showAverage && playerRating.averageRating && (
                   <div style={styles.averageRating}>
-                    Média: {playerRating.averageRating.average_rating.toFixed(1)} 
-                    ({playerRating.averageRating.total_ratings} votos)
+                    Média: {playerRating.averageRating.average_rating?.toFixed(1) || 'N/A'} 
+                    ({playerRating.averageRating.total_ratings || 0} votos)
                   </div>
                 )}
 
@@ -700,7 +700,12 @@ const PlayerRatings = () => {
                   <PlayerImage
                     imageUrl={player.image_url}
                     playerName={player.name}
-                    style={styles.playerImage}
+                    style={{
+                      ...styles.playerImage,
+                      // Zoom out para imagens default para evitar corte
+                      objectFit: player.image_url?.includes('default-player') ? 'contain' : 'cover',
+                      padding: player.image_url?.includes('default-player') ? '0.2rem' : '0',
+                    }}
                     loading="lazy"
                     width="80"
                     height="80"
@@ -753,7 +758,19 @@ const PlayerRatings = () => {
                     title="Homem do Jogo"
                     className="hover-button"
                   >
-                    <span style={{ fontSize: "clamp(1.2rem, 2.5vw, 1.8rem)" }}>⭐</span>
+                    {/* Estrela desenhada em SVG */}
+                    <svg 
+                      width="24" 
+                      height="24" 
+                      viewBox="0 0 24 24" 
+                      fill={isManOfMatch ? "#000" : "rgba(255, 215, 0, 0.7)"}
+                      style={{ 
+                        width: "clamp(1.2rem, 2.5vw, 1.8rem)", 
+                        height: "clamp(1.2rem, 2.5vw, 1.8rem)" 
+                      }}
+                    >
+                      <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                    </svg>
                   </button>
                 </div>
               </div>
@@ -790,7 +807,7 @@ const PlayerRatings = () => {
                   showFallbackText={true}
                 />
                 <div style={styles.winnerName}>{manOfMatchResults[0].player_name}</div>
-                <div style={styles.winnerPercentage}>{manOfMatchResults[0].percentage.toFixed(1)}%</div>
+                <div style={styles.winnerPercentage}>{manOfMatchResults[0].percentage?.toFixed(1) || '0.0'}%</div>
               </div>
             )}
           </div>

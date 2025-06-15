@@ -54,10 +54,10 @@ const OptimizedImage = ({
       setFallbackAttempts(1);
     }
     
-    if (fallbackAttempts <= 1 && !imageSrc.includes('default-player.svg')) {
+    if (fallbackAttempts <= 1 && !imageSrc.includes('default-player.png')) {
       // Final fallback: use default player image
       console.log('Using default player image fallback');
-      setImageSrc('/images/default-player.svg');
+      setImageSrc('/images/default-player.png');
       setHasError(true);
       setFallbackAttempts(2);
     }

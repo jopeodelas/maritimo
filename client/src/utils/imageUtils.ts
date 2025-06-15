@@ -51,7 +51,7 @@ export const getPlayerImageUrl = (imageUrl: string): string => {
   
   if (!imageUrl) {
     console.log('No image URL provided, using default');
-    return '/images/default-player.svg';
+    return '/images/default-player.png';
   }
   
   let finalUrl = '';
@@ -90,5 +90,5 @@ export const getWorkingImageUrl = async (imageUrl: string): Promise<string> => {
   }
   
   console.log('No working image found, using default');
-  return '/images/default-player.svg';
+  return '/images/default-player.png';
 }; 
