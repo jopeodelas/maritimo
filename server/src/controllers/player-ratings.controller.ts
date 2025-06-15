@@ -9,17 +9,30 @@ export const getActiveVoting = async (req: Request, res: Response) => {
       SELECT mv.*, 
              COALESCE(
                json_agg(
-                 json_build_object(
-                   'id', p.id,
-                   'name', p.name,
-                   'position', p.position,
-                   'image_url', p.image_url
-                 )
-               ) FILTER (WHERE p.id IS NOT NULL), '[]'::json
+                 CASE 
+                   WHEN mvp.player_type = 'regular' THEN
+                     json_build_object(
+                       'id', p.id,
+                       'name', p.name,
+                       'position', p.position,
+                       'image_url', p.image_url,
+                       'player_type', 'regular'
+                     )
+                   WHEN mvp.player_type = 'match' THEN
+                     json_build_object(
+                       'id', mp.id,
+                       'name', mp.name,
+                       'position', mp.position,
+                       'image_url', mp.image_url,
+                       'player_type', 'match'
+                     )
+                 END
+               ) FILTER (WHERE mvp.id IS NOT NULL), '[]'::json
              ) as players
       FROM match_voting mv
       LEFT JOIN match_voting_players mvp ON mv.id = mvp.match_voting_id
-      LEFT JOIN players p ON mvp.player_id = p.id
+      LEFT JOIN players p ON mvp.player_id = p.id AND mvp.player_type = 'regular'
+      LEFT JOIN match_players mp ON mvp.match_player_id = mp.id AND mvp.player_type = 'match'
       WHERE mv.is_active = true
       GROUP BY mv.id
       ORDER BY mv.created_at DESC
@@ -33,6 +46,34 @@ export const getActiveVoting = async (req: Request, res: Response) => {
     }
 
     const voting = result.rows[0];
+    
+    // Buscar informações detalhadas do jogo se temos match_id
+    let matchDetails = null;
+    if (voting.match_id) {
+      try {
+        const recentMatches = await footballAPIService.getRecentMatches(10);
+        
+        const matchInfo = recentMatches.find((match: any) => match.fixture.id === voting.match_id);
+        
+        if (matchInfo) {
+          matchDetails = {
+            homeTeam: matchInfo.teams.home.name,
+            awayTeam: matchInfo.teams.away.name,
+            homeScore: matchInfo.goals?.home || 0,
+            awayScore: matchInfo.goals?.away || 0,
+            homeLogo: matchInfo.teams.home.logo,
+            awayLogo: matchInfo.teams.away.logo,
+            matchDate: matchInfo.fixture.date,
+            status: matchInfo.fixture.status.short
+          };
+          
+          console.log(`📊 Match details found: ${matchDetails.homeTeam} ${matchDetails.homeScore}-${matchDetails.awayScore} ${matchDetails.awayTeam}`);
+        }
+      } catch (error) {
+        console.log('⚠️  Could not fetch match details:', error);
+      }
+    }
+
     res.json({
       id: voting.id,
       match_id: voting.match_id,
@@ -41,7 +82,8 @@ export const getActiveVoting = async (req: Request, res: Response) => {
       match_date: voting.match_date,
       is_active: voting.is_active,
       players: voting.players,
-      created_at: voting.created_at
+      created_at: voting.created_at,
+      matchDetails
     });
   } catch (error) {
     console.error('Error fetching active voting:', error);
@@ -76,17 +118,35 @@ export const submitPlayerRatings = async (req: Request, res: Response) => {
 
     // Insert player ratings
     for (const rating of ratings) {
-      await client.query(
-        'INSERT INTO player_ratings (player_id, user_id, match_id, rating) VALUES ($1, $2, $3, $4)',
-        [rating.player_id, userId, match_id, rating.rating]
-      );
+      const playerType = rating.player_type || 'regular';
+      
+      if (playerType === 'regular') {
+        await client.query(
+          'INSERT INTO player_ratings (player_id, user_id, match_id, rating, player_type) VALUES ($1, $2, $3, $4, $5)',
+          [rating.player_id, userId, match_id, rating.rating, 'regular']
+        );
+      } else {
+        await client.query(
+          'INSERT INTO player_ratings (match_player_id, user_id, match_id, rating, player_type) VALUES ($1, $2, $3, $4, $5)',
+          [rating.player_id, userId, match_id, rating.rating, 'match']
+        );
+      }
     }
 
     // Insert man of the match vote
-    await client.query(
-      'INSERT INTO man_of_match_votes (player_id, user_id, match_id) VALUES ($1, $2, $3)',
-      [man_of_match_player_id, userId, match_id]
-    );
+    const manOfMatchPlayerType = req.body.man_of_match_player_type || 'regular';
+    
+    if (manOfMatchPlayerType === 'regular') {
+      await client.query(
+        'INSERT INTO man_of_match_votes (player_id, user_id, match_id, player_type) VALUES ($1, $2, $3, $4)',
+        [man_of_match_player_id, userId, match_id, 'regular']
+      );
+    } else {
+      await client.query(
+        'INSERT INTO man_of_match_votes (match_player_id, user_id, match_id, player_type) VALUES ($1, $2, $3, $4)',
+        [man_of_match_player_id, userId, match_id, 'match']
+      );
+    }
 
     await client.query('COMMIT');
     res.json({ success: true, message: 'Avaliações submetidas com sucesso' });
@@ -104,18 +164,34 @@ export const submitPlayerRatings = async (req: Request, res: Response) => {
 export const getPlayerAverageRating = async (req: Request, res: Response) => {
   try {
     const playerId = parseInt(req.params.playerId);
+    const playerType = req.query.player_type as string || 'regular';
 
-    const result = await pool.query(`
-      SELECT 
-        p.id as player_id,
-        p.name as player_name,
-        ROUND(AVG(pr.rating::numeric), 2) as average_rating,
-        COUNT(pr.rating) as total_ratings
-      FROM players p
-      LEFT JOIN player_ratings pr ON p.id = pr.player_id
-      WHERE p.id = $1
-      GROUP BY p.id, p.name
-    `, [playerId]);
+    let result;
+    
+    if (playerType === 'regular') {
+      result = await pool.query(`
+        SELECT 
+          p.id as player_id,
+          p.name as player_name,
+          ROUND(AVG(pr.rating::numeric), 2) as average_rating,
+          COUNT(pr.rating) as total_ratings
+        FROM players p
+        LEFT JOIN player_ratings pr ON p.id = pr.player_id
+        WHERE p.id = $1
+        GROUP BY p.id, p.name
+      `, [playerId]);
+    } else {
+      // For match players, we don't have historical ratings yet
+      result = await pool.query(`
+        SELECT 
+          mp.id as player_id,
+          mp.name as player_name,
+          0 as average_rating,
+          0 as total_ratings
+        FROM match_players mp
+        WHERE mp.id = $1
+      `, [playerId]);
+    }
 
     if (result.rows.length === 0) {
       return res.status(404).json({ error: 'Jogador não encontrado' });
@@ -135,19 +211,20 @@ export const getManOfTheMatchResults = async (req: Request, res: Response) => {
 
     const result = await pool.query(`
       SELECT 
-        p.id as player_id,
-        p.name as player_name,
+        COALESCE(p.id, mp.id) as player_id,
+        COALESCE(p.name, mp.name) as player_name,
         COUNT(mmv.id) as vote_count,
         ROUND((COUNT(mmv.id) * 100.0 / (
           SELECT COUNT(*) 
           FROM man_of_match_votes 
           WHERE match_id = $1
         ))::numeric, 1) as percentage
-      FROM players p
-      JOIN man_of_match_votes mmv ON p.id = mmv.player_id
+      FROM man_of_match_votes mmv
+      LEFT JOIN players p ON mmv.player_id = p.id AND mmv.player_type = 'regular'
+      LEFT JOIN match_players mp ON mmv.match_player_id = mp.id AND mmv.player_type = 'match'
       WHERE mmv.match_id = $1
-      GROUP BY p.id, p.name
-      ORDER BY vote_count DESC, p.name ASC
+      GROUP BY COALESCE(p.id, mp.id), COALESCE(p.name, mp.name)
+      ORDER BY vote_count DESC, COALESCE(p.name, mp.name) ASC
     `, [matchId]);
 
     res.json(result.rows);

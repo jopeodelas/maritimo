@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import Navbar from '../components/Navbar';
 import OptimizedImage from '../components/OptimizedImage';
+import PlayerImage from '../components/PlayerImage';
 import { createStyles } from '../styles/styleUtils';
 import { getPlayerImageUrl } from '../utils/imageUtils';
 import * as playerRatingsService from '../services/playerRatingsService';
@@ -696,13 +697,14 @@ const PlayerRatings = () => {
                 )}
 
                 <div style={styles.playerInfo}>
-                  <OptimizedImage
-                    src={getPlayerImageUrl(player.image_url)}
-                    alt={player.name}
+                  <PlayerImage
+                    imageUrl={player.image_url}
+                    playerName={player.name}
                     style={styles.playerImage}
                     loading="lazy"
                     width="80"
                     height="80"
+                    showFallbackText={true}
                   />
                   <div style={styles.playerDetails}>
                     <div style={styles.playerName}>{player.name}</div>
@@ -778,13 +780,14 @@ const PlayerRatings = () => {
             <div style={styles.resultsTitle}>Homem do Jogo</div>
             {manOfMatchResults[0] && (
               <div style={styles.winnerCard}>
-                <OptimizedImage
-                  src={getPlayerImageUrl(getPlayerById(manOfMatchResults[0].player_id)?.image_url || '')}
-                  alt={manOfMatchResults[0].player_name}
+                <PlayerImage
+                  imageUrl={getPlayerById(manOfMatchResults[0].player_id)?.image_url || ''}
+                  playerName={manOfMatchResults[0].player_name}
                   style={styles.winnerImage}
                   loading="lazy"
                   width="120"
                   height="120"
+                  showFallbackText={true}
                 />
                 <div style={styles.winnerName}>{manOfMatchResults[0].player_name}</div>
                 <div style={styles.winnerPercentage}>{manOfMatchResults[0].percentage.toFixed(1)}%</div>

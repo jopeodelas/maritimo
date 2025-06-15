@@ -22,17 +22,30 @@ const getActiveVoting = (req, res) => __awaiter(void 0, void 0, void 0, function
       SELECT mv.*, 
              COALESCE(
                json_agg(
-                 json_build_object(
-                   'id', p.id,
-                   'name', p.name,
-                   'position', p.position,
-                   'image_url', p.image_url
-                 )
-               ) FILTER (WHERE p.id IS NOT NULL), '[]'::json
+                 CASE 
+                   WHEN mvp.player_type = 'regular' THEN
+                     json_build_object(
+                       'id', p.id,
+                       'name', p.name,
+                       'position', p.position,
+                       'image_url', p.image_url,
+                       'player_type', 'regular'
+                     )
+                   WHEN mvp.player_type = 'match' THEN
+                     json_build_object(
+                       'id', mp.id,
+                       'name', mp.name,
+                       'position', mp.position,
+                       'image_url', mp.image_url,
+                       'player_type', 'match'
+                     )
+                 END
+               ) FILTER (WHERE mvp.id IS NOT NULL), '[]'::json
              ) as players
       FROM match_voting mv
       LEFT JOIN match_voting_players mvp ON mv.id = mvp.match_voting_id
-      LEFT JOIN players p ON mvp.player_id = p.id
+      LEFT JOIN players p ON mvp.player_id = p.id AND mvp.player_type = 'regular'
+      LEFT JOIN match_players mp ON mvp.match_player_id = mp.id AND mvp.player_type = 'match'
       WHERE mv.is_active = true
       GROUP BY mv.id
       ORDER BY mv.created_at DESC
@@ -79,10 +92,22 @@ const submitPlayerRatings = (req, res) => __awaiter(void 0, void 0, void 0, func
         }
         // Insert player ratings
         for (const rating of ratings) {
-            yield client.query('INSERT INTO player_ratings (player_id, user_id, match_id, rating) VALUES ($1, $2, $3, $4)', [rating.player_id, userId, match_id, rating.rating]);
+            const playerType = rating.player_type || 'regular';
+            if (playerType === 'regular') {
+                yield client.query('INSERT INTO player_ratings (player_id, user_id, match_id, rating, player_type) VALUES ($1, $2, $3, $4, $5)', [rating.player_id, userId, match_id, rating.rating, 'regular']);
+            }
+            else {
+                yield client.query('INSERT INTO player_ratings (match_player_id, user_id, match_id, rating, player_type) VALUES ($1, $2, $3, $4, $5)', [rating.player_id, userId, match_id, rating.rating, 'match']);
+            }
         }
         // Insert man of the match vote
-        yield client.query('INSERT INTO man_of_match_votes (player_id, user_id, match_id) VALUES ($1, $2, $3)', [man_of_match_player_id, userId, match_id]);
+        const manOfMatchPlayerType = req.body.man_of_match_player_type || 'regular';
+        if (manOfMatchPlayerType === 'regular') {
+            yield client.query('INSERT INTO man_of_match_votes (player_id, user_id, match_id, player_type) VALUES ($1, $2, $3, $4)', [man_of_match_player_id, userId, match_id, 'regular']);
+        }
+        else {
+            yield client.query('INSERT INTO man_of_match_votes (match_player_id, user_id, match_id, player_type) VALUES ($1, $2, $3, $4)', [man_of_match_player_id, userId, match_id, 'match']);
+        }
         yield client.query('COMMIT');
         res.json({ success: true, message: 'Avaliações submetidas com sucesso' });
     }
@@ -100,17 +125,33 @@ exports.submitPlayerRatings = submitPlayerRatings;
 const getPlayerAverageRating = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const playerId = parseInt(req.params.playerId);
-        const result = yield db_1.default.query(`
-      SELECT 
-        p.id as player_id,
-        p.name as player_name,
-        ROUND(AVG(pr.rating::numeric), 2) as average_rating,
-        COUNT(pr.rating) as total_ratings
-      FROM players p
-      LEFT JOIN player_ratings pr ON p.id = pr.player_id
-      WHERE p.id = $1
-      GROUP BY p.id, p.name
-    `, [playerId]);
+        const playerType = req.query.player_type || 'regular';
+        let result;
+        if (playerType === 'regular') {
+            result = yield db_1.default.query(`
+        SELECT 
+          p.id as player_id,
+          p.name as player_name,
+          ROUND(AVG(pr.rating::numeric), 2) as average_rating,
+          COUNT(pr.rating) as total_ratings
+        FROM players p
+        LEFT JOIN player_ratings pr ON p.id = pr.player_id
+        WHERE p.id = $1
+        GROUP BY p.id, p.name
+      `, [playerId]);
+        }
+        else {
+            // For match players, we don't have historical ratings yet
+            result = yield db_1.default.query(`
+        SELECT 
+          mp.id as player_id,
+          mp.name as player_name,
+          0 as average_rating,
+          0 as total_ratings
+        FROM match_players mp
+        WHERE mp.id = $1
+      `, [playerId]);
+        }
         if (result.rows.length === 0) {
             return res.status(404).json({ error: 'Jogador não encontrado' });
         }
@@ -128,19 +169,20 @@ const getManOfTheMatchResults = (req, res) => __awaiter(void 0, void 0, void 0, 
         const matchId = parseInt(req.params.matchId);
         const result = yield db_1.default.query(`
       SELECT 
-        p.id as player_id,
-        p.name as player_name,
+        COALESCE(p.id, mp.id) as player_id,
+        COALESCE(p.name, mp.name) as player_name,
         COUNT(mmv.id) as vote_count,
         ROUND((COUNT(mmv.id) * 100.0 / (
           SELECT COUNT(*) 
           FROM man_of_match_votes 
           WHERE match_id = $1
         ))::numeric, 1) as percentage
-      FROM players p
-      JOIN man_of_match_votes mmv ON p.id = mmv.player_id
+      FROM man_of_match_votes mmv
+      LEFT JOIN players p ON mmv.player_id = p.id AND mmv.player_type = 'regular'
+      LEFT JOIN match_players mp ON mmv.match_player_id = mp.id AND mmv.player_type = 'match'
       WHERE mmv.match_id = $1
-      GROUP BY p.id, p.name
-      ORDER BY vote_count DESC, p.name ASC
+      GROUP BY COALESCE(p.id, mp.id), COALESCE(p.name, mp.name)
+      ORDER BY vote_count DESC, COALESCE(p.name, mp.name) ASC
     `, [matchId]);
         res.json(result.rows);
     }

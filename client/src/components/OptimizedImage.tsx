@@ -24,12 +24,14 @@ const OptimizedImage = ({
   const [imageSrc, setImageSrc] = useState<string>(src);
   const [isLoaded, setIsLoaded] = useState(false);
   const [hasError, setHasError] = useState(false);
+  const [fallbackAttempts, setFallbackAttempts] = useState(0);
   const imgRef = useRef<HTMLImageElement>(null);
 
   useEffect(() => {
     setImageSrc(src);
     setHasError(false);
     setIsLoaded(false);
+    setFallbackAttempts(0);
   }, [src]);
 
   const handleLoad = () => {
@@ -37,16 +39,27 @@ const OptimizedImage = ({
   };
 
   const handleError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
-    if (!hasError) {
-      setHasError(true);
-      // Fallback to original image if WebP fails
+    console.log(`Image load error for: ${imageSrc}, attempts: ${fallbackAttempts}`);
+    
+    if (fallbackAttempts === 0) {
+      // First attempt: try without .webp if it was webp
       if (imageSrc.includes('.webp')) {
         const fallbackSrc = imageSrc.replace('.webp', '.png').replace('.webp', '.jpg');
+        console.log(`First fallback attempt: ${fallbackSrc}`);
         setImageSrc(fallbackSrc);
-      } else {
-        // If original also fails, use a default placeholder
-        setImageSrc('/images/default-player.jpg');
+        setFallbackAttempts(1);
+        return;
       }
+      // If not webp, go directly to default
+      setFallbackAttempts(1);
+    }
+    
+    if (fallbackAttempts <= 1 && !imageSrc.includes('default-player.svg')) {
+      // Final fallback: use default player image
+      console.log('Using default player image fallback');
+      setImageSrc('/images/default-player.svg');
+      setHasError(true);
+      setFallbackAttempts(2);
     }
     
     if (onError) {

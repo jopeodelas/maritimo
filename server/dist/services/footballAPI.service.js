@@ -172,12 +172,13 @@ class FootballAPIService {
         return __awaiter(this, void 0, void 0, function* () {
             const client = yield db_1.default.connect();
             const matchedPlayerIds = [];
+            const playerTypes = [];
             try {
                 console.log(`🔍 Matching ${apiPlayers.length} players from API with database...`);
                 for (const apiPlayer of apiPlayers) {
                     const playerName = this.normalizePlayerName(apiPlayer.player.name);
-                    // Buscar jogador na base de dados por nome similar
-                    const result = yield client.query(`
+                    // Primeiro, buscar jogador na tabela players principal
+                    const regularPlayerResult = yield client.query(`
           SELECT id, name, position 
           FROM players 
           WHERE LOWER(TRIM(name)) ILIKE $1 
@@ -189,41 +190,66 @@ class FootballAPIService {
                         `%${playerName.split(' ')[0].toLowerCase()}%`,
                         `%${(_a = playerName.split(' ').pop()) === null || _a === void 0 ? void 0 : _a.toLowerCase()}%` // Último nome
                     ]);
-                    if (result.rows.length > 0) {
-                        const dbPlayer = result.rows[0];
+                    if (regularPlayerResult.rows.length > 0) {
+                        // Jogador encontrado na tabela principal
+                        const dbPlayer = regularPlayerResult.rows[0];
                         matchedPlayerIds.push(dbPlayer.id);
-                        console.log(`✅ Matched: ${apiPlayer.player.name} -> ${dbPlayer.name} (ID: ${dbPlayer.id})`);
+                        playerTypes.push('regular');
+                        console.log(`✅ Matched regular player: ${apiPlayer.player.name} -> ${dbPlayer.name} (ID: ${dbPlayer.id})`);
                     }
                     else {
-                        // Criar jogador temporário se não existir
-                        console.log(`➕ Creating temporary player: ${apiPlayer.player.name}`);
-                        const positionMap = {
-                            'G': 'Guarda-redes',
-                            'D': 'Defesa',
-                            'M': 'Médio',
-                            'A': 'Atacante'
-                        };
-                        const position = positionMap[apiPlayer.player.pos] || 'Jogador';
-                        const insertResult = yield client.query(`
-            INSERT INTO players (name, position, image_url)
-            VALUES ($1, $2, $3)
-            RETURNING id
+                        // Verificar se já existe na tabela match_players
+                        const matchPlayerResult = yield client.query(`
+            SELECT id, name, position 
+            FROM match_players 
+            WHERE api_player_id = $1 OR LOWER(TRIM(name)) ILIKE $2
+            LIMIT 1
           `, [
-                            apiPlayer.player.name,
-                            position,
-                            null // Sem imagem por enquanto
+                            apiPlayer.player.id,
+                            `%${playerName.toLowerCase()}%`
                         ]);
-                        const newPlayerId = insertResult.rows[0].id;
-                        matchedPlayerIds.push(newPlayerId);
-                        console.log(`✅ Created temporary player: ${apiPlayer.player.name} (ID: ${newPlayerId})`);
+                        if (matchPlayerResult.rows.length > 0) {
+                            // Jogador já existe na tabela match_players
+                            const matchPlayer = matchPlayerResult.rows[0];
+                            matchedPlayerIds.push(matchPlayer.id);
+                            playerTypes.push('match');
+                            console.log(`✅ Found existing match player: ${apiPlayer.player.name} -> ${matchPlayer.name} (ID: ${matchPlayer.id})`);
+                        }
+                        else {
+                            // Criar novo jogador temporário na tabela match_players
+                            console.log(`➕ Creating temporary match player: ${apiPlayer.player.name}`);
+                            const positionMap = {
+                                'G': 'Guarda-redes',
+                                'D': 'Defesa',
+                                'M': 'Médio',
+                                'A': 'Atacante'
+                            };
+                            const position = positionMap[apiPlayer.player.pos] || 'Jogador';
+                            const insertResult = yield client.query(`
+              INSERT INTO match_players (name, position, image_url, api_player_id, api_player_name)
+              VALUES ($1, $2, $3, $4, $5)
+              RETURNING id
+            `, [
+                                apiPlayer.player.name,
+                                position,
+                                null,
+                                apiPlayer.player.id,
+                                apiPlayer.player.name
+                            ]);
+                            const newPlayerId = insertResult.rows[0].id;
+                            matchedPlayerIds.push(newPlayerId);
+                            playerTypes.push('match');
+                            console.log(`✅ Created temporary match player: ${apiPlayer.player.name} (ID: ${newPlayerId})`);
+                        }
                     }
                 }
                 console.log(`🎯 Successfully processed ${matchedPlayerIds.length}/${apiPlayers.length} players`);
-                return matchedPlayerIds;
+                console.log(`📊 Regular players: ${playerTypes.filter(t => t === 'regular').length}, Match players: ${playerTypes.filter(t => t === 'match').length}`);
+                return { playerIds: matchedPlayerIds, playerTypes };
             }
             catch (error) {
                 console.error('Error matching/creating players:', error);
-                return [];
+                return { playerIds: [], playerTypes: [] };
             }
             finally {
                 client.release();
@@ -278,7 +304,8 @@ class FootballAPIService {
                 ];
                 console.log(`👥 Found ${allPlayers.length} players in the match`);
                 // Associar jogadores com a base de dados OU criar temporários
-                const matchedPlayerIds = yield this.findAndMatchPlayers(allPlayers);
+                const matchResult = yield this.findAndMatchPlayers(allPlayers);
+                const { playerIds: matchedPlayerIds, playerTypes } = matchResult;
                 if (matchedPlayerIds.length === 0) {
                     return { success: false, message: 'Nenhum jogador foi processado' };
                 }
@@ -296,12 +323,23 @@ class FootballAPIService {
       `, [homeTeam, awayTeam, matchDate, lastMatch.fixture.id]);
                 const votingId = votingResult.rows[0].id;
                 // Adicionar jogadores à votação
-                for (const playerId of matchedPlayerIds) {
-                    yield client.query(`
-          INSERT INTO match_voting_players (match_voting_id, player_id)
-          VALUES ($1, $2)
-          ON CONFLICT DO NOTHING
-        `, [votingId, playerId]);
+                for (let i = 0; i < matchedPlayerIds.length; i++) {
+                    const playerId = matchedPlayerIds[i];
+                    const playerType = playerTypes[i];
+                    if (playerType === 'regular') {
+                        yield client.query(`
+            INSERT INTO match_voting_players (match_voting_id, player_id, player_type)
+            VALUES ($1, $2, 'regular')
+            ON CONFLICT DO NOTHING
+          `, [votingId, playerId]);
+                    }
+                    else {
+                        yield client.query(`
+            INSERT INTO match_voting_players (match_voting_id, match_player_id, player_type)
+            VALUES ($1, $2, 'match')
+            ON CONFLICT DO NOTHING
+          `, [votingId, playerId]);
+                    }
                 }
                 yield client.query('COMMIT');
                 const matchInfo = {
@@ -309,6 +347,8 @@ class FootballAPIService {
                     awayTeam,
                     matchDate,
                     playersCount: matchedPlayerIds.length,
+                    regularPlayersCount: playerTypes.filter(t => t === 'regular').length,
+                    matchPlayersCount: playerTypes.filter(t => t === 'match').length,
                     fixtureId: lastMatch.fixture.id
                 };
                 console.log('🎉 Automatic voting created successfully!');
