@@ -97,24 +97,57 @@ class TransferService {
   }
 
   async getRumors(): Promise<TransferRumor[]> {
-    if (!this.lastUpdate || Date.now() - this.lastUpdate.getTime() > 60 * 60 * 1000) {
-      await this.updateRumors();
+    try {
+      // Primeiro, tentar buscar da base de dados
+      console.log('📊 GetRumors: Tentando buscar rumores da base de dados...');
+      const dbRumors = await this.getRumorsFromDB();
+      
+      if (dbRumors.length > 0) {
+        console.log(`📊 GetRumors: Encontrados ${dbRumors.length} rumores na base de dados`);
+        return dbRumors;
+      }
+      
+      console.log('📊 GetRumors: Base de dados vazia, usando sistema de fallback...');
+      
+      // Fallback para o sistema antigo se a base de dados estiver vazia
+      if (!this.lastUpdate || Date.now() - this.lastUpdate.getTime() > 60 * 60 * 1000) {
+        await this.updateRumors();
+        await this.saveNewRumorsToDB(); // Guardar na base de dados
+      }
+      
+      // Return main team rumors including coaches
+      return this.rumors.filter(rumor => 
+        rumor.isMainTeam !== false || rumor.category === 'coach'
+      );
+    } catch (error) {
+      console.error('📊 GetRumors: Erro ao buscar da base de dados, usando fallback:', error);
+      
+      // Fallback para o sistema antigo em caso de erro
+      if (!this.lastUpdate || Date.now() - this.lastUpdate.getTime() > 60 * 60 * 1000) {
+        await this.updateRumors();
+      }
+      
+      return this.rumors.filter(rumor => 
+        rumor.isMainTeam !== false || rumor.category === 'coach'
+      );
     }
-    // Return main team rumors including coaches
-    return this.rumors.filter(rumor => 
-      rumor.isMainTeam !== false || rumor.category === 'coach'
-    );
   }
 
   async refreshRumors(): Promise<TransferRumor[]> {
+    console.log('🔄 RefreshRumors: Atualizando rumores e guardando novos na base de dados...');
+    
+    // Primeiro, atualizar com novos rumores do sistema de scraping
     await this.updateRumors();
     
     // Apply corrections to existing Vítor Matos rumors
     this.correctVitorMatosRumors();
     
-    return this.rumors.filter(rumor => 
-      rumor.isMainTeam !== false || rumor.category === 'coach'
-    );
+    // Guardar novos rumores na base de dados
+    await this.saveNewRumorsToDB();
+    
+    // Retornar rumores da base de dados (fonte única da verdade)
+    console.log('🔄 RefreshRumors: Retornando rumores da base de dados...');
+    return await this.getRumorsFromDB();
   }
 
   private correctVitorMatosRumors(): void {
@@ -182,37 +215,21 @@ class TransferService {
   }
 
   async addManualRumor(rumor: Omit<TransferRumor, 'id' | 'date'>, req: Request): Promise<TransferRumor> {
-    const newRumor: TransferRumor = {
-      ...rumor,
-      id: `manual_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-      date: new Date().toISOString().split('T')[0],
-      source: 'Manual',
-      isMainTeam: this.isMainTeamRelated(rumor.player_name, rumor.description || ''),
-      category: this.categorizeRumor(rumor.player_name, rumor.description || ''),
-      duplicateSignature: this.createAdvancedRumorSignature(rumor.player_name, rumor.club, rumor.type, rumor.description || '')
-    };
-
+    console.log('➕ AddManualRumor: Adicionando rumor manual à base de dados...');
+    
     // SPECIAL HANDLING: Force correct status and info for Vítor Matos
     if (['vítor matos', 'vitor matos'].includes(rumor.player_name.toLowerCase())) {
-      newRumor.status = 'confirmado';
-      newRumor.reliability = 5;
-      newRumor.club = 'CS Marítimo';  // CORREÇÃO: Sempre CS Marítimo
-      newRumor.type = 'compra';       // CORREÇÃO: Sempre compra (chegada ao Marítimo)
+      rumor.status = 'confirmado';
+      rumor.reliability = 5;
+      rumor.club = 'CS Marítimo';  // CORREÇÃO: Sempre CS Marítimo
+      rumor.type = 'compra';       // CORREÇÃO: Sempre compra (chegada ao Marítimo)
       console.log('AddManualRumor: Forçando Vítor Matos como confirmado com confiabilidade 5 e clube correto (CS Marítimo)');
     }
 
-    // Check for duplicates before adding
-    if (!this.isDuplicateRumor(newRumor)) {
-      this.rumors.unshift(newRumor);
-      this.updateSignatureCaches(newRumor);
-      
-      // Keep only the most recent 50 rumors
-      if (this.rumors.length > 50) {
-        this.rumors = this.rumors.slice(0, 50);
-        this.rebuildCaches();
-      }
-    }
-
+    // Adicionar rumor diretamente à base de dados
+    const newRumor = await this.createRumorInDB(rumor);
+    console.log(`➕ AddManualRumor: Rumor criado na base de dados com ID ${newRumor.dbId}`);
+    
     return newRumor;
   }
 
@@ -1165,6 +1182,8 @@ class TransferService {
             // Verificar se já existe na base de dados
             const exists = await TransferRumorModel.existsByUniqueId(rumor.id);
             if (!exists) {
+              console.log(`📅 SaveToDB: Guardando ${rumor.player_name} com data: ${rumor.date}`);
+              
               await TransferRumorModel.create({
                 unique_id: rumor.id,
                 player_name: rumor.player_name,
@@ -1172,7 +1191,7 @@ class TransferService {
                 club: rumor.club,
                 value: rumor.value,
                 status: rumor.status,
-                date: rumor.date,
+                date: rumor.date, // Data já formatada pelo realNewsService
                 source: rumor.source,
                 reliability: rumor.reliability,
                 description: rumor.description,
@@ -1181,6 +1200,10 @@ class TransferService {
                 position: rumor.position,
                 is_approved: rumor.reliability >= 4 // Auto-aprovar rumores de alta confiabilidade
               });
+              
+              console.log(`✅ SaveToDB: ${rumor.player_name} guardado com sucesso`);
+            } else {
+              console.log(`⏭️ SaveToDB: ${rumor.player_name} já existe na BD, saltando...`);
             }
           } catch (error) {
             console.error(`Erro ao guardar rumor ${rumor.id}:`, error);
@@ -1196,6 +1219,22 @@ class TransferService {
 
   // Converter rumor da base de dados para interface do frontend
   private convertDBRumorToTransferRumor(dbRumor: TransferRumorDB): TransferRumor {
+    // Garantir que a data está no formato correto (YYYY-MM-DD)
+    let formattedDate = dbRumor.date;
+    if (dbRumor.date) {
+      try {
+        // Se a data vem como objeto Date, converter para string
+        const dateObj = new Date(dbRumor.date);
+        if (!isNaN(dateObj.getTime())) {
+          formattedDate = dateObj.toISOString().split('T')[0];
+        }
+        console.log(`📅 ConvertDBRumor: ${dbRumor.player_name} - Original: ${dbRumor.date}, Formatted: ${formattedDate}`);
+      } catch (error) {
+        console.log(`📅 ConvertDBRumor: Erro ao formatar data para ${dbRumor.player_name}: ${error}`);
+        formattedDate = dbRumor.date; // Manter original se houver erro
+      }
+    }
+
     return {
       id: dbRumor.unique_id,
       dbId: dbRumor.id, // Adicionar o ID da base de dados para o admin usar
@@ -1204,7 +1243,7 @@ class TransferService {
       club: dbRumor.club,
       value: dbRumor.value,
       status: dbRumor.status,
-      date: dbRumor.date,
+      date: formattedDate,
       source: dbRumor.source,
       reliability: dbRumor.reliability,
       description: dbRumor.description,

@@ -185,6 +185,30 @@ const PlayerImage = ({
     );
   }
 
+  // Se não há imageSrc válido, não renderizar a imagem
+  if (!imageSrc) {
+    return (
+      <div 
+        style={{
+          ...style,
+          width,
+          height,
+          borderRadius: style?.borderRadius || '50%',
+          background: 'linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%)',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          color: 'white',
+          fontSize: '12px',
+          fontWeight: 'bold',
+        }}
+        className={className}
+      >
+        ?
+      </div>
+    );
+  }
+
   return (
     <img
       ref={imgRef}

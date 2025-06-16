@@ -302,6 +302,12 @@ class RealNewsService {
           const link = this.extractXMLContent(itemXml, 'link');
           const pubDate = this.extractXMLContent(itemXml, 'pubDate');
           
+          console.log(`📰 Google News Item:`, {
+            title: title?.substring(0, 50) + '...',
+            pubDate: pubDate,
+            hasDate: !!pubDate
+          });
+          
           if (title && this.isMaritimoRelated(title + ' ' + description)) {
             const cleanedDescription = this.cleanText(description);
             // Only include description if it's meaningful (more than 20 chars and contains actual words)
@@ -336,6 +342,12 @@ class RealNewsService {
           const description = this.extractXMLContent(itemXml, 'description');
           const link = this.extractXMLContent(itemXml, 'link');
           const pubDate = this.extractXMLContent(itemXml, 'pubDate');
+          
+          console.log(`📰 ${sourceName} Item:`, {
+            title: title?.substring(0, 50) + '...',
+            pubDate: pubDate,
+            hasDate: !!pubDate
+          });
           
           if (title) {
             const cleanedDescription = this.cleanText(description);
@@ -1109,6 +1121,8 @@ class RealNewsService {
       return new Date().toISOString().split('T')[0];
     }
   }
+  
+
 
   private calculateReliability(source: string, title: string): number {
     let baseReliability = 1;
