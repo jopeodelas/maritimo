@@ -23,6 +23,7 @@ export const submitPlayerRatings = async (ratings: {
   match_id: number;
   ratings: { player_id: number; rating: number }[];
   man_of_match_player_id: number;
+  man_of_match_player_type?: 'regular' | 'match';
 }): Promise<boolean> => {
   try {
     await api.post('/player-ratings/submit', ratings);

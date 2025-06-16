@@ -113,23 +113,33 @@ const PlayerRatings = () => {
       if (userHasVoted) {
         // Show results if user has already voted
         setShowResults(true);
-        const results = await playerRatingsService.getManOfTheMatchResults(voting.id);
-        setManOfMatchResults(results);
+        
+        // Sempre buscar resultados para utilizadores que já votaram
+        try {
+          const results = await playerRatingsService.getManOfTheMatchResults(voting.id);
+          console.log('🏆 Man of the match results for voted user:', results);
+          setManOfMatchResults(results);
+        } catch (error) {
+          console.error('Error fetching man of the match results:', error);
+          // Mesmo se houver erro, manter showResults como true
+        }
         
         // Get user's previous ratings
         const userRatings = await playerRatingsService.getUserRatings(voting.id);
         const ratingsState = voting.players.map(player => ({
           playerId: player.id,
-          rating: userRatings.ratings.find(r => r.player_id === player.id)?.rating || 6,
-          showAverage: false
+          rating: userRatings.ratings.find(r => r.player_id === player.id)?.rating || 0,
+          averageRating: undefined,
+          showAverage: true // Mostrar média se já votou
         }));
         setPlayerRatings(ratingsState);
         setManOfMatchPlayerId(userRatings.manOfMatchVote?.player_id || null);
       } else {
-        // Initialize ratings for new vote
+        // Initialize ratings for new vote - começar com 0 em vez de 6
         const ratingsState = voting.players.map(player => ({
           playerId: player.id,
-          rating: 6, // Default "average" rating
+          rating: 0, // Não começar com 6 selecionado
+          averageRating: undefined,
           showAverage: false
         }));
         setPlayerRatings(ratingsState);
@@ -171,75 +181,103 @@ const PlayerRatings = () => {
   const handleRatingChange = (playerId: number, rating: number) => {
     if (hasVoted) return; // Prevent changes if already voted
     
-    setPlayerRatings(prev => 
-      prev.map(p => 
-        p.playerId === playerId ? { ...p, rating } : p
-      )
-    );
-  };
+    // Verificar se é a primeira vez que seleciona um rating para este jogador
+    const currentPlayerRating = playerRatings.find(p => p.playerId === playerId);
+    const isFirstSelection = !currentPlayerRating?.rating || currentPlayerRating.rating === 0;
+    
+    setPlayerRatings(prev => prev.map(p => 
+      p.playerId === playerId 
+        ? { ...p, rating, showAverage: true } // Sempre mostrar média quando selecionar
+        : p
+    ));
 
-  const handlePlayerClick = async (playerId: number) => {
-    const playerRating = playerRatings.find(p => p.playerId === playerId);
-    if (!playerRating) return;
-
-    if (playerRating.showAverage && playerRating.averageRating) {
-      // Hide average if already showing
-      setPlayerRatings(prev => 
-        prev.map(p => 
-          p.playerId === playerId ? { ...p, showAverage: false } : p
-        )
-      );
-    } else {
-      // Fetch and show average
-      const averageRating = await playerRatingsService.getPlayerAverageRating(playerId);
-      setPlayerRatings(prev => 
-        prev.map(p => 
-          p.playerId === playerId 
-            ? { ...p, averageRating: averageRating || undefined, showAverage: true } 
-            : p
-        )
-      );
+    // Buscar e mostrar a média quando selecionar pela primeira vez
+    if (isFirstSelection && !currentPlayerRating?.averageRating) {
+      handlePlayerClick(playerId);
     }
   };
 
-  const handleManOfMatchSelect = (playerId: number) => {
-    if (hasVoted) return; // Prevent changes if already voted
+  const handlePlayerClick = async (playerId: number) => {
+    try {
+      const averageRating = await playerRatingsService.getPlayerAverageRating(playerId);
+      console.log(`🔍 Average rating for player ${playerId}:`, averageRating);
+      
+      setPlayerRatings(prev => prev.map(p => 
+        p.playerId === playerId 
+          ? { ...p, averageRating: averageRating || undefined, showAverage: true }
+          : p
+      ));
+    } catch (error) {
+      console.error('Error fetching player average rating:', error);
+    }
+  };
+
+  const handleManOfMatchSelect = (playerId: number, playerType: 'regular' | 'match') => {
+    console.log(`⭐ Selecting man of the match:`, { playerId, playerType });
+    
+    // DEBUG: Verificar que jogador corresponde a este ID
+    const allPlayers = activeVoting?.players || [];
+    const selectedPlayer = allPlayers.find(p => p.id === playerId);
+    console.log(`🔍 CRITICAL DEBUG: Selected player ID ${playerId} corresponds to:`, selectedPlayer);
+    console.log(`🔍 CRITICAL DEBUG: All available players:`, allPlayers.map(p => ({ id: p.id, name: p.name })));
+    
     setManOfMatchPlayerId(playerId === manOfMatchPlayerId ? null : playerId);
   };
 
   const canSubmit = () => {
-    return playerRatings.every(p => p.rating >= 1 && p.rating <= 10) && 
-           manOfMatchPlayerId !== null && 
-           !hasVoted;
+    // Verificar se todos os jogadores têm rating > 0, há homem do jogo selecionado e ainda não votou
+    const allRated = playerRatings.every(rating => rating.rating > 0);
+    return allRated && manOfMatchPlayerId !== null && !hasVoted;
   };
 
   const handleSubmit = async () => {
-    if (!activeVoting || !canSubmit()) return;
-
+    if (!canSubmit() || submitting || hasVoted) return; // Verificar se já votou
+    
+    setSubmitting(true);
+    
     try {
-      setSubmitting(true);
-      const ratingsData = {
-        match_id: activeVoting.id,
-        ratings: playerRatings.map(p => ({
-          player_id: p.playerId,
-          rating: p.rating
-        })),
-        man_of_match_player_id: manOfMatchPlayerId!
-      };
+      const ratingsData = playerRatings.map(rating => ({
+        player_id: rating.playerId,
+        rating: rating.rating
+      }));
 
-      const success = await playerRatingsService.submitPlayerRatings(ratingsData);
+      // Determinar o tipo do jogador selecionado para man of the match
+      const allPlayers = activeVoting!.players;
+      const selectedPlayer = allPlayers.find(p => p.id === manOfMatchPlayerId);
+      const manOfMatchPlayerType = selectedPlayer?.player_type || 'regular';
+
+      console.log(`🗳️  Frontend submitting:`, {
+        match_id: activeVoting!.id,
+        man_of_match_player_id: manOfMatchPlayerId,
+        man_of_match_player_type: manOfMatchPlayerType,
+        ratingsData,
+        selectedPlayer: selectedPlayer,
+        playersList: activeVoting!.players.map(p => ({ id: p.id, name: p.name, type: p.player_type }))
+      });
+
+      await playerRatingsService.submitPlayerRatings({
+        match_id: activeVoting!.id,
+        ratings: ratingsData,
+        man_of_match_player_id: manOfMatchPlayerId!,
+        man_of_match_player_type: manOfMatchPlayerType
+      });
+
+      // Marcar como votado e mostrar resultados
+      setHasVoted(true);
+      setShowResults(true);
       
-      if (success) {
-        setHasVoted(true);
-        setShowResults(true);
-        const results = await playerRatingsService.getManOfTheMatchResults(activeVoting.id);
-        setManOfMatchResults(results);
-      } else {
-        setError('Erro ao submeter as avaliações. Tente novamente.');
-      }
-    } catch (error) {
+      // Buscar resultados
+      const results = await playerRatingsService.getManOfTheMatchResults(activeVoting!.id);
+      setManOfMatchResults(results);
+      
+    } catch (error: any) {
       console.error('Error submitting ratings:', error);
-      setError('Erro ao submeter as avaliações. Tente novamente.');
+      if (error.response?.data?.error === 'Já votou neste jogo') {
+        setHasVoted(true);
+        setError('Já submeteu a sua avaliação para este jogo.');
+      } else {
+        setError('Erro ao submeter avaliações. Tente novamente.');
+      }
     } finally {
       setSubmitting(false);
     }
@@ -606,6 +644,72 @@ const PlayerRatings = () => {
       letterSpacing: "0.05em",
       marginTop: "clamp(1rem, 2vh, 1.5rem)",
     },
+    matchHeader: {
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: "clamp(1rem, 3vw, 2rem)",
+      margin: "clamp(1rem, 2vh, 1.5rem) 0",
+      flexWrap: "wrap",
+    },
+    teamSection: {
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      gap: "clamp(0.5rem, 1vh, 0.8rem)",
+      minWidth: "clamp(6rem, 12vw, 8rem)",
+    },
+    teamLogo: {
+      width: "clamp(3.5rem, 7vw, 5rem)",
+      height: "clamp(3.5rem, 7vw, 5rem)",
+      borderRadius: "50%",
+      border: "2px solid rgba(255, 255, 255, 0.3)",
+      objectFit: "contain",
+      background: "rgba(255, 255, 255, 0.1)",
+      padding: "0.2rem",
+    },
+    teamName: {
+      fontSize: "clamp(0.8rem, 1.8vw, 1rem)",
+      fontWeight: "600",
+      color: "#B0BEC5",
+      textAlign: "center",
+      lineHeight: "1.2",
+    },
+    scoreSection: {
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      gap: "clamp(0.3rem, 0.8vh, 0.5rem)",
+    },
+    score: {
+      fontSize: "clamp(2rem, 5vw, 3rem)",
+      fontWeight: "900",
+      color: "#FFD700",
+      textShadow: "0 2px 4px rgba(0, 0, 0, 0.5)",
+      letterSpacing: "-0.02em",
+    },
+    matchStatus: {
+      fontSize: "clamp(0.7rem, 1.5vw, 0.9rem)",
+      fontWeight: "600",
+      color: "rgba(255, 255, 255, 0.7)",
+      background: "rgba(76, 175, 80, 0.2)",
+      padding: "0.2rem 0.6rem",
+      borderRadius: "0.5rem",
+      border: "1px solid rgba(76, 175, 80, 0.3)",
+    },
+    noResultsMessage: {
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      justifyContent: "center",
+      padding: "clamp(1rem, 2vh, 1.5rem)",
+      color: "rgba(255, 255, 255, 0.7)",
+      fontSize: "clamp(0.8rem, 2vw, 0.9rem)",
+      fontWeight: "600",
+    },
+    noResultsText: {
+      marginTop: "clamp(0.5rem, 1vh, 0.8rem)",
+    },
   });
 
   if (loading) {
@@ -656,7 +760,51 @@ const PlayerRatings = () => {
         <div style={styles.heroSection}>
           <div style={styles.heroAccent}></div>
           <h1 style={styles.heroTitle}>Avaliação dos Jogadores</h1>
-          <p style={styles.heroSubtitle}>{activeVoting.home_team} vs {activeVoting.away_team}</p>
+          
+          {/* Match Header com logos e resultado */}
+          <div style={styles.matchHeader}>
+            {activeVoting.matchDetails ? (
+              <>
+                <div style={styles.teamSection}>
+                  {activeVoting.matchDetails.homeLogo && (
+                    <img 
+                      src={activeVoting.matchDetails.homeLogo} 
+                      alt={activeVoting.matchDetails.homeTeam}
+                      style={styles.teamLogo}
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).style.display = 'none';
+                      }}
+                    />
+                  )}
+                  <div style={styles.teamName}>{activeVoting.matchDetails.homeTeam}</div>
+                </div>
+                
+                <div style={styles.scoreSection}>
+                  <div style={styles.score}>
+                    {activeVoting.matchDetails.homeScore} - {activeVoting.matchDetails.awayScore}
+                  </div>
+                  <div style={styles.matchStatus}>{activeVoting.matchDetails.status}</div>
+                </div>
+                
+                <div style={styles.teamSection}>
+                  {activeVoting.matchDetails.awayLogo && (
+                    <img 
+                      src={activeVoting.matchDetails.awayLogo} 
+                      alt={activeVoting.matchDetails.awayTeam}
+                      style={styles.teamLogo}
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).style.display = 'none';
+                      }}
+                    />
+                  )}
+                  <div style={styles.teamName}>{activeVoting.matchDetails.awayTeam}</div>
+                </div>
+              </>
+            ) : (
+              <p style={styles.heroSubtitle}>{activeVoting.home_team} vs {activeVoting.away_team}</p>
+            )}
+          </div>
+          
           <p style={styles.matchInfo}>
             {new Date(activeVoting.match_date).toLocaleDateString('pt-PT', {
               weekday: 'long',
@@ -682,16 +830,31 @@ const PlayerRatings = () => {
             return (
               <div 
                 key={player.id} 
-                style={{
-                  ...styles.playerCard,
-                  ...(player.position.toLowerCase().includes('gk') || player.position.toLowerCase().includes('guarda-redes') ? styles.playerCardRed : {})
-                }}
+                style={styles.playerCard} // Remover cor diferente para GR
                 onClick={() => handlePlayerClick(player.id)}
                 className="hover-card"
               >
                 {playerRating?.showAverage && playerRating.averageRating && (
                   <div style={styles.averageRating}>
-                    Média: {playerRating.averageRating.average_rating?.toFixed(1) || 'N/A'} 
+                    Média: {(() => {
+                      const avgRating = playerRating.averageRating.average_rating;
+                      console.log(`🎯 Displaying average for player:`, {
+                        playerId: player.id,
+                        playerName: player.name,
+                        avgRating,
+                        type: typeof avgRating,
+                        totalRatings: playerRating.averageRating.total_ratings
+                      });
+                      
+                      // Converter string para número se necessário
+                      const numericRating = typeof avgRating === 'string' ? parseFloat(avgRating) : avgRating;
+                      
+                      if (typeof numericRating === 'number' && numericRating > 0 && !isNaN(numericRating)) {
+                        return numericRating.toFixed(1);
+                      } else {
+                        return 'N/A';
+                      }
+                    })()} 
                     ({playerRating.averageRating.total_ratings || 0} votos)
                   </div>
                 )}
@@ -739,9 +902,7 @@ const PlayerRatings = () => {
                     ))}
                   </div>
                   
-                  <div style={styles.currentRating}>
-                    {playerRating?.rating || 6}
-                  </div>
+                  {/* REMOVER COMPLETAMENTE - não mostrar número à direita */}
                 </div>
 
                 <div style={styles.manOfMatchSection}>
@@ -752,7 +913,7 @@ const PlayerRatings = () => {
                     }}
                     onClick={(e) => {
                       e.stopPropagation();
-                      handleManOfMatchSelect(player.id);
+                      handleManOfMatchSelect(player.id, 'regular');
                     }}
                     disabled={hasVoted}
                     title="Homem do Jogo"
@@ -792,10 +953,10 @@ const PlayerRatings = () => {
           </button>
         )}
 
-        {showResults && manOfMatchResults.length > 0 && (
+        {hasVoted && showResults && (
           <div style={styles.resultsSection}>
             <div style={styles.resultsTitle}>Homem do Jogo</div>
-            {manOfMatchResults[0] && (
+            {manOfMatchResults.length > 0 ? (
               <div style={styles.winnerCard}>
                 <PlayerImage
                   imageUrl={getPlayerById(manOfMatchResults[0].player_id)?.image_url || ''}
@@ -807,7 +968,17 @@ const PlayerRatings = () => {
                   showFallbackText={true}
                 />
                 <div style={styles.winnerName}>{manOfMatchResults[0].player_name}</div>
-                <div style={styles.winnerPercentage}>{manOfMatchResults[0].percentage?.toFixed(1) || '0.0'}%</div>
+                <div style={styles.winnerPercentage}>
+                  {typeof manOfMatchResults[0].percentage === 'number' 
+                    ? manOfMatchResults[0].percentage.toFixed(1) 
+                    : '0.0'}%
+                </div>
+              </div>
+            ) : (
+              <div style={styles.noResultsMessage}>
+                <div style={styles.noResultsText}>
+                  Ainda não há votos suficientes para determinar o Homem do Jogo
+                </div>
               </div>
             )}
           </div>

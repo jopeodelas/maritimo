@@ -23,5 +23,6 @@ router.post('/check-new-votings', playerRatingsController.checkAndCreateNewVotin
 
 // Debug routes
 router.get('/debug/find-maritimo-id', playerRatingsController.findMaritimoTeamId);
+router.post('/debug/run-migration', playerRatingsController.runMigration);
 
 export default router; 

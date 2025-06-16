@@ -10,6 +10,7 @@ export interface User {
     position: string;
     image_url: string;
     vote_count: number;
+    player_type?: 'regular' | 'match';
   }
   
   export interface Vote {
@@ -60,6 +61,16 @@ export interface User {
     is_active: boolean;
     players: Player[];
     created_at: string;
+    matchDetails?: {
+      homeTeam: string;
+      awayTeam: string;
+      homeScore: number;
+      awayScore: number;
+      homeLogo: string;
+      awayLogo: string;
+      matchDate: string;
+      status: string;
+    };
   }
 
   export interface ManOfTheMatchVote {

@@ -101,6 +101,32 @@ export const submitPlayerRatings = async (req: Request, res: Response) => {
     const { match_id, ratings, man_of_match_player_id } = req.body;
     const userId = (req as any).user?.id;
 
+    console.log(`🗳️  Submitting votes:`, {
+      userId,
+      match_id,
+      man_of_match_player_id,
+      ratingsCount: ratings.length
+    });
+
+    // DEBUG: Verificar que jogador corresponde ao ID enviado
+    if (man_of_match_player_id) {
+      const playerCheck = await client.query(
+        'SELECT id, name FROM players WHERE id = $1',
+        [man_of_match_player_id]
+      );
+      console.log(`🔍 CRITICAL: Frontend sent man_of_match_player_id ${man_of_match_player_id}, which corresponds to:`, playerCheck.rows[0]);
+      
+      // Verificar também todos os jogadores na votação atual
+      const votingPlayers = await client.query(`
+        SELECT p.id, p.name 
+        FROM players p
+        INNER JOIN match_voting_players mvp ON p.id = mvp.player_id
+        WHERE mvp.match_voting_id = $1
+        ORDER BY p.name
+      `, [match_id]);
+      console.log(`🔍 CRITICAL: All players in current voting:`, votingPlayers.rows);
+    }
+
     if (!userId) {
       return res.status(401).json({ error: 'Utilizador não autenticado' });
     }
@@ -136,19 +162,71 @@ export const submitPlayerRatings = async (req: Request, res: Response) => {
     // Insert man of the match vote
     const manOfMatchPlayerType = req.body.man_of_match_player_type || 'regular';
     
+    console.log(`🏆 Inserting man of the match vote:`, {
+      man_of_match_player_id,
+      manOfMatchPlayerType,
+      userId,
+      match_id
+    });
+    
     if (manOfMatchPlayerType === 'regular') {
       await client.query(
         'INSERT INTO man_of_match_votes (player_id, user_id, match_id, player_type) VALUES ($1, $2, $3, $4)',
         [man_of_match_player_id, userId, match_id, 'regular']
       );
     } else {
-      await client.query(
-        'INSERT INTO man_of_match_votes (match_player_id, user_id, match_id, player_type) VALUES ($1, $2, $3, $4)',
-        [man_of_match_player_id, userId, match_id, 'match']
+      // Para jogadores 'match', vamos tentar encontrar um jogador correspondente na tabela players
+      // baseado no nome, ou criar uma entrada especial
+      const matchPlayerResult = await client.query(
+        'SELECT name FROM match_players WHERE id = $1',
+        [man_of_match_player_id]
       );
+      
+      if (matchPlayerResult.rows.length === 0) {
+        throw new Error(`Match player with ID ${man_of_match_player_id} not found`);
+      }
+      
+      const matchPlayerName = matchPlayerResult.rows[0].name;
+      console.log(`🔍 Looking for match player: ${matchPlayerName}`);
+      
+      // Tentar encontrar um jogador correspondente na tabela players
+      const correspondingPlayerResult = await client.query(
+        'SELECT id FROM players WHERE LOWER(name) = LOWER($1)',
+        [matchPlayerName]
+      );
+      
+      if (correspondingPlayerResult.rows.length > 0) {
+        // Encontrou correspondência na tabela players
+        const actualPlayerId = correspondingPlayerResult.rows[0].id;
+        console.log(`✅ Found corresponding player ID ${actualPlayerId} for ${matchPlayerName}`);
+        
+        await client.query(
+          'INSERT INTO man_of_match_votes (player_id, user_id, match_id, player_type) VALUES ($1, $2, $3, $4)',
+          [actualPlayerId, userId, match_id, 'match']
+        );
+      } else {
+        // Não encontrou correspondência - vamos usar um ID especial ou criar uma entrada
+        console.log(`⚠️ No corresponding player found for ${matchPlayerName}, using match_player_id directly`);
+        
+        // Verificar se a tabela tem a coluna match_player_id
+        try {
+          await client.query(
+            'INSERT INTO man_of_match_votes (match_player_id, user_id, match_id, player_type) VALUES ($1, $2, $3, $4)',
+            [man_of_match_player_id, userId, match_id, 'match']
+          );
+        } catch (error: any) {
+          if (error.code === '42703') { // Column does not exist
+            console.log(`❌ Column match_player_id does not exist, skipping vote for ${matchPlayerName}`);
+            throw new Error(`Cannot vote for match player ${matchPlayerName} - database schema not updated`);
+          } else {
+            throw error;
+          }
+        }
+      }
     }
 
     await client.query('COMMIT');
+    console.log(`✅ Votes submitted successfully for user ${userId}`);
     res.json({ success: true, message: 'Avaliações submetidas com sucesso' });
 
   } catch (error) {
@@ -173,8 +251,8 @@ export const getPlayerAverageRating = async (req: Request, res: Response) => {
         SELECT 
           p.id as player_id,
           p.name as player_name,
-          ROUND(AVG(pr.rating::numeric), 2) as average_rating,
-          COUNT(pr.rating) as total_ratings
+          COALESCE(ROUND(AVG(pr.rating::numeric), 2), 0)::float as average_rating,
+          COUNT(pr.rating)::int as total_ratings
         FROM players p
         LEFT JOIN player_ratings pr ON p.id = pr.player_id
         WHERE p.id = $1
@@ -186,8 +264,8 @@ export const getPlayerAverageRating = async (req: Request, res: Response) => {
         SELECT 
           mp.id as player_id,
           mp.name as player_name,
-          0 as average_rating,
-          0 as total_ratings
+          0::float as average_rating,
+          0::int as total_ratings
         FROM match_players mp
         WHERE mp.id = $1
       `, [playerId]);
@@ -197,6 +275,7 @@ export const getPlayerAverageRating = async (req: Request, res: Response) => {
       return res.status(404).json({ error: 'Jogador não encontrado' });
     }
 
+    console.log(`📊 Player ${playerId} average rating:`, result.rows[0]);
     res.json(result.rows[0]);
   } catch (error) {
     console.error('Error fetching player average rating:', error);
@@ -209,24 +288,64 @@ export const getManOfTheMatchResults = async (req: Request, res: Response) => {
   try {
     const matchId = parseInt(req.params.matchId);
 
+    console.log(`🏆 Getting man of the match results for match ${matchId}`);
+
+    // Debug: verificar todos os votos para este match com detalhes completos
+    const debugVotes = await pool.query(`
+      SELECT 
+        mmv.id as vote_id,
+        mmv.player_id,
+        mmv.user_id,
+        mmv.match_id,
+        mmv.created_at,
+        p.name as player_name,
+        u.username as voter_username
+      FROM man_of_match_votes mmv 
+      LEFT JOIN players p ON mmv.player_id = p.id 
+      LEFT JOIN users u ON mmv.user_id = u.id
+      WHERE mmv.match_id = $1
+      ORDER BY mmv.created_at DESC
+    `, [matchId]);
+    
+    console.log(`🔍 DETAILED man of the match votes for match ${matchId}:`, debugVotes.rows);
+
+    // Debug: verificar todos os jogadores disponíveis na votação
+    const debugPlayers = await pool.query(`
+      SELECT p.id, p.name 
+      FROM players p
+      INNER JOIN match_voting_players mvp ON p.id = mvp.player_id
+      INNER JOIN match_voting mv ON mvp.match_voting_id = mv.id
+      WHERE mv.id = $1
+      ORDER BY p.name
+    `, [matchId]);
+    
+    console.log(`🔍 ALL players available in voting ${matchId}:`, debugPlayers.rows);
+
+    // Debug: verificar se há discrepância entre os IDs
+    const allPlayers = await pool.query(`
+      SELECT id, name FROM players ORDER BY name
+    `);
+    console.log(`🔍 ALL players in database:`, allPlayers.rows);
+
+    // Query simplificada - buscar apenas votos que existem
     const result = await pool.query(`
       SELECT 
-        COALESCE(p.id, mp.id) as player_id,
-        COALESCE(p.name, mp.name) as player_name,
+        p.id as player_id,
+        p.name as player_name,
         COUNT(mmv.id) as vote_count,
         ROUND((COUNT(mmv.id) * 100.0 / (
           SELECT COUNT(*) 
           FROM man_of_match_votes 
           WHERE match_id = $1
-        ))::numeric, 1) as percentage
+        ))::numeric, 1)::float as percentage
       FROM man_of_match_votes mmv
-      LEFT JOIN players p ON mmv.player_id = p.id AND mmv.player_type = 'regular'
-      LEFT JOIN match_players mp ON mmv.match_player_id = mp.id AND mmv.player_type = 'match'
+      INNER JOIN players p ON mmv.player_id = p.id
       WHERE mmv.match_id = $1
-      GROUP BY COALESCE(p.id, mp.id), COALESCE(p.name, mp.name)
-      ORDER BY vote_count DESC, COALESCE(p.name, mp.name) ASC
+      GROUP BY p.id, p.name
+      ORDER BY vote_count DESC, p.name ASC
     `, [matchId]);
 
+    console.log(`🏆 Man of the match results:`, result.rows);
     res.json(result.rows);
   } catch (error) {
     console.error('Error fetching man of the match results:', error);
@@ -480,6 +599,55 @@ export const findMaritimoTeamId = async (req: Request, res: Response) => {
     res.status(500).json({ 
       success: false, 
       message: 'Erro ao procurar ID do CS Marítimo: ' + (error as any).message 
+    });
+  }
+};
+
+// Temporary endpoint to run migration
+export const runMigration = async (req: Request, res: Response) => {
+  try {
+    console.log('🔄 Running migration...');
+    
+    // Execute migration SQL
+    await pool.query(`
+      -- Atualizar tabela player_ratings para suportar tanto jogadores regulares como jogadores temporários
+      ALTER TABLE player_ratings 
+      ADD COLUMN IF NOT EXISTS player_type VARCHAR(20) DEFAULT 'regular' CHECK (player_type IN ('regular', 'match'));
+
+      ALTER TABLE player_ratings 
+      ADD COLUMN IF NOT EXISTS match_player_id INTEGER REFERENCES match_players(id);
+
+      -- Atualizar tabela man_of_match_votes para suportar tanto jogadores regulares como jogadores temporários
+      ALTER TABLE man_of_match_votes 
+      ADD COLUMN IF NOT EXISTS player_type VARCHAR(20) DEFAULT 'regular' CHECK (player_type IN ('regular', 'match'));
+
+      ALTER TABLE man_of_match_votes 
+      ADD COLUMN IF NOT EXISTS match_player_id INTEGER REFERENCES match_players(id);
+    `);
+    
+    console.log('✅ Migration completed successfully!');
+    
+    // Verificar se as colunas foram adicionadas
+    const result = await pool.query(`
+      SELECT column_name 
+      FROM information_schema.columns 
+      WHERE table_name = 'man_of_match_votes' 
+      AND column_name IN ('player_type', 'match_player_id')
+    `);
+    
+    console.log('📋 Columns in man_of_match_votes:', result.rows);
+    
+    res.json({ 
+      success: true, 
+      message: 'Migration completed successfully',
+      columns: result.rows
+    });
+    
+  } catch (error) {
+    console.error('❌ Migration failed:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Migration failed: ' + (error as any).message 
     });
   }
 }; 
