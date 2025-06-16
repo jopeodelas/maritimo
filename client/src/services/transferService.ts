@@ -2,6 +2,7 @@ import api from './api';
 
 export interface TransferRumor {
   id: string;
+  dbId?: number; // ID da base de dados para uso do admin
   player_name: string;
   type: "compra" | "venda" | "renovação";
   club: string;

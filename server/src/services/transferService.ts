@@ -1,8 +1,10 @@
 import type { Request } from 'express';
 import { realNewsService } from './realNewsService';
+import { TransferRumorModel, TransferRumorDB, CreateTransferRumorInput, UpdateTransferRumorInput } from '../models/transfer-rumor.model';
 
 export interface TransferRumor {
   id: string;
+  dbId?: number; // ID da base de dados para uso do admin
   player_name: string;
   type: "compra" | "venda" | "renovação";
   club: string;
@@ -84,6 +86,7 @@ class TransferService {
   constructor() {
     this.initializeDefaultRumors();
     this.updateRumors();
+    this.migrateToDatabase();
   }
 
   private initializeDefaultRumors(): void {
@@ -1016,6 +1019,204 @@ class TransferService {
     }
 
     return 'Novo elemento técnico';
+  }
+
+  // NOVOS MÉTODOS PARA TRABALHAR COM A BASE DE DADOS
+
+  // Migrar rumores da memória para a base de dados (executar uma vez)
+  private async migrateToDatabase(): Promise<void> {
+    try {
+      if (this.rumors.length > 0) {
+        console.log('Migrando rumores existentes para a base de dados...');
+        await TransferRumorModel.migrateFromMemory(this.rumors);
+        console.log('Migração concluída!');
+      }
+    } catch (error) {
+      console.error('Erro na migração para a base de dados:', error);
+    }
+  }
+
+  // Obter rumores da base de dados (método público para utilizadores)
+  async getRumorsFromDB(): Promise<TransferRumor[]> {
+    try {
+      const dbRumors = await TransferRumorModel.getAllApproved();
+      return this.convertDBRumorsToTransferRumors(dbRumors);
+    } catch (error) {
+      console.error('Erro ao obter rumores da base de dados:', error);
+      // Fallback para rumores em memória
+      return this.getRumors();
+    }
+  }
+
+  // Obter todos os rumores da base de dados (para admin)
+  async getAllRumorsFromDB(): Promise<TransferRumor[]> {
+    try {
+      const dbRumors = await TransferRumorModel.getAllForAdmin();
+      return this.convertDBRumorsToTransferRumors(dbRumors);
+    } catch (error) {
+      console.error('Erro ao obter todos os rumores da base de dados:', error);
+      return [];
+    }
+  }
+
+  // Criar novo rumor na base de dados
+  async createRumorInDB(rumor: Omit<TransferRumor, 'id' | 'date'>, userId?: number): Promise<TransferRumor> {
+    try {
+      const uniqueId = `manual_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      const newRumor = await TransferRumorModel.create({
+        unique_id: uniqueId,
+        player_name: rumor.player_name,
+        type: rumor.type,
+        club: rumor.club,
+        value: rumor.value,
+        status: rumor.status,
+        date: new Date().toISOString().split('T')[0],
+        source: rumor.source || 'Manual',
+        reliability: rumor.reliability,
+        description: rumor.description,
+        is_main_team: rumor.isMainTeam !== false,
+        category: rumor.category || 'senior',
+        position: rumor.position,
+        is_approved: false, // Rumores manuais precisam de aprovação
+        created_by: userId
+      });
+
+      return this.convertDBRumorToTransferRumor(newRumor);
+    } catch (error) {
+      console.error('Erro ao criar rumor na base de dados:', error);
+      throw error;
+    }
+  }
+
+  // Atualizar rumor na base de dados
+  async updateRumorInDB(id: number, updates: UpdateTransferRumorInput): Promise<TransferRumor | null> {
+    try {
+      const updatedRumor = await TransferRumorModel.update(id, updates);
+      if (updatedRumor) {
+        return this.convertDBRumorToTransferRumor(updatedRumor);
+      }
+      return null;
+    } catch (error) {
+      console.error('Erro ao atualizar rumor na base de dados:', error);
+      throw error;
+    }
+  }
+
+  // Remover rumor da base de dados (soft delete)
+  async deleteRumorFromDB(id: number): Promise<boolean> {
+    try {
+      return await TransferRumorModel.softDelete(id);
+    } catch (error) {
+      console.error('Erro ao remover rumor da base de dados:', error);
+      throw error;
+    }
+  }
+
+  // Aprovar rumor
+  async approveRumor(id: number): Promise<TransferRumor | null> {
+    try {
+      const approvedRumor = await TransferRumorModel.approve(id);
+      if (approvedRumor) {
+        return this.convertDBRumorToTransferRumor(approvedRumor);
+      }
+      return null;
+    } catch (error) {
+      console.error('Erro ao aprovar rumor:', error);
+      throw error;
+    }
+  }
+
+  // Desaprovar rumor
+  async disapproveRumor(id: number): Promise<TransferRumor | null> {
+    try {
+      const disapprovedRumor = await TransferRumorModel.disapprove(id);
+      if (disapprovedRumor) {
+        return this.convertDBRumorToTransferRumor(disapprovedRumor);
+      }
+      return null;
+    } catch (error) {
+      console.error('Erro ao desaprovar rumor:', error);
+      throw error;
+    }
+  }
+
+  // Obter estatísticas da base de dados
+  async getStatsFromDB(): Promise<any> {
+    try {
+      return await TransferRumorModel.getStats();
+    } catch (error) {
+      console.error('Erro ao obter estatísticas da base de dados:', error);
+      // Fallback para estatísticas em memória
+      return this.getStats();
+    }
+  }
+
+  // Guardar novos rumores descobertos na base de dados
+  async saveNewRumorsToDB(): Promise<void> {
+    try {
+      // Buscar novos rumores
+      const scrapedRumors = await realNewsService.fetchRealTransferNews();
+      
+      if (scrapedRumors.length > 0) {
+        console.log(`Processando ${scrapedRumors.length} rumores descobertos...`);
+        
+        for (const rumor of scrapedRumors) {
+          try {
+            // Verificar se já existe na base de dados
+            const exists = await TransferRumorModel.existsByUniqueId(rumor.id);
+            if (!exists) {
+              await TransferRumorModel.create({
+                unique_id: rumor.id,
+                player_name: rumor.player_name,
+                type: rumor.type,
+                club: rumor.club,
+                value: rumor.value,
+                status: rumor.status,
+                date: rumor.date,
+                source: rumor.source,
+                reliability: rumor.reliability,
+                description: rumor.description,
+                is_main_team: rumor.isMainTeam !== false,
+                category: rumor.category || 'senior',
+                position: rumor.position,
+                is_approved: rumor.reliability >= 4 // Auto-aprovar rumores de alta confiabilidade
+              });
+            }
+          } catch (error) {
+            console.error(`Erro ao guardar rumor ${rumor.id}:`, error);
+          }
+        }
+        
+        console.log('Rumores processados e guardados na base de dados');
+      }
+    } catch (error) {
+      console.error('Erro ao guardar novos rumores na base de dados:', error);
+    }
+  }
+
+  // Converter rumor da base de dados para interface do frontend
+  private convertDBRumorToTransferRumor(dbRumor: TransferRumorDB): TransferRumor {
+    return {
+      id: dbRumor.unique_id,
+      dbId: dbRumor.id, // Adicionar o ID da base de dados para o admin usar
+      player_name: dbRumor.player_name,
+      type: dbRumor.type,
+      club: dbRumor.club,
+      value: dbRumor.value,
+      status: dbRumor.status,
+      date: dbRumor.date,
+      source: dbRumor.source,
+      reliability: dbRumor.reliability,
+      description: dbRumor.description,
+      isMainTeam: dbRumor.is_main_team,
+      category: dbRumor.category as any,
+      position: dbRumor.position
+    };
+  }
+
+  // Converter array de rumores da base de dados
+  private convertDBRumorsToTransferRumors(dbRumors: TransferRumorDB[]): TransferRumor[] {
+    return dbRumors.map(dbRumor => this.convertDBRumorToTransferRumor(dbRumor));
   }
 }
 

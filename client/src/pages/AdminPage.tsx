@@ -35,7 +35,24 @@ interface Player {
   vote_count: number;
 }
 
-type TabType = 'polls' | 'users' | 'banned' | 'players';
+interface TransferRumor {
+  id: string | number; // Pode ser string (unique_id) ou number (database id)
+  dbId?: number; // ID da base de dados
+  player_name: string;
+  type: "compra" | "venda" | "renovação";
+  club: string;
+  value: string;
+  status: "rumor" | "negociação" | "confirmado";
+  date: string;
+  source: string;
+  reliability: number;
+  description?: string;
+  isMainTeam?: boolean;
+  category?: string;
+  position?: string;
+}
+
+type TabType = 'polls' | 'users' | 'banned' | 'players' | 'rumors';
 
 const AdminPage = () => {
   const { user } = useAuth();
@@ -66,6 +83,21 @@ const AdminPage = () => {
   const [newPlayerImageFile, setNewPlayerImageFile] = useState<File | null>(null);
   const [creatingPlayer, setCreatingPlayer] = useState(false);
 
+  // Transfer rumors management states
+  const [rumors, setRumors] = useState<TransferRumor[]>([]);
+  const [loadingRumors, setLoadingRumors] = useState(false);
+  const [showRumorModal, setShowRumorModal] = useState(false);
+  const [editingRumor, setEditingRumor] = useState<TransferRumor | null>(null);
+  const [newRumorPlayerName, setNewRumorPlayerName] = useState('');
+  const [newRumorType, setNewRumorType] = useState<"compra" | "venda" | "renovação">('compra');
+  const [newRumorClub, setNewRumorClub] = useState('');
+  const [newRumorValue, setNewRumorValue] = useState('');
+  const [newRumorStatus, setNewRumorStatus] = useState<"rumor" | "negociação" | "confirmado">('rumor');
+  const [newRumorSource, setNewRumorSource] = useState('');
+  const [newRumorReliability, setNewRumorReliability] = useState(3);
+  const [newRumorDescription, setNewRumorDescription] = useState('');
+  const [creatingRumor, setCreatingRumor] = useState(false);
+
   useEffect(() => {
     // Check if user is admin
     if (!user?.is_admin) {
@@ -80,6 +112,8 @@ const AdminPage = () => {
       fetchBannedUsers();
     } else if (activeTab === 'players') {
       fetchPlayers();
+    } else if (activeTab === 'rumors') {
+      fetchRumors();
     }
   }, [user, navigate, activeTab]);
 
@@ -139,6 +173,21 @@ const AdminPage = () => {
       alert('Erro ao carregar jogadores: ' + (error as any)?.response?.data?.message || (error as any)?.message);
     } finally {
       setLoadingPlayers(false);
+    }
+  };
+
+  const fetchRumors = async () => {
+    setLoadingRumors(true);
+    try {
+      const response = await api.get('/admin/transfer/rumors');
+      console.log('Rumors response:', response);
+      console.log('Rumors data:', response.data);
+      setRumors(response.data.data || []);
+    } catch (error) {
+      console.error('Error fetching rumors:', error);
+      alert('Erro ao carregar rumores: ' + (error as any)?.response?.data?.message || (error as any)?.message);
+    } finally {
+      setLoadingRumors(false);
     }
   };
 
@@ -312,6 +361,116 @@ const AdminPage = () => {
         console.error('Error deleting player:', error);
         alert(error.response?.data?.message || 'Erro ao remover jogador');
       }
+    }
+  };
+
+  // Rumor management functions
+  const openRumorModal = (rumor?: TransferRumor) => {
+    if (rumor) {
+      setEditingRumor(rumor);
+      setNewRumorPlayerName(rumor.player_name);
+      setNewRumorType(rumor.type);
+      setNewRumorClub(rumor.club);
+      setNewRumorValue(rumor.value);
+      setNewRumorStatus(rumor.status);
+      setNewRumorSource(rumor.source);
+      setNewRumorReliability(rumor.reliability);
+      setNewRumorDescription(rumor.description || '');
+    } else {
+      setEditingRumor(null);
+      setNewRumorPlayerName('');
+      setNewRumorType('compra');
+      setNewRumorClub('');
+      setNewRumorValue('');
+      setNewRumorStatus('rumor');
+      setNewRumorSource('Admin');
+      setNewRumorReliability(5);
+      setNewRumorDescription('');
+    }
+    setShowRumorModal(true);
+  };
+
+  const closeRumorModal = () => {
+    setShowRumorModal(false);
+    setEditingRumor(null);
+  };
+
+  const createOrUpdateRumor = async () => {
+    if (!newRumorPlayerName.trim() || !newRumorClub.trim()) {
+      alert('Por favor, preencha pelo menos o nome do jogador e o clube');
+      return;
+    }
+
+    setCreatingRumor(true);
+    try {
+      const rumorData = {
+        player_name: newRumorPlayerName.trim(),
+        type: newRumorType,
+        club: newRumorClub.trim(),
+        value: newRumorValue.trim() || 'Valor não revelado',
+        status: newRumorStatus,
+        source: newRumorSource.trim() || 'Admin',
+        reliability: newRumorReliability,
+        description: newRumorDescription.trim()
+      };
+
+      if (editingRumor) {
+        // Use dbId if available, otherwise try to parse from id string
+        const numericId = editingRumor.dbId || (typeof editingRumor.id === 'number' ? editingRumor.id : parseInt(String(editingRumor.id).split('_')[1]) || Date.now());
+        await api.put(`/admin/transfer/rumors/${numericId}`, rumorData);
+      } else {
+        await api.post('/admin/transfer/rumors', rumorData);
+      }
+      
+      closeRumorModal();
+      fetchRumors();
+      alert(editingRumor ? 'Rumor atualizado com sucesso' : 'Rumor criado com sucesso');
+    } catch (error: any) {
+      console.error('Error creating/updating rumor:', error);
+      alert(error.response?.data?.message || 'Erro ao salvar rumor');
+    } finally {
+      setCreatingRumor(false);
+    }
+  };
+
+  const deleteRumor = async (rumorId: string | number, rumor?: TransferRumor) => {
+    if (window.confirm('Tem a certeza que deseja remover este rumor?')) {
+      try {
+        // Use dbId if available, otherwise try to parse from id string
+        const numericId = rumor?.dbId || (typeof rumorId === 'number' ? rumorId : parseInt(String(rumorId).split('_')[1]) || Date.now());
+        await api.delete(`/admin/transfer/rumors/${numericId}`);
+        fetchRumors();
+        alert('Rumor removido com sucesso');
+      } catch (error: any) {
+        console.error('Error deleting rumor:', error);
+        alert(error.response?.data?.message || 'Erro ao remover rumor');
+      }
+    }
+  };
+
+  const approveRumor = async (rumorId: string | number, rumor?: TransferRumor) => {
+    try {
+      // Use dbId if available, otherwise try to parse from id string
+      const numericId = rumor?.dbId || (typeof rumorId === 'number' ? rumorId : parseInt(String(rumorId).split('_')[1]) || Date.now());
+      await api.post(`/admin/transfer/rumors/${numericId}/approve`);
+      fetchRumors();
+      alert('Rumor aprovado com sucesso');
+    } catch (error: any) {
+      console.error('Error approving rumor:', error);
+      alert(error.response?.data?.message || 'Erro ao aprovar rumor');
+    }
+  };
+
+  const disapproveRumor = async (rumorId: string | number, rumor?: TransferRumor) => {
+    try {
+      // Use dbId if available, otherwise try to parse from id string
+      const numericId = rumor?.dbId || (typeof rumorId === 'number' ? rumorId : parseInt(String(rumorId).split('_')[1]) || Date.now());
+      await api.post(`/admin/transfer/rumors/${numericId}/disapprove`);
+      fetchRumors();
+      alert('Rumor desaprovado com sucesso');
+    } catch (error: any) {
+      console.error('Error disapproving rumor:', error);
+      alert(error.response?.data?.message || 'Erro ao desaprovar rumor');
     }
   };
 
@@ -829,6 +988,114 @@ const AdminPage = () => {
           </div>
         );
 
+      case 'rumors':
+        return (
+          <div style={styles.section}>
+            <div style={styles.sectionHeader}>
+              <h2 style={styles.sectionTitle}>Gerir Rumores de Transferências</h2>
+              <div style={{ display: 'flex', gap: '1rem' }}>
+                <button 
+                  style={styles.button} 
+                  onClick={() => openRumorModal()}
+                >
+                  + Novo Rumor
+                </button>
+                <button 
+                  style={styles.button} 
+                  onClick={fetchRumors}
+                  disabled={loadingRumors}
+                >
+                  {loadingRumors ? 'A carregar...' : 'Atualizar'}
+                </button>
+              </div>
+            </div>
+            
+            {loadingRumors ? (
+              <div style={styles.loading}>A carregar rumores...</div>
+            ) : rumors.length === 0 ? (
+              <div style={styles.emptyState}>Nenhum rumor encontrado</div>
+            ) : (
+              <table style={styles.table}>
+                <thead style={styles.tableHeader}>
+                  <tr>
+                    <th style={styles.tableHeaderCell}>Jogador</th>
+                    <th style={styles.tableHeaderCell}>Tipo</th>
+                    <th style={styles.tableHeaderCell}>Clube</th>
+                    <th style={styles.tableHeaderCell}>Valor</th>
+                    <th style={styles.tableHeaderCell}>Status</th>
+                    <th style={styles.tableHeaderCell}>Fonte</th>
+                    <th style={styles.tableHeaderCell}>Confiabilidade</th>
+                    <th style={styles.tableHeaderCell}>Data</th>
+                    <th style={styles.tableHeaderCell}>Ações</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {rumors.map(rumor => (
+                    <tr key={rumor.id} style={styles.tableRow}>
+                      <td style={styles.tableCell}>{rumor.player_name}</td>
+                      <td style={styles.tableCell}>
+                        <span style={{
+                          ...styles.userStatus,
+                          ...(rumor.type === 'compra' ? styles.activeStatus : 
+                              rumor.type === 'venda' ? styles.bannedStatus : styles.adminStatus)
+                        }}>
+                          {rumor.type}
+                        </span>
+                      </td>
+                      <td style={styles.tableCell}>{rumor.club}</td>
+                      <td style={styles.tableCell}>{rumor.value}</td>
+                      <td style={styles.tableCell}>
+                        <span style={{
+                          ...styles.userStatus,
+                          ...(rumor.status === 'confirmado' ? styles.activeStatus : 
+                              rumor.status === 'negociação' ? styles.adminStatus : styles.bannedStatus)
+                        }}>
+                          {rumor.status}
+                        </span>
+                      </td>
+                      <td style={styles.tableCell}>{rumor.source}</td>
+                      <td style={styles.tableCell}>
+                        <span style={{
+                          ...styles.userStatus,
+                          ...(rumor.reliability >= 4 ? styles.activeStatus : 
+                              rumor.reliability >= 3 ? styles.adminStatus : styles.bannedStatus)
+                        }}>
+                          {rumor.reliability}/5
+                        </span>
+                      </td>
+                      <td style={styles.tableCell}>{rumor.date}</td>
+                      <td style={styles.tableCell}>
+                        <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                          <button 
+                            style={{...styles.button, fontSize: '0.8rem', padding: '0.5rem'}} 
+                            onClick={() => openRumorModal(rumor)}
+                          >
+                            Editar
+                          </button>
+                          {rumor.status !== 'confirmado' && (
+                            <button 
+                              style={{...styles.button, ...styles.successButton, fontSize: '0.8rem', padding: '0.5rem'}}
+                              onClick={() => approveRumor(rumor.id, rumor)}
+                            >
+                              Aprovar
+                            </button>
+                          )}
+                          <button 
+                            style={{...styles.button, ...styles.dangerButton, fontSize: '0.8rem', padding: '0.5rem'}}
+                            onClick={() => deleteRumor(rumor.id, rumor)}
+                          >
+                            Remover
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
+        );
+
       default:
         return null;
     }
@@ -883,6 +1150,15 @@ const AdminPage = () => {
             onClick={() => setActiveTab('players')}
           >
             Jogadores
+          </button>
+          <button 
+            style={{
+              ...styles.tab,
+              ...(activeTab === 'rumors' ? styles.activeTab : {})
+            }}
+            onClick={() => setActiveTab('rumors')}
+          >
+            Rumores de Transferências
           </button>
         </div>
 
@@ -1040,6 +1316,118 @@ const AdminPage = () => {
                   disabled={creatingPlayer}
                 >
                   {creatingPlayer ? 'A salvar...' : 'Salvar'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Rumor Modal */}
+        {showRumorModal && (
+          <div style={styles.modal} onClick={(e) => {
+            if (e.target === e.currentTarget) closeRumorModal();
+          }}>
+            <div style={styles.modalContent}>
+              <h2 style={styles.modalTitle}>{editingRumor ? 'Editar Rumor' : 'Novo Rumor'}</h2>
+              
+              <input
+                style={styles.input}
+                type="text"
+                placeholder="Nome do Jogador *"
+                value={newRumorPlayerName}
+                onChange={(e) => setNewRumorPlayerName(e.target.value)}
+              />
+              
+              <select
+                style={styles.input}
+                value={newRumorType}
+                onChange={(e) => setNewRumorType(e.target.value as "compra" | "venda" | "renovação")}
+              >
+                <option value="compra">Compra</option>
+                <option value="venda">Venda</option>
+                <option value="renovação">Renovação</option>
+              </select>
+
+              <input
+                style={styles.input}
+                type="text"
+                placeholder="Clube *"
+                value={newRumorClub}
+                onChange={(e) => setNewRumorClub(e.target.value)}
+              />
+
+              <input
+                style={styles.input}
+                type="text"
+                placeholder="Valor (ex: 1M€, Livre, Valor não revelado)"
+                value={newRumorValue}
+                onChange={(e) => setNewRumorValue(e.target.value)}
+              />
+
+              <select
+                style={styles.input}
+                value={newRumorStatus}
+                onChange={(e) => setNewRumorStatus(e.target.value as "rumor" | "negociação" | "confirmado")}
+              >
+                <option value="rumor">Rumor</option>
+                <option value="negociação">Negociação</option>
+                <option value="confirmado">Confirmado</option>
+              </select>
+
+              <input
+                style={styles.input}
+                type="text"
+                placeholder="Fonte"
+                value={newRumorSource}
+                onChange={(e) => setNewRumorSource(e.target.value)}
+              />
+
+              <div style={{ marginBottom: '1rem' }}>
+                <label style={{ 
+                  color: '#B0BEC5', 
+                  marginBottom: '0.5rem', 
+                  display: 'block',
+                  fontSize: '0.9rem'
+                }}>
+                  Confiabilidade: {newRumorReliability}/5
+                </label>
+                <input
+                  style={{
+                    ...styles.input,
+                    marginBottom: '0'
+                  }}
+                  type="range"
+                  min="1"
+                  max="5"
+                  value={newRumorReliability}
+                  onChange={(e) => setNewRumorReliability(parseInt(e.target.value))}
+                />
+              </div>
+
+              <textarea
+                style={{
+                  ...styles.input,
+                  minHeight: '80px',
+                  resize: 'vertical' as const
+                }}
+                placeholder="Descrição (opcional)"
+                value={newRumorDescription}
+                onChange={(e) => setNewRumorDescription(e.target.value)}
+              />
+              
+              <div style={styles.modalActions}>
+                <button 
+                  style={styles.cancelButton} 
+                  onClick={closeRumorModal}
+                >
+                  Cancelar
+                </button>
+                <button 
+                  style={styles.button} 
+                  onClick={createOrUpdateRumor}
+                  disabled={creatingRumor}
+                >
+                  {creatingRumor ? 'A salvar...' : 'Salvar'}
                 </button>
               </div>
             </div>

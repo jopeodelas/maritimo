@@ -11,7 +11,8 @@ export const getTransferRumors = async (req: Request, res: Response) => {
       category 
     } = req.query;
 
-    let rumors = await transferService.getRumors();
+    // Tentar obter rumores da base de dados primeiro, fallback para memória
+    let rumors = await transferService.getRumorsFromDB();
 
     // Apply additional filters based on query parameters
     if (includeYouth === 'false') {
