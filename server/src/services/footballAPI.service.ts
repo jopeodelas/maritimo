@@ -78,7 +78,7 @@ const API_CONFIGS = [
 
 // ID do CS Marítimo nas diferentes APIs
 const MARITIMO_TEAM_IDS = {
-  'API-Football': parseInt(process.env.MARITIMO_API_FOOTBALL_ID || '214'), // CS Marítimo real ID correto
+  'API-Football': 214, // CS Marítimo Portugal ID correto (confirmado)
   'Football-Data': parseInt(process.env.MARITIMO_FOOTBALL_DATA_ID || '5529') // Exemplo - será configurado
 };
 
@@ -111,13 +111,15 @@ class FootballAPIService {
         console.log(`   - ${team.name} (ID: ${team.id}) - ${team.country} - Liga: ${teamData.venue?.name || 'N/A'}`);
       });
 
-      // Procurar CS Marítimo especificamente
-      const maritimoTeam = teams.find((teamData: any) => {
-        const team = teamData.team;
-        return team.name.toLowerCase().includes('marítimo') || 
-               team.name.toLowerCase().includes('maritimo') ||
-               team.name.toLowerCase().includes('cs marítimo');
-      });
+          // Procurar CS Marítimo especificamente (Portugal)
+    const maritimoTeam = teams.find((teamData: any) => {
+      const team = teamData.team;
+      return (team.name.toLowerCase().includes('marítimo') || 
+              team.name.toLowerCase().includes('maritimo') ||
+              team.name.toLowerCase().includes('cs marítimo')) &&
+             team.country === 'Portugal' &&
+             team.id === 214; // Garantir que é o CS Marítimo correto
+    });
 
       if (maritimoTeam) {
         console.log(`✅ Found CS Marítimo: ${maritimoTeam.team.name} (ID: ${maritimoTeam.team.id})`);

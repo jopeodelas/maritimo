@@ -45,7 +45,16 @@ export const auth = async (req: Request, res: Response, next: NextFunction) => {
       
       req.userId = decoded.id;
       req.user = { id: decoded.id, is_admin: user.is_admin };
-      console.log('Token verified, user ID:', decoded.id);
+      console.log('Token verified, user ID:', decoded.id, 'is_admin:', user.is_admin);
+      
+      // Additional validation to ensure consistency
+      if (req.userId !== req.user.id) {
+        console.error('⚠️ CRITICAL: userId and user.id mismatch!', {
+          userId: req.userId,
+          userObjectId: req.user.id
+        });
+      }
+      
       next();
     } catch (err) {
       console.error('Auth middleware error:', err);

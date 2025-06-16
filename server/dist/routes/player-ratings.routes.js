@@ -43,4 +43,5 @@ router.get('/recent-matches', playerRatingsController.getRecentMatchesFromAPI);
 router.post('/check-new-votings', playerRatingsController.checkAndCreateNewVotings);
 // Debug routes
 router.get('/debug/find-maritimo-id', playerRatingsController.findMaritimoTeamId);
+router.post('/debug/run-migration', playerRatingsController.runMigration);
 exports.default = router;

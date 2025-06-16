@@ -34,7 +34,7 @@ const API_CONFIGS = [
 ];
 // ID do CS Marítimo nas diferentes APIs
 const MARITIMO_TEAM_IDS = {
-    'API-Football': parseInt(process.env.MARITIMO_API_FOOTBALL_ID || '214'),
+    'API-Football': 214,
     'Football-Data': parseInt(process.env.MARITIMO_FOOTBALL_DATA_ID || '5529') // Exemplo - será configurado
 };
 // Liga Portugal 2 ID (Segunda Liga)
@@ -43,6 +43,12 @@ const LIGA_PORTUGAL_2_ID = 219;
 class FootballAPIService {
     constructor() {
         this.currentAPIIndex = 0;
+        // Mapeamento manual para casos especiais onde API e BD têm nomes diferentes
+        this.specialNameMappings = {
+            // API name -> BD name (normalized)
+            'daniel silva': 'daniel benchimol',
+            // Adicionar outros casos especiais conforme necessário
+        };
     }
     getCurrentAPI() {
         return API_CONFIGS[this.currentAPIIndex];
@@ -62,12 +68,14 @@ class FootballAPIService {
                     const team = teamData.team;
                     console.log(`   - ${team.name} (ID: ${team.id}) - ${team.country} - Liga: ${((_a = teamData.venue) === null || _a === void 0 ? void 0 : _a.name) || 'N/A'}`);
                 });
-                // Procurar CS Marítimo especificamente
+                // Procurar CS Marítimo especificamente (Portugal)
                 const maritimoTeam = teams.find((teamData) => {
                     const team = teamData.team;
-                    return team.name.toLowerCase().includes('marítimo') ||
+                    return (team.name.toLowerCase().includes('marítimo') ||
                         team.name.toLowerCase().includes('maritimo') ||
-                        team.name.toLowerCase().includes('cs marítimo');
+                        team.name.toLowerCase().includes('cs marítimo')) &&
+                        team.country === 'Portugal' &&
+                        team.id === 214; // Garantir que é o CS Marítimo correto
                 });
                 if (maritimoTeam) {
                     console.log(`✅ Found CS Marítimo: ${maritimoTeam.team.name} (ID: ${maritimoTeam.team.id})`);
@@ -166,30 +174,151 @@ class FootballAPIService {
             }
         });
     }
+    // Mapeamento para detectar nomes com iniciais diferentes
+    detectInitialMatch(apiName, dbPlayers) {
+        const normalizedAPI = this.normalizePlayerName(apiName);
+        const parts = normalizedAPI.split(' ');
+        if (parts.length >= 2) {
+            const firstPart = parts[0];
+            const lastName = parts[parts.length - 1];
+            // Se o primeiro é uma inicial (1 char)
+            if (firstPart.length === 1) {
+                // Procurar jogador que comece com esta inicial e tenha o mesmo apelido
+                for (const player of dbPlayers) {
+                    const normalizedDB = this.normalizePlayerName(player.name);
+                    const dbParts = normalizedDB.split(' ');
+                    if (dbParts.length >= 2) {
+                        const dbFirstName = dbParts[0];
+                        const dbLastName = dbParts[dbParts.length - 1];
+                        // Verificar se inicial coincide e apelido é igual
+                        if (dbFirstName.startsWith(firstPart) && dbLastName === lastName) {
+                            return player;
+                        }
+                    }
+                }
+                // Se não encontrou, tentar caso onde a inicial pode ser de nome do meio
+                // Ex: "E. Peña Zauner" pode ser só "Peña Zauner" na BD
+                if (parts.length >= 3) {
+                    const possibleFirstName = parts[1]; // "pena" em "e pena zauner"
+                    for (const player of dbPlayers) {
+                        const normalizedDB = this.normalizePlayerName(player.name);
+                        const dbParts = normalizedDB.split(' ');
+                        if (dbParts.length >= 2) {
+                            const dbFirstName = dbParts[0];
+                            const dbLastName = dbParts[dbParts.length - 1];
+                            // Verificar se nome e apelido coincidem (ignorando a inicial)
+                            if (dbFirstName === possibleFirstName && dbLastName === lastName) {
+                                return player;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return null;
+    }
     // Encontrar e associar jogadores reais com a base de dados
     findAndMatchPlayers(apiPlayers) {
-        var _a;
         return __awaiter(this, void 0, void 0, function* () {
             const client = yield db_1.default.connect();
             const matchedPlayerIds = [];
             const playerTypes = [];
             try {
                 console.log(`🔍 Matching ${apiPlayers.length} players from API with database...`);
+                // Buscar todos os jogadores da BD para usar na detecção de iniciais
+                const allDBPlayers = yield client.query('SELECT id, name, position FROM players');
                 for (const apiPlayer of apiPlayers) {
-                    const playerName = this.normalizePlayerName(apiPlayer.player.name);
-                    // Primeiro, buscar jogador na tabela players principal
-                    const regularPlayerResult = yield client.query(`
-          SELECT id, name, position 
+                    let playerName = this.normalizePlayerName(apiPlayer.player.name);
+                    // Verificar mapeamento manual primeiro
+                    if (this.specialNameMappings[playerName]) {
+                        playerName = this.specialNameMappings[playerName];
+                        console.log(`🔄 Using special mapping: "${apiPlayer.player.name}" -> "${playerName}"`);
+                    }
+                    // Primeiro, buscar jogador na tabela players principal com matching melhorado
+                    console.log(`🔍 Searching for: "${apiPlayer.player.name}" -> normalized: "${playerName}"`);
+                    // Verificar se playerName não está vazio
+                    if (!playerName || playerName.trim() === '') {
+                        console.log(`   ⚠️  Empty player name, skipping matching`);
+                        continue;
+                    }
+                    // 1. Busca exata primeiro
+                    let regularPlayerResult = yield client.query(`
+          SELECT id, name, position, 
+                 'exact' as match_type,
+                 1 as priority
           FROM players 
-          WHERE LOWER(TRIM(name)) ILIKE $1 
-          OR LOWER(TRIM(name)) ILIKE $2
-          OR LOWER(TRIM(name)) ILIKE $3
+          WHERE LOWER(TRIM(name)) = $1::text
+        `, [playerName.toLowerCase()]);
+                    // 2. Se não encontrar exato, busca por nome completo similar (sem similarity por ora)
+                    if (regularPlayerResult.rows.length === 0) {
+                        regularPlayerResult = yield client.query(`
+            SELECT id, name, position,
+                   'full_similar' as match_type,
+                   2 as priority
+            FROM players 
+            WHERE LOWER(TRIM(name)) ILIKE $1::text
+            ORDER BY LENGTH(name) ASC
+            LIMIT 1
+          `, [
+                            `%${playerName.toLowerCase()}%`
+                        ]);
+                    }
+                    // 3. Se ainda não encontrar, busca por nomes individuais (detectar iniciais)
+                    if (regularPlayerResult.rows.length === 0) {
+                        const nameParts = playerName.split(' ').filter(part => part.length > 0);
+                        if (nameParts.length >= 2) {
+                            const firstName = nameParts[0];
+                            const lastName = nameParts[nameParts.length - 1];
+                            // Detectar se é uma inicial (1 caractere)
+                            if (firstName.length === 1 && lastName.length > 2) {
+                                // Buscar por apelido apenas (para casos como "N. Madsen" -> "Noah Madsen")
+                                console.log(`   🔍 Detected initial "${firstName}.", searching by surname "${lastName}"`);
+                                regularPlayerResult = yield client.query(`
+                SELECT id, name, position,
+                       'surname_match' as match_type,
+                       3 as priority
+                FROM players 
+                WHERE LOWER(TRIM(name)) ILIKE $1::text
+                AND LOWER(TRIM(name)) ILIKE $2::text
           LIMIT 1
         `, [
-                        `%${playerName.toLowerCase()}%`,
-                        `%${playerName.split(' ')[0].toLowerCase()}%`,
-                        `%${(_a = playerName.split(' ').pop()) === null || _a === void 0 ? void 0 : _a.toLowerCase()}%` // Último nome
-                    ]);
+                                    `${firstName}%`,
+                                    `%${lastName}%` // Contém o apelido
+                                ]);
+                                // Se não encontrar, tentar apenas por apelido
+                                if (regularPlayerResult.rows.length === 0) {
+                                    regularPlayerResult = yield client.query(`
+                  SELECT id, name, position,
+                         'surname_only' as match_type,
+                         4 as priority
+                  FROM players 
+                  WHERE LOWER(TRIM(name)) ILIKE $1::text
+                  LIMIT 1
+                `, [`%${lastName}%`]);
+                                }
+                            }
+                            else if (firstName.length >= 3) {
+                                // Busca normal por ambos os nomes (para nomes completos)
+                                regularPlayerResult = yield client.query(`
+                SELECT id, name, position,
+                       'both_names' as match_type,
+                       3 as priority
+                FROM players 
+                WHERE LOWER(TRIM(name)) ILIKE $1::text 
+                AND LOWER(TRIM(name)) ILIKE $2::text
+                LIMIT 1
+              `, [
+                                    `%${firstName}%`,
+                                    `%${lastName}%`
+                                ]);
+                            }
+                        }
+                    }
+                    console.log(`   Query results: ${regularPlayerResult.rows.length} matches`);
+                    if (regularPlayerResult.rows.length > 0) {
+                        const match = regularPlayerResult.rows[0];
+                        console.log(`   Best match: "${match.name}" (${match.match_type}, priority: ${match.priority})`);
+                    }
                     if (regularPlayerResult.rows.length > 0) {
                         // Jogador encontrado na tabela principal
                         const dbPlayer = regularPlayerResult.rows[0];
@@ -198,11 +327,20 @@ class FootballAPIService {
                         console.log(`✅ Matched regular player: ${apiPlayer.player.name} -> ${dbPlayer.name} (ID: ${dbPlayer.id})`);
                     }
                     else {
+                        // 4. Tentar detecção automática de iniciais
+                        const initialMatch = this.detectInitialMatch(apiPlayer.player.name, allDBPlayers.rows);
+                        if (initialMatch) {
+                            matchedPlayerIds.push(initialMatch.id);
+                            playerTypes.push('regular');
+                            console.log(`✅ Matched player by initial: ${apiPlayer.player.name} -> ${initialMatch.name} (ID: ${initialMatch.id})`);
+                            continue;
+                        }
+                        // 5. Se não encontrar nada, criar temporário
                         // Verificar se já existe na tabela match_players
                         const matchPlayerResult = yield client.query(`
             SELECT id, name, position 
             FROM match_players 
-            WHERE api_player_id = $1 OR LOWER(TRIM(name)) ILIKE $2
+            WHERE api_player_id = $1::integer OR LOWER(TRIM(name)) ILIKE $2::text
             LIMIT 1
           `, [
                             apiPlayer.player.id,
@@ -259,7 +397,9 @@ class FootballAPIService {
     // Normalizar nomes de jogadores para melhor matching
     normalizePlayerName(name) {
         return name
-            .replace(/[^\w\s]/g, '') // Remove símbolos
+            .normalize('NFD') // Separar caracteres base dos acentos
+            .replace(/[\u0300-\u036f]/g, '') // Remove acentos
+            .replace(/[^\w\s]/g, '') // Remove símbolos restantes
             .replace(/\s+/g, ' ') // Normaliza espaços
             .trim()
             .toLowerCase();
@@ -297,12 +437,39 @@ class FootballAPIService {
                     return { success: false, message: 'Lineup do Marítimo não encontrado' };
                 }
                 console.log(`✅ Found CS Marítimo lineup: ${maritimoLineup.team.name} (ID: ${maritimoLineup.team.id})`);
-                // Combinar titulares e suplentes
+                // Buscar eventos para identificar substituições
+                const eventsData = yield this.makeAPIRequest(`/fixtures/events`, {
+                    fixture: lastMatch.fixture.id
+                });
+                // Identificar jogadores que efetivamente jogaram
+                const playersWhoPlayed = new Set();
+                // Adicionar todos os titulares (Starting XI)
+                maritimoLineup.startXI.forEach((item) => {
+                    playersWhoPlayed.add(item.player.name);
+                });
+                // Se temos dados de eventos, adicionar suplentes que entraram
+                if (eventsData.response && eventsData.response.length > 0) {
+                    const maritimoEvents = eventsData.response.filter((event) => event.team.id === MARITIMO_TEAM_IDS['API-Football']);
+                    const substitutions = maritimoEvents.filter((event) => event.type === 'subst');
+                    console.log(`🔄 Found ${substitutions.length} substitutions made by Marítimo`);
+                    substitutions.forEach((sub) => {
+                        // Adicionar jogador que entrou
+                        if (sub.assist && sub.assist.name) {
+                            playersWhoPlayed.add(sub.assist.name);
+                            console.log(`   ${sub.time.elapsed}' IN: ${sub.assist.name}`);
+                        }
+                    });
+                }
+                // Filtrar apenas jogadores que efetivamente jogaram
+                const startingXI = maritimoLineup.startXI.filter((item) => playersWhoPlayed.has(item.player.name));
+                const substitutesWhoPlayed = maritimoLineup.substitutes.filter((item) => playersWhoPlayed.has(item.player.name));
+                // Combinar apenas jogadores que efetivamente jogaram
                 const allPlayers = [
-                    ...maritimoLineup.startXI,
-                    ...maritimoLineup.substitutes
+                    ...startingXI,
+                    ...substitutesWhoPlayed
                 ];
-                console.log(`👥 Found ${allPlayers.length} players in the match`);
+                console.log(`⚽ Found ${allPlayers.length} players who actually played (${startingXI.length} starters + ${substitutesWhoPlayed.length} subs)`);
+                console.log(`📊 Total squad: ${maritimoLineup.startXI.length + maritimoLineup.substitutes.length}, but only ${allPlayers.length} played`);
                 // Associar jogadores com a base de dados OU criar temporários
                 const matchResult = yield this.findAndMatchPlayers(allPlayers);
                 const { playerIds: matchedPlayerIds, playerTypes } = matchResult;
@@ -337,8 +504,8 @@ class FootballAPIService {
                         yield client.query(`
             INSERT INTO match_voting_players (match_voting_id, match_player_id, player_type)
             VALUES ($1, $2, 'match')
-            ON CONFLICT DO NOTHING
-          `, [votingId, playerId]);
+          ON CONFLICT DO NOTHING
+        `, [votingId, playerId]);
                     }
                 }
                 yield client.query('COMMIT');

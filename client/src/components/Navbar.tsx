@@ -16,7 +16,7 @@ const Navbar = () => {
   const styles = createStyles({
     navbar: {
       background: 'linear-gradient(135deg, #009759 0%, #006633 100%)',
-      padding: '1.5vh 3vw',
+      padding: '1vh 1.5vw',
       boxShadow: '0 0.3vh 1.5vh rgba(0, 0, 0, 0.15)',
       position: 'fixed',
       top: 0,
@@ -26,30 +26,32 @@ const Navbar = () => {
       borderBottom: '3px solid #FFBB4C',
     },
     navContent: {
-      maxWidth: '1400px',
+      maxWidth: '1600px',
       margin: '0 auto',
       display: 'flex',
       justifyContent: 'space-between',
       alignItems: 'center',
-      gap: '2vw',
+      gap: '1.5vw',
       minHeight: '6vh',
+      width: '100%',
     },
     logoSection: {
       display: 'flex',
       alignItems: 'center',
-      gap: '0.8vw',
+      gap: '0.6vw',
       cursor: 'pointer',
       transition: 'transform 0.3s ease',
       textDecoration: 'none',
       flex: '0 0 auto',
       minWidth: 'fit-content',
+      marginRight: '1vw',
     },
     logoImage: {
-      width: '2.8vw',
-      height: '2.8vw',
+      width: '2.5vw',
+      height: '2.5vw',
       borderRadius: '50%',
       backgroundColor: 'white',
-      padding: '0.2vw',
+      padding: '0.15vw',
       boxShadow: '0 0.2vh 0.8vh rgba(0, 0, 0, 0.2)',
       transition: 'transform 0.3s ease',
       objectFit: 'contain',
@@ -60,7 +62,7 @@ const Navbar = () => {
     },
     logoText: {
       color: 'white',
-      fontSize: '1.4vw',
+      fontSize: '1.2vw',
       fontWeight: '700',
       margin: 0,
       fontFamily: '"Shockwave", cursive',
@@ -70,7 +72,7 @@ const Navbar = () => {
     },
     logoSubtext: {
       color: '#FFBB4C',
-      fontSize: '0.7vw',
+      fontSize: '0.6vw',
       margin: 0,
       fontWeight: '400',
       textShadow: '0.05vh 0.05vh 0.2vh rgba(0, 0, 0, 0.3)',
@@ -79,17 +81,19 @@ const Navbar = () => {
     },
     navLinks: {
       display: 'flex',
-      gap: '1.5vw',
+      gap: '1.2vw',
       alignItems: 'center',
       flex: '1 1 auto',
       justifyContent: 'center',
+      flexWrap: 'nowrap',
+      overflow: 'hidden',
     },
     navLink: {
       color: 'white',
       textDecoration: 'none',
-      fontSize: '1vw',
+      fontSize: '0.9vw',
       fontWeight: '600',
-      padding: '1vh 1.2vw',
+      padding: '0.8vh 1vw',
       borderRadius: '0.6vw',
       transition: 'all 0.3s ease',
       cursor: 'pointer',
@@ -99,20 +103,22 @@ const Navbar = () => {
       overflow: 'hidden',
       display: 'inline-block',
       whiteSpace: 'nowrap',
+      flexShrink: 0,
     },
     rightSection: {
       display: 'flex',
       gap: '1vw',
       alignItems: 'center',
       flex: '0 0 auto',
+      marginLeft: '1vw',
     },
     logoutButton: {
       backgroundColor: 'rgba(254, 0, 0, 0.1)',
       color: 'white',
       border: '2px solid rgba(254, 0, 0, 0.5)',
-      padding: '1vh 1.5vw',
+      padding: '0.8vh 1.2vw',
       borderRadius: '0.6vw',
-      fontSize: '0.9vw',
+      fontSize: '0.8vw',
       fontWeight: '600',
       cursor: 'pointer',
       transition: 'all 0.3s ease',
@@ -120,46 +126,58 @@ const Navbar = () => {
       whiteSpace: 'nowrap',
     },
     '@media (max-width: 1200px)': {
-      logoText: {
-        fontSize: '2vw',
-      },
-      logoSubtext: {
-        fontSize: '0.9vw',
-      },
-      navLink: {
-        fontSize: '1.2vw',
-      },
-      logoutButton: {
-        fontSize: '1.1vw',
-      },
-    } as any,
-    '@media (max-width: 768px)': {
       navbar: {
-        padding: '1vh 2vw',
+        padding: '1vh 1vw',
       },
       navContent: {
         gap: '1vw',
       },
-      logoImage: {
-        width: '6vw',
-        height: '6vw',
-      },
       logoText: {
-        fontSize: '3vw',
+        fontSize: '1.8vw',
       },
       logoSubtext: {
-        fontSize: '1.5vw',
-      },
-      navLinks: {
-        gap: '1.5vw',
+        fontSize: '0.8vw',
       },
       navLink: {
-        fontSize: '2.5vw',
-        padding: '0.8vh 2vw',
+        fontSize: '1vw',
+        padding: '0.7vh 0.8vw',
       },
       logoutButton: {
-        fontSize: '2.2vw',
-        padding: '0.8vh 2.5vw',
+        fontSize: '0.9vw',
+        padding: '0.7vh 1vw',
+      },
+    } as any,
+    '@media (max-width: 768px)': {
+      navbar: {
+        padding: '1vh 1vw',
+      },
+      navContent: {
+        gap: '0.8vw',
+      },
+      logoSection: {
+        gap: '0.4vw',
+        marginRight: '0.5vw',
+      },
+      logoImage: {
+        width: '5vw',
+        height: '5vw',
+      },
+      logoText: {
+        fontSize: '2.5vw',
+      },
+      logoSubtext: {
+        fontSize: '1.2vw',
+      },
+      navLinks: {
+        gap: '1vw',
+      },
+      navLink: {
+        fontSize: '2vw',
+        padding: '0.6vh 1.5vw',
+      },
+      logoutButton: {
+        fontSize: '1.8vw',
+        padding: '0.6vh 2vw',
       },
     } as any,
     '@media (max-width: 480px)': {

@@ -6,6 +6,7 @@ const router = Router();
 
 // Public routes (require authentication)
 router.get('/active-voting', auth, playerRatingsController.getActiveVoting);
+router.get('/player/:playerId', auth, playerRatingsController.getPlayerById);
 router.post('/submit', auth, playerRatingsController.submitPlayerRatings);
 router.get('/player/:playerId/average', auth, playerRatingsController.getPlayerAverageRating);
 router.get('/match/:matchId/man-of-match-results', auth, playerRatingsController.getManOfTheMatchResults);
@@ -24,5 +25,6 @@ router.post('/check-new-votings', playerRatingsController.checkAndCreateNewVotin
 // Debug routes
 router.get('/debug/find-maritimo-id', playerRatingsController.findMaritimoTeamId);
 router.post('/debug/run-migration', playerRatingsController.runMigration);
+
 
 export default router; 

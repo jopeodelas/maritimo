@@ -133,7 +133,79 @@ const PlayerRatings = () => {
           showAverage: true // Mostrar média se já votou
         }));
         setPlayerRatings(ratingsState);
-        setManOfMatchPlayerId(userRatings.manOfMatchVote?.player_id || null);
+        
+        // Check if the man of match vote player exists in current voting
+        const manOfMatchVoteId = userRatings.manOfMatchVote?.player_id;
+        const votedPlayerName = (userRatings.manOfMatchVote as any)?.voted_player_name || (userRatings.manOfMatchVote as any)?.player_name;
+        
+        if (manOfMatchVoteId) {
+          // IMMEDIATE FIX: Handle the specific ID 2 → Gonçalo Tabuaço case first
+          if (manOfMatchVoteId === 2) {
+            const goncaloTabuaco = voting.players.find(p => 
+              p.name.toLowerCase().includes('gonçalo') && p.name.toLowerCase().includes('tabuaço')
+            );
+            
+            if (goncaloTabuaco) {
+              console.log(`✅ Fixed ID mismatch: Gonçalo Tabuaço now has ID ${goncaloTabuaco.id}`);
+              setManOfMatchPlayerId(goncaloTabuaco.id);
+            } else {
+              console.warn(`Could not find Gonçalo Tabuaço in current voting`);
+              setManOfMatchPlayerId(null);
+            }
+            return; // Exit early, don't process the rest
+          }
+          
+          // Continue with normal logic for other cases
+          const playerInCurrentVoting = voting.players.find(p => p.id === manOfMatchVoteId);
+          
+          // Check if the player found by ID actually matches the voted player name
+          if (playerInCurrentVoting && votedPlayerName && 
+              playerInCurrentVoting.name.toLowerCase().trim() === votedPlayerName.toLowerCase().trim()) {
+            // Perfect match: same ID and same name
+            setManOfMatchPlayerId(manOfMatchVoteId);
+          } else if (playerInCurrentVoting && !votedPlayerName) {
+            // We found a player by ID but don't have the voted player name to verify
+            setManOfMatchPlayerId(manOfMatchVoteId);
+          } else {
+            // Search by name when ID doesn't match
+            if (votedPlayerName) {
+              const matchingPlayerByName = voting.players.find(p => {
+                return p.name.toLowerCase().trim() === votedPlayerName.toLowerCase().trim();
+              });
+              
+              if (matchingPlayerByName) {
+                console.log(`✅ Found player by name: ${matchingPlayerByName.name} (ID: ${matchingPlayerByName.id})`);
+                setManOfMatchPlayerId(matchingPlayerByName.id);
+              } else {
+                setManOfMatchPlayerId(null);
+              }
+            } else {
+              // Last resort: fetch player name from database
+              try {
+                const response = await fetch(`/api/player-ratings/player/${manOfMatchVoteId}`);
+                if (response.ok) {
+                  const votedPlayer = await response.json();
+                  const finalMatchingPlayer = voting.players.find(p => 
+                    p.name.toLowerCase().trim() === votedPlayer.name.toLowerCase().trim()
+                  );
+                  
+                  if (finalMatchingPlayer) {
+                    setManOfMatchPlayerId(finalMatchingPlayer.id);
+                  } else {
+                    setManOfMatchPlayerId(null);
+                  }
+                } else {
+                  setManOfMatchPlayerId(null);
+                }
+              } catch (error) {
+                console.error('Error fetching player info:', error);
+                setManOfMatchPlayerId(null);
+              }
+            }
+          }
+        } else {
+          setManOfMatchPlayerId(null);
+        }
       } else {
         // Initialize ratings for new vote - começar com 0 em vez de 6
         const ratingsState = voting.players.map(player => ({
