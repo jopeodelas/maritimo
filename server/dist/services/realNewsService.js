@@ -281,6 +281,11 @@ class RealNewsService {
                     const description = this.extractXMLContent(itemXml, 'description');
                     const link = this.extractXMLContent(itemXml, 'link');
                     const pubDate = this.extractXMLContent(itemXml, 'pubDate');
+                    console.log(`📰 Google News Item:`, {
+                        title: (title === null || title === void 0 ? void 0 : title.substring(0, 50)) + '...',
+                        pubDate: pubDate,
+                        hasDate: !!pubDate
+                    });
                     if (title && this.isMaritimoRelated(title + ' ' + description)) {
                         const cleanedDescription = this.cleanText(description);
                         // Only include description if it's meaningful (more than 20 chars and contains actual words)
@@ -311,6 +316,11 @@ class RealNewsService {
                     const description = this.extractXMLContent(itemXml, 'description');
                     const link = this.extractXMLContent(itemXml, 'link');
                     const pubDate = this.extractXMLContent(itemXml, 'pubDate');
+                    console.log(`📰 ${sourceName} Item:`, {
+                        title: (title === null || title === void 0 ? void 0 : title.substring(0, 50)) + '...',
+                        pubDate: pubDate,
+                        hasDate: !!pubDate
+                    });
                     if (title) {
                         const cleanedDescription = this.cleanText(description);
                         const finalDescription = this.isValidDescription(cleanedDescription) ? cleanedDescription : '';

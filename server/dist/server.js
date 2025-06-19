@@ -15,15 +15,18 @@ const auth_routes_1 = __importDefault(require("./routes/auth.routes"));
 const players_routes_1 = __importDefault(require("./routes/players.routes"));
 const votes_routes_1 = __importDefault(require("./routes/votes.routes"));
 const transfer_routes_1 = __importDefault(require("./routes/transfer.routes"));
+const transfer_admin_routes_1 = __importDefault(require("./routes/transfer-admin.routes"));
 const news_routes_1 = __importDefault(require("./routes/news.routes"));
 const poll_routes_1 = __importDefault(require("./routes/poll.routes"));
 const custom_polls_routes_1 = __importDefault(require("./routes/custom-polls.routes"));
 const discussions_routes_1 = __importDefault(require("./routes/discussions.routes"));
 const user_management_routes_1 = __importDefault(require("./routes/user-management.routes"));
 const maritodle_routes_1 = __importDefault(require("./routes/maritodle.routes"));
+const maritodle_daily_routes_1 = __importDefault(require("./routes/maritodle-daily.routes"));
 const player_ratings_routes_1 = __importDefault(require("./routes/player-ratings.routes"));
 const error_middleware_1 = require("./middleware/error.middleware");
 const scheduler_service_1 = __importDefault(require("./services/scheduler.service"));
+const maritodle_scheduler_service_1 = __importDefault(require("./services/maritodle-scheduler.service"));
 const app = (0, express_1.default)();
 // Compression middleware - should be early in the middleware stack
 app.use((0, compression_1.default)({
@@ -84,12 +87,14 @@ app.use('/api/auth', auth_routes_1.default);
 app.use('/api/players', players_routes_1.default);
 app.use('/api/votes', votes_routes_1.default);
 app.use('/api/transfer', transfer_routes_1.default);
+app.use('/api/admin/transfer', transfer_admin_routes_1.default);
 app.use('/api/news', news_routes_1.default);
 app.use('/api/poll', poll_routes_1.default);
 app.use('/api/custom-polls', custom_polls_routes_1.default);
 app.use('/api/discussions', discussions_routes_1.default);
 app.use('/api/admin', user_management_routes_1.default);
 app.use('/api/maritodle', maritodle_routes_1.default);
+app.use('/api/maritodle-daily', maritodle_daily_routes_1.default);
 app.use('/api/player-ratings', player_ratings_routes_1.default);
 // Error handling
 app.use(error_middleware_1.notFoundHandler);
@@ -102,5 +107,8 @@ app.listen(PORT, () => {
     // Inicializar scheduler para verificação automática de novos jogos
     console.log('🚀 Initializing automatic voting system...');
     scheduler_service_1.default.startAutoVotingCheck();
+    // Inicializar scheduler do maritodle diário
+    console.log('🎮 Initializing Maritodle daily scheduler...');
+    maritodle_scheduler_service_1.default.startDailyScheduler();
 });
 exports.default = app;

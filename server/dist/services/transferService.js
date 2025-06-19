@@ -11,6 +11,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.transferService = void 0;
 const realNewsService_1 = require("./realNewsService");
+const transfer_rumor_model_1 = require("../models/transfer-rumor.model");
 const RELIABILITY_THRESHOLD = 0;
 class TransferService {
     constructor() {
@@ -56,6 +57,7 @@ class TransferService {
         ];
         this.initializeDefaultRumors();
         this.updateRumors();
+        this.migrateToDatabase();
     }
     initializeDefaultRumors() {
         // Initialize with some realistic rumors
@@ -65,19 +67,45 @@ class TransferService {
     }
     getRumors() {
         return __awaiter(this, void 0, void 0, function* () {
-            if (!this.lastUpdate || Date.now() - this.lastUpdate.getTime() > 60 * 60 * 1000) {
-                yield this.updateRumors();
+            try {
+                // Primeiro, tentar buscar da base de dados
+                console.log('📊 GetRumors: Tentando buscar rumores da base de dados...');
+                const dbRumors = yield this.getRumorsFromDB();
+                if (dbRumors.length > 0) {
+                    console.log(`📊 GetRumors: Encontrados ${dbRumors.length} rumores na base de dados`);
+                    return dbRumors;
+                }
+                console.log('📊 GetRumors: Base de dados vazia, usando sistema de fallback...');
+                // Fallback para o sistema antigo se a base de dados estiver vazia
+                if (!this.lastUpdate || Date.now() - this.lastUpdate.getTime() > 60 * 60 * 1000) {
+                    yield this.updateRumors();
+                    yield this.saveNewRumorsToDB(); // Guardar na base de dados
+                }
+                // Return main team rumors including coaches
+                return this.rumors.filter(rumor => rumor.isMainTeam !== false || rumor.category === 'coach');
             }
-            // Return main team rumors including coaches
-            return this.rumors.filter(rumor => rumor.isMainTeam !== false || rumor.category === 'coach');
+            catch (error) {
+                console.error('📊 GetRumors: Erro ao buscar da base de dados, usando fallback:', error);
+                // Fallback para o sistema antigo em caso de erro
+                if (!this.lastUpdate || Date.now() - this.lastUpdate.getTime() > 60 * 60 * 1000) {
+                    yield this.updateRumors();
+                }
+                return this.rumors.filter(rumor => rumor.isMainTeam !== false || rumor.category === 'coach');
+            }
         });
     }
     refreshRumors() {
         return __awaiter(this, void 0, void 0, function* () {
+            console.log('🔄 RefreshRumors: Atualizando rumores e guardando novos na base de dados...');
+            // Primeiro, atualizar com novos rumores do sistema de scraping
             yield this.updateRumors();
             // Apply corrections to existing Vítor Matos rumors
             this.correctVitorMatosRumors();
-            return this.rumors.filter(rumor => rumor.isMainTeam !== false || rumor.category === 'coach');
+            // Guardar novos rumores na base de dados
+            yield this.saveNewRumorsToDB();
+            // Retornar rumores da base de dados (fonte única da verdade)
+            console.log('🔄 RefreshRumors: Retornando rumores da base de dados...');
+            return yield this.getRumorsFromDB();
         });
     }
     correctVitorMatosRumors() {
@@ -135,25 +163,18 @@ class TransferService {
     }
     addManualRumor(rumor, req) {
         return __awaiter(this, void 0, void 0, function* () {
-            const newRumor = Object.assign(Object.assign({}, rumor), { id: `manual_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`, date: new Date().toISOString().split('T')[0], source: 'Manual', isMainTeam: this.isMainTeamRelated(rumor.player_name, rumor.description || ''), category: this.categorizeRumor(rumor.player_name, rumor.description || ''), duplicateSignature: this.createAdvancedRumorSignature(rumor.player_name, rumor.club, rumor.type, rumor.description || '') });
+            console.log('➕ AddManualRumor: Adicionando rumor manual à base de dados...');
             // SPECIAL HANDLING: Force correct status and info for Vítor Matos
             if (['vítor matos', 'vitor matos'].includes(rumor.player_name.toLowerCase())) {
-                newRumor.status = 'confirmado';
-                newRumor.reliability = 5;
-                newRumor.club = 'CS Marítimo'; // CORREÇÃO: Sempre CS Marítimo
-                newRumor.type = 'compra'; // CORREÇÃO: Sempre compra (chegada ao Marítimo)
+                rumor.status = 'confirmado';
+                rumor.reliability = 5;
+                rumor.club = 'CS Marítimo'; // CORREÇÃO: Sempre CS Marítimo
+                rumor.type = 'compra'; // CORREÇÃO: Sempre compra (chegada ao Marítimo)
                 console.log('AddManualRumor: Forçando Vítor Matos como confirmado com confiabilidade 5 e clube correto (CS Marítimo)');
             }
-            // Check for duplicates before adding
-            if (!this.isDuplicateRumor(newRumor)) {
-                this.rumors.unshift(newRumor);
-                this.updateSignatureCaches(newRumor);
-                // Keep only the most recent 50 rumors
-                if (this.rumors.length > 50) {
-                    this.rumors = this.rumors.slice(0, 50);
-                    this.rebuildCaches();
-                }
-            }
+            // Adicionar rumor diretamente à base de dados
+            const newRumor = yield this.createRumorInDB(rumor);
+            console.log(`➕ AddManualRumor: Rumor criado na base de dados com ID ${newRumor.dbId}`);
             return newRumor;
         });
     }
@@ -791,6 +812,239 @@ class TransferService {
             }
         }
         return 'Novo elemento técnico';
+    }
+    // NOVOS MÉTODOS PARA TRABALHAR COM A BASE DE DADOS
+    // Migrar rumores da memória para a base de dados (executar uma vez)
+    migrateToDatabase() {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                if (this.rumors.length > 0) {
+                    console.log('Migrando rumores existentes para a base de dados...');
+                    yield transfer_rumor_model_1.TransferRumorModel.migrateFromMemory(this.rumors);
+                    console.log('Migração concluída!');
+                }
+            }
+            catch (error) {
+                console.error('Erro na migração para a base de dados:', error);
+            }
+        });
+    }
+    // Obter rumores da base de dados (método público para utilizadores)
+    getRumorsFromDB() {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const dbRumors = yield transfer_rumor_model_1.TransferRumorModel.getAllApproved();
+                return this.convertDBRumorsToTransferRumors(dbRumors);
+            }
+            catch (error) {
+                console.error('Erro ao obter rumores da base de dados:', error);
+                // Fallback para rumores em memória
+                return this.getRumors();
+            }
+        });
+    }
+    // Obter todos os rumores da base de dados (para admin)
+    getAllRumorsFromDB() {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const dbRumors = yield transfer_rumor_model_1.TransferRumorModel.getAllForAdmin();
+                return this.convertDBRumorsToTransferRumors(dbRumors);
+            }
+            catch (error) {
+                console.error('Erro ao obter todos os rumores da base de dados:', error);
+                return [];
+            }
+        });
+    }
+    // Criar novo rumor na base de dados
+    createRumorInDB(rumor, userId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const uniqueId = `manual_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+                const newRumor = yield transfer_rumor_model_1.TransferRumorModel.create({
+                    unique_id: uniqueId,
+                    player_name: rumor.player_name,
+                    type: rumor.type,
+                    club: rumor.club,
+                    value: rumor.value,
+                    status: rumor.status,
+                    date: new Date().toISOString().split('T')[0],
+                    source: rumor.source || 'Manual',
+                    reliability: rumor.reliability,
+                    description: rumor.description,
+                    is_main_team: rumor.isMainTeam !== false,
+                    category: rumor.category || 'senior',
+                    position: rumor.position,
+                    is_approved: false,
+                    created_by: userId
+                });
+                return this.convertDBRumorToTransferRumor(newRumor);
+            }
+            catch (error) {
+                console.error('Erro ao criar rumor na base de dados:', error);
+                throw error;
+            }
+        });
+    }
+    // Atualizar rumor na base de dados
+    updateRumorInDB(id, updates) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const updatedRumor = yield transfer_rumor_model_1.TransferRumorModel.update(id, updates);
+                if (updatedRumor) {
+                    return this.convertDBRumorToTransferRumor(updatedRumor);
+                }
+                return null;
+            }
+            catch (error) {
+                console.error('Erro ao atualizar rumor na base de dados:', error);
+                throw error;
+            }
+        });
+    }
+    // Remover rumor da base de dados (soft delete)
+    deleteRumorFromDB(id) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                return yield transfer_rumor_model_1.TransferRumorModel.softDelete(id);
+            }
+            catch (error) {
+                console.error('Erro ao remover rumor da base de dados:', error);
+                throw error;
+            }
+        });
+    }
+    // Aprovar rumor
+    approveRumor(id) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const approvedRumor = yield transfer_rumor_model_1.TransferRumorModel.approve(id);
+                if (approvedRumor) {
+                    return this.convertDBRumorToTransferRumor(approvedRumor);
+                }
+                return null;
+            }
+            catch (error) {
+                console.error('Erro ao aprovar rumor:', error);
+                throw error;
+            }
+        });
+    }
+    // Desaprovar rumor
+    disapproveRumor(id) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const disapprovedRumor = yield transfer_rumor_model_1.TransferRumorModel.disapprove(id);
+                if (disapprovedRumor) {
+                    return this.convertDBRumorToTransferRumor(disapprovedRumor);
+                }
+                return null;
+            }
+            catch (error) {
+                console.error('Erro ao desaprovar rumor:', error);
+                throw error;
+            }
+        });
+    }
+    // Obter estatísticas da base de dados
+    getStatsFromDB() {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                return yield transfer_rumor_model_1.TransferRumorModel.getStats();
+            }
+            catch (error) {
+                console.error('Erro ao obter estatísticas da base de dados:', error);
+                // Fallback para estatísticas em memória
+                return this.getStats();
+            }
+        });
+    }
+    // Guardar novos rumores descobertos na base de dados
+    saveNewRumorsToDB() {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                // Buscar novos rumores
+                const scrapedRumors = yield realNewsService_1.realNewsService.fetchRealTransferNews();
+                if (scrapedRumors.length > 0) {
+                    console.log(`Processando ${scrapedRumors.length} rumores descobertos...`);
+                    for (const rumor of scrapedRumors) {
+                        try {
+                            // Verificar se já existe na base de dados
+                            const exists = yield transfer_rumor_model_1.TransferRumorModel.existsByUniqueId(rumor.id);
+                            if (!exists) {
+                                console.log(`📅 SaveToDB: Guardando ${rumor.player_name} com data: ${rumor.date}`);
+                                yield transfer_rumor_model_1.TransferRumorModel.create({
+                                    unique_id: rumor.id,
+                                    player_name: rumor.player_name,
+                                    type: rumor.type,
+                                    club: rumor.club,
+                                    value: rumor.value,
+                                    status: rumor.status,
+                                    date: rumor.date,
+                                    source: rumor.source,
+                                    reliability: rumor.reliability,
+                                    description: rumor.description,
+                                    is_main_team: rumor.isMainTeam !== false,
+                                    category: rumor.category || 'senior',
+                                    position: rumor.position,
+                                    is_approved: rumor.reliability >= 4 // Auto-aprovar rumores de alta confiabilidade
+                                });
+                                console.log(`✅ SaveToDB: ${rumor.player_name} guardado com sucesso`);
+                            }
+                            else {
+                                console.log(`⏭️ SaveToDB: ${rumor.player_name} já existe na BD, saltando...`);
+                            }
+                        }
+                        catch (error) {
+                            console.error(`Erro ao guardar rumor ${rumor.id}:`, error);
+                        }
+                    }
+                    console.log('Rumores processados e guardados na base de dados');
+                }
+            }
+            catch (error) {
+                console.error('Erro ao guardar novos rumores na base de dados:', error);
+            }
+        });
+    }
+    // Converter rumor da base de dados para interface do frontend
+    convertDBRumorToTransferRumor(dbRumor) {
+        // Garantir que a data está no formato correto (YYYY-MM-DD)
+        let formattedDate = dbRumor.date;
+        if (dbRumor.date) {
+            try {
+                // Se a data vem como objeto Date, converter para string
+                const dateObj = new Date(dbRumor.date);
+                if (!isNaN(dateObj.getTime())) {
+                    formattedDate = dateObj.toISOString().split('T')[0];
+                }
+                console.log(`📅 ConvertDBRumor: ${dbRumor.player_name} - Original: ${dbRumor.date}, Formatted: ${formattedDate}`);
+            }
+            catch (error) {
+                console.log(`📅 ConvertDBRumor: Erro ao formatar data para ${dbRumor.player_name}: ${error}`);
+                formattedDate = dbRumor.date; // Manter original se houver erro
+            }
+        }
+        return {
+            id: dbRumor.unique_id,
+            dbId: dbRumor.id,
+            player_name: dbRumor.player_name,
+            type: dbRumor.type,
+            club: dbRumor.club,
+            value: dbRumor.value,
+            status: dbRumor.status,
+            date: formattedDate,
+            source: dbRumor.source,
+            reliability: dbRumor.reliability,
+            description: dbRumor.description,
+            isMainTeam: dbRumor.is_main_team,
+            category: dbRumor.category,
+            position: dbRumor.position
+        };
+    }
+    // Converter array de rumores da base de dados
+    convertDBRumorsToTransferRumors(dbRumors) {
+        return dbRumors.map(dbRumor => this.convertDBRumorToTransferRumor(dbRumor));
     }
 }
 exports.transferService = new TransferService();

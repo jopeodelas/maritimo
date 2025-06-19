@@ -29,6 +29,7 @@ const playerRatingsController = __importStar(require("../controllers/player-rati
 const router = (0, express_1.Router)();
 // Public routes (require authentication)
 router.get('/active-voting', auth_middleware_1.auth, playerRatingsController.getActiveVoting);
+router.get('/player/:playerId', auth_middleware_1.auth, playerRatingsController.getPlayerById);
 router.post('/submit', auth_middleware_1.auth, playerRatingsController.submitPlayerRatings);
 router.get('/player/:playerId/average', auth_middleware_1.auth, playerRatingsController.getPlayerAverageRating);
 router.get('/match/:matchId/man-of-match-results', auth_middleware_1.auth, playerRatingsController.getManOfTheMatchResults);

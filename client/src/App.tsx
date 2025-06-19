@@ -18,6 +18,7 @@ const HistoryPage = lazy(() => import('./pages/HistoryPage'));
 const ChatPage = lazy(() => import('./pages/ChatPage'));
 const AdminPage = lazy(() => import('./pages/AdminPage'));
 const MaritodlePage = lazy(() => import('./pages/MaritodlePage'));
+
 const Squad = lazy(() => import('./pages/Squad'));
 const Schedule = lazy(() => import('./pages/Schedule'));
 const PlayerRatings = lazy(() => import('./pages/PlayerRatings'));
@@ -159,6 +160,7 @@ function App() {
                   </ProtectedRoute>
                 } 
               />
+
               <Route 
                 path="/player-ratings" 
                 element={

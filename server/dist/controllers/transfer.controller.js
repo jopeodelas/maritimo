@@ -14,6 +14,7 @@ const transferService_1 = require("../services/transferService");
 const getTransferRumors = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { includeYouth = 'false', includeStaff = 'false', includeCoaches = 'true', minReliability = '0', category } = req.query;
+        // Obter rumores usando a lógica unificada (BD com fallback)
         let rumors = yield transferService_1.transferService.getRumors();
         // Apply additional filters based on query parameters
         if (includeYouth === 'false') {

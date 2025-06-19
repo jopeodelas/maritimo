@@ -52,11 +52,47 @@ const MaritodlePage = () => {
   const [logoAnimationActive, setLogoAnimationActive] = useState(false);
   const [clue1Revealed, setClue1Revealed] = useState(false);
   const [clue2Revealed, setClue2Revealed] = useState(false);
+  const [stats, setStats] = useState({ totalWinners: 0, totalPlayers: 0 });
+  const [yesterdayPlayer, setYesterdayPlayer] = useState<string | null>(null);
+  const [hasPlayedToday, setHasPlayedToday] = useState(false);
+  const [playerPosition, setPlayerPosition] = useState<number | null>(null);
+  const [secretPlayerName, setSecretPlayerName] = useState<string | null>(null);
+  const [timeUntilNext, setTimeUntilNext] = useState<string>('');
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     carregarNomes();
-    iniciarNovoJogo();
+    carregarEstadoJogo();
+    
+    // Atualizar estatísticas a cada 5 segundos para tempo real
+    const statsInterval = setInterval(updateStats, 5000);
+    
+    // Timer countdown para próximo jogo
+    const updateCountdown = () => {
+      const now = new Date();
+      const today = new Date(now);
+      today.setHours(23, 0, 0, 0); // 23:00 de hoje
+      
+      // Se já passou das 23:00, mostrar amanhã às 23:00
+      const targetTime = today.getTime() < now.getTime() ? 
+        new Date(today.setDate(today.getDate() + 1)) : today;
+      
+      const timeDiff = targetTime.getTime() - now.getTime();
+      
+      if (timeDiff > 0) {
+        const hours = Math.floor(timeDiff / (1000 * 60 * 60));
+        const minutes = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((timeDiff % (1000 * 60)) / 1000);
+        
+        setTimeUntilNext(`${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`);
+      } else {
+        setTimeUntilNext('00:00:00');
+      }
+    };
+    
+    // Atualizar countdown a cada segundo
+    const countdownInterval = setInterval(updateCountdown, 1000);
+    updateCountdown(); // Chamar imediatamente
     
     // Adicionar animações CSS
     const style = document.createElement('style');
@@ -149,6 +185,8 @@ const MaritodlePage = () => {
     document.head.appendChild(style);
     
     return () => {
+      clearInterval(statsInterval);
+      clearInterval(countdownInterval);
       document.head.removeChild(style);
     };
   }, []);
@@ -214,37 +252,103 @@ const MaritodlePage = () => {
     return () => clearInterval(interval);
   }, [logoAnimationActive, flyingLogos.length]);
 
+  // Scroll automático para utilizadores que já acertaram
+  useEffect(() => {
+    // Verificar se o utilizador já jogou e tem dados da vitória
+    if (hasPlayedToday && secretPlayerName) {
+      // Aguardar um pouco para garantir que o elemento já foi renderizado
+      const timer = setTimeout(() => {
+        const resultElement = document.querySelector('[data-result-container]') as HTMLElement;
+        if (resultElement) {
+          // Scroll gradual personalizado
+          const targetPosition = resultElement.offsetTop - (window.innerHeight / 2) + (resultElement.offsetHeight / 2);
+          const startPosition = window.pageYOffset;
+          const distance = targetPosition - startPosition;
+          const duration = 2000; // 2 segundos para o scroll
+          let start: number | null = null;
+
+          function step(timestamp: number) {
+            if (!start) start = timestamp;
+            const progress = timestamp - start;
+            const percentage = Math.min(progress / duration, 1);
+            
+            // Função de easing para tornar o movimento mais suave
+            const easeInOutCubic = (t: number): number => {
+              return t < 0.5 ? 4 * t * t * t : (t - 1) * (2 * t - 2) * (2 * t - 2) + 1;
+            };
+            
+            const currentPosition = startPosition + (distance * easeInOutCubic(percentage));
+            window.scrollTo(0, currentPosition);
+            
+            if (progress < duration) {
+              window.requestAnimationFrame(step);
+            }
+          }
+          
+          window.requestAnimationFrame(step);
+        }
+      }, 500); // 500ms delay para garantir que tudo carregou
+
+      return () => clearTimeout(timer);
+    }
+  }, [hasPlayedToday, secretPlayerName]); // Executar quando estes estados mudarem
+
   const carregarNomes = async () => {
     try {
-      const response = await api.get('/maritodle/nomes');
-      setNomes(response.data.nomes);
+      const response = await api.get('/maritodle-daily/nomes');
+      setNomes(response.data);
     } catch (error) {
       console.error('Erro ao carregar nomes:', error);
       setError('Erro ao carregar dados do jogo');
     }
   };
 
-  const iniciarNovoJogo = async () => {
+  const carregarEstadoJogo = async () => {
     try {
-      // Limpar cache do jogo para forçar refresh
-      localStorage.removeItem('maritodle_cache');
-      await api.get('/maritodle/novo-jogo');
-      setTentativas([]);
-      setGameState(null);
-      setClue1('');
-      setClue2('');
-      setInputValue('');
-      setError('');
-      setShowModal(false);
-      setShowCongrats(false);
-      setLatestAttemptIndex(-1);
-      setFlyingLogos([]);
-      setShowResult(false);
-      setLogoAnimationActive(false);
-      setClue1Revealed(false);
-      setClue2Revealed(false);
+      const response = await api.get('/maritodle-daily/game-state');
+      const state = response.data;
+      
+      setStats({
+        totalWinners: state.todaysGame.totalWinners,
+        totalPlayers: state.todaysGame.totalPlayers
+      });
+      
+      setYesterdayPlayer(state.yesterdaysGame?.playerName || null);
+      setHasPlayedToday(state.hasPlayedToday);
+      
+      // Carregar dados da vitória se o usuário ganhou
+      if (state.userPosition) {
+        setPlayerPosition(state.userPosition);
+      }
+      if (state.secretPlayerName) {
+        setSecretPlayerName(state.secretPlayerName);
+      }
+      
+      // Se há tentativas salvas, carregar na interface
+      if (state.userAttempt?.attempts_data) {
+        const tentativasSalvas = state.userAttempt.attempts_data.map((data: any) => ({
+          nome: data.nome,
+          feedback: data.feedback,
+          palpite_dados: data.palpite
+        }));
+        setTentativas(tentativasSalvas);
+        
+        // Se já ganhou, mostrar resultado
+        if (state.userAttempt.won) {
+          setShowResult(true);
+        }
+      }
     } catch (error) {
-      console.error('Erro ao iniciar novo jogo:', error);
+      console.error('Erro ao carregar estado do jogo:', error);
+    }
+  };
+
+  const updateStats = async () => {
+    try {
+      const response = await api.get('/maritodle-daily/stats');
+      setStats(response.data);
+    } catch (error) {
+      console.error('Erro ao atualizar estatísticas:', error);
     }
   };
 
@@ -261,55 +365,45 @@ const MaritodlePage = () => {
     setError('');
 
     try {
-      const response = await api.post('/maritodle/palpite', {
-        nome: inputValue,
-        tentativa_atual: tentativas.length
+      const response = await api.post('/maritodle-daily/palpite', {
+        nome: inputValue
       });
 
-      const state: GameState = response.data;
-      setGameState(state);
+      const result = response.data;
 
       // Adicionar tentativa à lista
       setTentativas(prev => [...prev, {
         nome: inputValue,
-        feedback: state.feedback,
-        palpite_dados: state.palpite_dados
+        feedback: result.feedback,
+        palpite_dados: result.palpite_dados
       }]);
 
       // Marcar qual é a tentativa mais recente para animação
       setLatestAttemptIndex(tentativas.length);
 
-      // Mostrar clues automáticas baseadas no número de tentativas
-      const numTentativas = tentativas.length + 1;
-      if (numTentativas >= 6 && !clue1 && state.segredo_completo) {
-        // Primeira dica: revelar a posição
-        const posicoes = state.segredo_completo.posicoes || ['N/A'];
-        setClue1(`O jogador secreto joga na posição: ${posicoes.join(', ')}`);
-      }
-      if (numTentativas >= 9 && !clue2 && state.segredo_completo) {
-        // Segunda dica: revelar o período
-        const entrada = state.segredo_completo.ano_entrada || 'N/A';
-        const saida = state.segredo_completo.ano_saida === 9999 ? 'presente' : (state.segredo_completo.ano_saida || 'N/A');
-        setClue2(`O jogador secreto esteve/está no Marítimo durante: ${entrada}-${saida}`);
-      }
-
-      // Mostrar clues se necessário
-      if (state.mostrar_clue1 && state.clue1) {
-        setClue1(state.clue1);
-      }
-      if (state.mostrar_clue2 && state.clue2) {
-        setClue2(state.clue2);
-      }
-
-      // Verificar vitória ou derrota
-      if (state.venceu || state.perdeu) {
-        if (state.venceu) {
-          setShowCongrats(true);
-          startEpicCelebration();
-        } else {
-          setModalType('derrota');
-          setShowModal(true);
+      // Verificar vitória
+      if (result.venceu) {
+        setShowCongrats(true);
+        startEpicCelebration();
+        setHasPlayedToday(true);
+        
+        // Capturar dados da vitória
+        if (result.playerPosition) {
+          setPlayerPosition(result.playerPosition);
         }
+        if (result.secretPlayerName) {
+          setSecretPlayerName(result.secretPlayerName);
+        }
+        
+        // Atualizar estatísticas se fornecidas
+        if (result.totalWinners !== undefined) {
+          setStats(prev => ({ ...prev, totalWinners: result.totalWinners }));
+        }
+        
+        // Recarregar estado do jogo
+        setTimeout(() => {
+          carregarEstadoJogo();
+        }, 1000);
       }
 
       setInputValue('');
@@ -348,7 +442,7 @@ const MaritodlePage = () => {
       
       // Scroll automático para o resultado após ele aparecer
       setTimeout(() => {
-        const resultElement = document.querySelector('[data-result-container]');
+        const resultElement = document.querySelector('[data-result-container]') as HTMLElement;
         if (resultElement) {
           resultElement.scrollIntoView({ 
             behavior: 'smooth', 
@@ -416,7 +510,6 @@ const MaritodlePage = () => {
 
   const styles = createStyles({
     container: {
-      height: tentativas.length === 0 ? '100vh' : 'auto',
       minHeight: '100vh',
       background: `
         radial-gradient(circle at 20% 50%, rgba(76, 175, 80, 0.1) 0%, transparent 50%),
@@ -426,7 +519,7 @@ const MaritodlePage = () => {
       `,
       fontFamily: '"Roboto", "Inter", -apple-system, BlinkMacSystemFont, sans-serif',
       position: "relative",
-      overflow: tentativas.length === 0 ? "hidden" : "auto",
+      overflow: "auto",
     },
     backgroundPattern: {
       position: "absolute",
@@ -444,7 +537,7 @@ const MaritodlePage = () => {
     content: {
       maxWidth: '1400px',
       margin: '0 auto',
-      padding: tentativas.length === 0 ? 'clamp(8rem, 10vh, 10rem) 2vw clamp(12rem, 15vh, 15rem)' : 'clamp(8rem, 10vh, 10rem) 2vw clamp(8rem, 10vh, 10rem)',
+      padding: 'clamp(8rem, 10vh, 10rem) 2vw clamp(8rem, 10vh, 10rem)',
       position: "relative",
       zIndex: 2,
     },
@@ -1197,22 +1290,38 @@ const MaritodlePage = () => {
         <div style={styles.heroSection}>
           <div style={styles.heroAccent}></div>
           <h1 style={styles.heroTitle}>Maritodle</h1>
-          <p style={styles.heroSubtitle}>Adivinha o jogador ou treinador do CS Marítimo!</p>
+          <p style={styles.heroSubtitle}>Adivinha o jogador do CS Marítimo!</p>
+          <p style={{...styles.heroSubtitle, fontSize: '1rem', fontStyle: 'italic', marginTop: '0.5rem'}}>
+            Jogadores possíveis: Últimas 10 épocas do CS Marítimo
+          </p>
+        </div>
+
+        {/* Small stats info */}
+        <div style={{
+          textAlign: 'center' as const,
+          marginBottom: '1rem',
+          fontSize: '0.875rem',
+          color: '#B0BEC5'
+        }}>
+          <div>
+            {stats.totalWinners} / {stats.totalPlayers} pessoas descobriram o jogador
+          </div>
         </div>
 
         {/* Input Section */}
-        <div style={styles.inputSection}>
-          <form style={styles.inputForm} onSubmit={submeterPalpite}>
-            <div style={styles.inputContainer}>
-              <input
-                ref={inputRef}
-                style={styles.input}
-                type="text"
-                value={inputValue}
-                onChange={(e) => setInputValue(e.target.value)}
-                placeholder="Digite o nome de um jogador ou treinador..."
-                disabled={loading || gameState?.venceu || gameState?.perdeu}
-              />
+        {!hasPlayedToday && (
+          <div style={styles.inputSection}>
+            <form style={styles.inputForm} onSubmit={submeterPalpite}>
+              <div style={styles.inputContainer}>
+                <input
+                  ref={inputRef}
+                  style={styles.input}
+                  type="text"
+                  value={inputValue}
+                  onChange={(e) => setInputValue(e.target.value)}
+                  placeholder="Digite o nome de um jogador..."
+                  disabled={loading || gameState?.venceu || gameState?.perdeu}
+                />
               {showSuggestions && (
                 <div style={styles.suggestions}>
                   {filteredNomes.map((nome, index) => (
@@ -1252,13 +1361,7 @@ const MaritodlePage = () => {
             >
               Desistir
             </button>
-            <button
-              type="button"
-              style={styles.newGameButton}
-              onClick={iniciarNovoJogo}
-            >
-              Novo Jogo
-            </button>
+
           </form>
           {error && <div style={styles.error}>{error}</div>}
           {tentativas.length > 0 && (
@@ -1267,6 +1370,7 @@ const MaritodlePage = () => {
             </div>
           )}
         </div>
+        )}
 
         {/* Clues Section - Movido para cima */}
         {(clue1 || clue2) && (
@@ -1422,16 +1526,97 @@ const MaritodlePage = () => {
           </div>
         </div>
 
+        {/* Yesterday's player info - after legend */}
+        {yesterdayPlayer && (
+          <div style={{
+            background: 'rgba(15, 20, 25, 0.95)',
+            border: '2px solid #FFD700',
+            borderRadius: '1rem',
+            padding: '1.5rem 2rem',
+            textAlign: 'center' as const,
+            margin: '2rem auto',
+            maxWidth: '400px',
+            boxShadow: '0 0.5rem 1.5rem rgba(0, 0, 0, 0.3), 0 0 20px rgba(255, 215, 0, 0.2)'
+          }}>
+            <div style={{
+              fontSize: '1rem',
+              color: '#B0BEC5',
+              marginBottom: '0.5rem',
+              fontWeight: '500'
+            }}>
+              Jogador de ontem
+            </div>
+            <div style={{
+              fontSize: '1.5rem',
+              color: '#FFD700',
+              fontWeight: 'bold',
+              textShadow: '0 0 10px rgba(255, 215, 0, 0.5)'
+            }}>
+              {yesterdayPlayer}
+            </div>
+          </div>
+        )}
+
         {/* Resultado da Vitória */}
-        {showResult && (
+        {(showResult || (hasPlayedToday && secretPlayerName)) && (
           <div style={styles.resultContainer} data-result-container>
             <h2 style={styles.resultTitle}>VITÓRIA!</h2>
+            
             <p style={styles.resultText}>
-              Jogador: {tentativas[tentativas.length - 1]?.nome}
+              Jogador: {secretPlayerName || tentativas[tentativas.length - 1]?.nome}
             </p>
+            
+            {playerPosition && (
+              <p style={{
+                ...styles.resultText,
+                color: '#FFD700',
+                marginBottom: '1rem'
+              }}>
+                És o {playerPosition}º que encontrou a personagem hoje.
+              </p>
+            )}
+            
             <p style={styles.resultSubtext}>
               Tentativas: {tentativas.length}
             </p>
+            
+            <div style={{
+              marginTop: '2rem',
+              padding: '1.5rem',
+              background: 'rgba(15, 20, 25, 0.8)',
+              border: '2px solid #4CAF50',
+              borderRadius: '0.5rem',
+              boxShadow: '0 0 15px rgba(76, 175, 80, 0.3)'
+            }}>
+              <p style={{
+                fontSize: '1.1rem',
+                color: '#FFFFFF',
+                margin: '0 0 0.5rem 0',
+                fontWeight: '600'
+              }}>
+                Próximo jogador em:
+              </p>
+              
+              <div style={{
+                fontSize: '2rem',
+                color: '#4CAF50',
+                fontWeight: 'bold',
+                fontFamily: 'monospace',
+                marginBottom: '0.5rem',
+                textShadow: '0 0 10px rgba(76, 175, 80, 0.6)'
+              }}>
+                {timeUntilNext}
+              </div>
+              
+              <p style={{
+                fontSize: '0.9rem',
+                color: '#B0BEC5',
+                margin: 0,
+                fontStyle: 'italic'
+              }}>
+                Fuso horário: Portugal (Próximo jogo às 23:00)
+              </p>
+            </div>
           </div>
         )}
 
@@ -1474,10 +1659,10 @@ const MaritodlePage = () => {
                   style={{...styles.modalButton, backgroundColor: '#4CAF50', color: 'white'}}
                   onClick={() => {
                     setShowModal(false);
-                    iniciarNovoJogo();
+                    carregarEstadoJogo();
                   }}
                 >
-                  Novo Jogo
+                  Atualizar
                 </button>
                 <button
                   style={{...styles.modalButton, backgroundColor: '#666', color: 'white'}}
