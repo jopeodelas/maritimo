@@ -129,7 +129,7 @@ private readonly CHECK_INTERVAL = 30 * 60 * 1000; // 30 minutos
 ### 2. Configurar .env:
 ```env
 RAPIDAPI_KEY=your_api_key_here
-MARITIMO_API_FOOTBALL_ID=4281
+MARITIMO_API_FOOTBALL_ID=214
 ```
 
 ### 3. Reiniciar Servidor:

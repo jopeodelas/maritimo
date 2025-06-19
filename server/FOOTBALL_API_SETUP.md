@@ -37,13 +37,13 @@ RAPIDAPI_KEY=your_rapidapi_key_here
 FOOTBALL_DATA_TOKEN=your_football_data_token_here
 
 # ID do CS Marítimo nas APIs
-MARITIMO_API_FOOTBALL_ID=4281  # ID correto na API-Football
+MARITIMO_API_FOOTBALL_ID=214  # ID correto na API-Football
 MARITIMO_FOOTBALL_DATA_ID=5529 # ID na Football-Data (verificar)
 ```
 
 ### Passo 3: Encontrar o ID Correto do CS Marítimo
 
-O ID `4281` é o ID real do CS Marítimo na API-Football. Se necessário verificar:
+O ID `214` é o ID real do CS Marítimo na API-Football. Se necessário verificar:
 
 ```bash
 # Testar endpoint para encontrar o ID correto

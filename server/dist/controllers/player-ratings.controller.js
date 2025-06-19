@@ -123,68 +123,27 @@ const submitPlayerRatings = (req, res) => __awaiter(void 0, void 0, void 0, func
         yield client.query('BEGIN');
         const { match_id, ratings, man_of_match_player_id } = req.body;
         const userId = (_c = req.user) === null || _c === void 0 ? void 0 : _c.id;
-        console.log(`🗳️  Submitting votes:`, {
-            userId,
-            match_id,
-            man_of_match_player_id,
-            ratingsCount: ratings.length
-        });
-        // DEBUG: Verificar que jogador corresponde ao ID enviado
-        if (man_of_match_player_id) {
-            const playerCheck = yield client.query('SELECT id, name FROM players WHERE id = $1', [man_of_match_player_id]);
-            console.log(`🔍 CRITICAL: Frontend sent man_of_match_player_id ${man_of_match_player_id}, which corresponds to:`, playerCheck.rows[0]);
-            // Verificar também todos os jogadores na votação atual
-            const votingPlayers = yield client.query(`
-        SELECT p.id, p.name 
-        FROM players p
-        INNER JOIN match_voting_players mvp ON p.id = mvp.player_id
-        WHERE mvp.match_voting_id = $1
-        ORDER BY p.name
-      `, [match_id]);
-            console.log(`🔍 CRITICAL: All players in current voting:`, votingPlayers.rows);
-        }
         if (!userId) {
+            yield client.query('ROLLBACK');
             return res.status(401).json({ error: 'Utilizador não autenticado' });
         }
-        console.log(`🔍 DETAILED user authentication info:`, {
-            userId,
-            userObject: req.user,
-            userIdFromReq: req.userId,
-            headers: req.headers,
-            cookies: req.cookies,
-            signedCookies: req.signedCookies
-        });
-        // Check if user has already voted for this match - more comprehensive check
+        console.log(`🗳️ User ${userId} submitting ratings for match ${match_id}`);
+        console.log(`📊 Ratings:`, ratings);
+        console.log(`⭐ Man of match player ID:`, man_of_match_player_id);
+        // Check if user has already voted for this specific match only
         const existingPlayerRatings = yield client.query('SELECT id FROM player_ratings WHERE user_id = $1 AND match_id = $2', [userId, match_id]);
         const existingManOfMatchVotes = yield client.query('SELECT id FROM man_of_match_votes WHERE user_id = $1 AND match_id = $2', [userId, match_id]);
-        // ALSO check for recent votes (last 24 hours) to prevent duplicate voting after server restarts
-        const recentPlayerRatings = yield client.query(`
-      SELECT id FROM player_ratings 
-      WHERE user_id = $1 
-      AND created_at > NOW() - INTERVAL '24 hours'
-      LIMIT 1
-    `, [userId]);
-        const recentManOfMatchVotes = yield client.query(`
-      SELECT id FROM man_of_match_votes 
-      WHERE user_id = $1 
-      AND created_at > NOW() - INTERVAL '24 hours'
-      LIMIT 1
-    `, [userId]);
         console.log(`🔍 EXISTING votes check:`, {
             userId,
             match_id,
             existingPlayerRatings: existingPlayerRatings.rows.length,
-            existingManOfMatchVotes: existingManOfMatchVotes.rows.length,
-            recentPlayerRatings: recentPlayerRatings.rows.length,
-            recentManOfMatchVotes: recentManOfMatchVotes.rows.length
+            existingManOfMatchVotes: existingManOfMatchVotes.rows.length
         });
         const hasAlreadyVoted = existingPlayerRatings.rows.length > 0 ||
-            existingManOfMatchVotes.rows.length > 0 ||
-            recentPlayerRatings.rows.length > 0 ||
-            recentManOfMatchVotes.rows.length > 0;
+            existingManOfMatchVotes.rows.length > 0;
         if (hasAlreadyVoted) {
             yield client.query('ROLLBACK');
-            console.log(`❌ User ${userId} has already voted (direct or recent votes found)`);
+            console.log(`❌ User ${userId} has already voted for this specific match`);
             return res.status(400).json({ error: 'Já votou neste jogo' });
         }
         // Insert player ratings
@@ -372,34 +331,13 @@ const hasUserVoted = (req, res) => __awaiter(void 0, void 0, void 0, function* (
         if (!userId) {
             return res.status(401).json({ error: 'Utilizador não autenticado' });
         }
-        // FIRST: Check direct votes for this match_id
+        // Check direct votes for this specific match only
         const directPlayerRatings = yield db_1.default.query('SELECT id FROM player_ratings WHERE user_id = $1 AND match_id = $2 LIMIT 1', [userId, matchId]);
         const directManOfMatch = yield db_1.default.query('SELECT id FROM man_of_match_votes WHERE user_id = $1 AND match_id = $2 LIMIT 1', [userId, matchId]);
-        // If we find direct votes, user has voted for this specific match
-        if (directPlayerRatings.rows.length > 0 || directManOfMatch.rows.length > 0) {
-            return res.json({ hasVoted: true });
-        }
-        // SECOND: Check for recent votes (last 24 hours) - this handles server restarts
-        const recentPlayerRatings = yield db_1.default.query(`
-      SELECT pr.*, mv.home_team, mv.away_team, mv.match_date 
-      FROM player_ratings pr 
-      LEFT JOIN match_voting mv ON pr.match_id = mv.id
-      WHERE pr.user_id = $1 
-      AND pr.created_at > NOW() - INTERVAL '24 hours'
-      ORDER BY pr.created_at DESC 
-      LIMIT 1
-    `, [userId]);
-        const recentManOfMatch = yield db_1.default.query(`
-      SELECT mmv.*, mv.home_team, mv.away_team, mv.match_date
-      FROM man_of_match_votes mmv 
-      LEFT JOIN match_voting mv ON mmv.match_id = mv.id
-      WHERE mmv.user_id = $1 
-      AND mmv.created_at > NOW() - INTERVAL '24 hours'
-      ORDER BY mmv.created_at DESC 
-      LIMIT 1
-    `, [userId]);
-        const hasRecentVotes = recentPlayerRatings.rows.length > 0 || recentManOfMatch.rows.length > 0;
-        res.json({ hasVoted: hasRecentVotes });
+        // User has voted if there are direct votes for this specific match
+        const hasVoted = directPlayerRatings.rows.length > 0 || directManOfMatch.rows.length > 0;
+        console.log(`🔍 Checking if user ${userId} has voted for match ${matchId}: ${hasVoted}`);
+        res.json({ hasVoted });
     }
     catch (error) {
         console.error('Error checking if user has voted:', error);
@@ -416,39 +354,45 @@ const getUserRatings = (req, res) => __awaiter(void 0, void 0, void 0, function*
         if (!userId) {
             return res.status(401).json({ error: 'Utilizador não autenticado' });
         }
-        // FIRST: Try to get direct votes for this match
+        console.log(`🔍 Getting user ratings for user ${userId}, match ${matchId}`);
+        // FIRST: Try to get direct votes for this specific match
         let ratingsResult = yield db_1.default.query('SELECT * FROM player_ratings WHERE user_id = $1 AND match_id = $2', [userId, matchId]);
         let manOfMatchResult = yield db_1.default.query('SELECT * FROM man_of_match_votes WHERE user_id = $1 AND match_id = $2 LIMIT 1', [userId, matchId]);
-        // If no direct votes, get the most recent votes (handles server restarts)
+        // If no direct votes for this match, get the most recent votes (without time limit)
         if (ratingsResult.rows.length === 0 && manOfMatchResult.rows.length === 0) {
-            // Get most recent player ratings (last 24 hours)
+            console.log(`⚠️ No direct votes found for match ${matchId}, searching for most recent votes...`);
+            // Get most recent player ratings (no time limit)
             const recentRatings = yield db_1.default.query(`
         SELECT pr.*, p.name as player_name, p.id as original_player_id
         FROM player_ratings pr
         LEFT JOIN players p ON pr.player_id = p.id
         WHERE pr.user_id = $1 
-        AND pr.created_at > NOW() - INTERVAL '24 hours'
         ORDER BY pr.created_at DESC
+        LIMIT 50
       `, [userId]);
-            // Get most recent man of match vote (last 24 hours)  
+            // Get most recent man of match vote (no time limit)  
             const recentManOfMatch = yield db_1.default.query(`
         SELECT mmv.*, p.name as player_name, p.id as original_player_id
         FROM man_of_match_votes mmv
         LEFT JOIN players p ON mmv.player_id = p.id
         WHERE mmv.user_id = $1 
-        AND mmv.created_at > NOW() - INTERVAL '24 hours'
         ORDER BY mmv.created_at DESC
         LIMIT 1
       `, [userId]);
             // Use recent votes if available
             if (recentRatings.rows.length > 0) {
+                console.log(`✅ Found ${recentRatings.rows.length} recent ratings for user ${userId}`);
                 ratingsResult.rows = recentRatings.rows;
             }
             if (recentManOfMatch.rows.length > 0) {
+                console.log(`✅ Found recent man of match vote for user ${userId}`);
                 // Include the player name in the response for frontend mapping
                 recentManOfMatch.rows[0].voted_player_name = recentManOfMatch.rows[0].player_name;
                 manOfMatchResult.rows = recentManOfMatch.rows;
             }
+        }
+        else {
+            console.log(`✅ Found direct votes for match ${matchId}: ${ratingsResult.rows.length} ratings, ${manOfMatchResult.rows.length} man of match votes`);
         }
         res.json({
             ratings: ratingsResult.rows,

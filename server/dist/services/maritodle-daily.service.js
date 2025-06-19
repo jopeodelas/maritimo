@@ -52,6 +52,22 @@ class MaritodleDailyService {
             return result.rows.length > 0 ? result.rows[0] : null;
         });
     }
+    // Obter posição do jogador no ranking do dia
+    getUserPositionToday(userId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const today = new Date().toISOString().split('T')[0];
+            // Obter todos os jogadores que ganharam hoje, ordenados por hora de vitória
+            const result = yield db_1.default.query(`
+      SELECT user_id, won_at 
+      FROM maritodle_daily_attempts 
+      WHERE game_date = $1 AND won = true 
+      ORDER BY won_at ASC
+    `, [today]);
+            // Encontrar a posição do usuário
+            const position = result.rows.findIndex(row => row.user_id === userId);
+            return position >= 0 ? position + 1 : null;
+        });
+    }
     // Criar ou atualizar tentativa do usuário
     updateUserAttempt(userId, attemptData) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -119,14 +135,19 @@ class MaritodleDailyService {
     getPlayers() {
         return __awaiter(this, void 0, void 0, function* () {
             const result = yield db_1.default.query('SELECT * FROM maritodle_players WHERE papel != $1 ORDER BY nome', ['Treinador']);
-            return result.rows;
+            // Transformar dados para formato compatível
+            return result.rows.map(player => (Object.assign(Object.assign({}, player), { posicoes: [player.posicao_principal], papeis: [player.papel] })));
         });
     }
     // Obter jogador por ID
     getPlayerById(id) {
         return __awaiter(this, void 0, void 0, function* () {
             const result = yield db_1.default.query('SELECT * FROM maritodle_players WHERE id = $1', [id]);
-            return result.rows.length > 0 ? result.rows[0] : null;
+            if (result.rows.length === 0)
+                return null;
+            const player = result.rows[0];
+            // Transformar dados para formato compatível
+            return Object.assign(Object.assign({}, player), { posicoes: [player.posicao_principal], papeis: [player.papel] });
         });
     }
     // Verificar se usuário já jogou hoje

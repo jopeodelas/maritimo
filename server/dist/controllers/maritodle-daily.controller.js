@@ -42,12 +42,10 @@ function gerarFeedback(palpite, segredo) {
         coluna: 'jogos',
         icone: palpite.sexo === segredo.sexo ? 'verde' : 'vermelho'
     });
-    // 2. Posições - converter para array se necessário
-    const posicoesPalpite = Array.isArray(palpite.posicao_principal) ? palpite.posicao_principal : [palpite.posicao_principal];
-    const posicoesSegredo = Array.isArray(segredo.posicao_principal) ? segredo.posicao_principal : [segredo.posicao_principal];
+    // 2. Posições
     feedback.push({
         coluna: 'posicoes',
-        icone: compararListas(posicoesPalpite, posicoesSegredo)
+        icone: compararListas(palpite.posicoes, segredo.posicoes)
     });
     // 3. Altura
     let alturaIcone;
@@ -64,12 +62,10 @@ function gerarFeedback(palpite, segredo) {
         coluna: 'altura',
         icone: alturaIcone
     });
-    // 4. Papéis - converter para array se necessário
-    const papeisPalpite = Array.isArray(palpite.papel) ? palpite.papel : [palpite.papel];
-    const papeisSegredo = Array.isArray(segredo.papel) ? segredo.papel : [segredo.papel];
+    // 4. Papéis
     feedback.push({
         coluna: 'papeis',
-        icone: compararListas(papeisPalpite, papeisSegredo)
+        icone: compararListas(palpite.papeis, segredo.papeis)
     });
     // 5. Idade
     let idadeIcone;
@@ -152,6 +148,13 @@ const getGameState = (req, res, next) => __awaiter(void 0, void 0, void 0, funct
         const stats = yield maritodle_daily_service_1.default.getTodaysStats();
         // Obter jogo de ontem
         const yesterdaysGame = yield maritodle_daily_service_1.default.getYesterdaysGame();
+        // Se o usuário ganhou, obter sua posição
+        let userPosition = null;
+        let secretPlayerName = null;
+        if (userAttempt === null || userAttempt === void 0 ? void 0 : userAttempt.won) {
+            userPosition = yield maritodle_daily_service_1.default.getUserPositionToday(userId);
+            secretPlayerName = todaysGame.secret_player_name;
+        }
         res.json({
             todaysGame: {
                 date: todaysGame.date,
@@ -167,7 +170,9 @@ const getGameState = (req, res, next) => __awaiter(void 0, void 0, void 0, funct
             yesterdaysGame: yesterdaysGame ? {
                 playerName: yesterdaysGame.secret_player_name
             } : null,
-            hasPlayedToday: (userAttempt === null || userAttempt === void 0 ? void 0 : userAttempt.completed) || false
+            hasPlayedToday: (userAttempt === null || userAttempt === void 0 ? void 0 : userAttempt.completed) || false,
+            userPosition: userPosition,
+            secretPlayerName: secretPlayerName
         });
     }
     catch (error) {
@@ -209,7 +214,7 @@ const submeterPalpite = (req, res, next) => __awaiter(void 0, void 0, void 0, fu
         // if (currentAttempts >= 12) {
         //   throw new BadRequestError('Limite de tentativas excedido');
         // }
-        // Gerar feedback
+        // Gerar feedback (dados já vêm transformados do serviço)
         const feedback = gerarFeedback(palpite, secretPlayer);
         const venceu = verificarVitoria(feedback);
         // Adicionar tentativa aos dados
@@ -239,6 +244,8 @@ const submeterPalpite = (req, res, next) => __awaiter(void 0, void 0, void 0, fu
             // Obter estatísticas atualizadas
             const updatedStats = yield maritodle_daily_service_1.default.getTodaysStats();
             response.totalWinners = updatedStats.totalWinners;
+            response.playerPosition = updatedStats.totalWinners; // Posição do jogador (1º, 2º, etc.)
+            response.secretPlayerName = secretPlayer.nome;
         }
         res.json(response);
     }

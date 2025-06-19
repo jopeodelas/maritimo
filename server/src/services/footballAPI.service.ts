@@ -78,7 +78,7 @@ const API_CONFIGS = [
 
 // ID do CS Marítimo nas diferentes APIs
 const MARITIMO_TEAM_IDS = {
-  'API-Football': 214, // CS Marítimo Portugal ID correto (confirmado)
+  'API-Football': 214, // CS Marítimo Portugal ID correto
   'Football-Data': parseInt(process.env.MARITIMO_FOOTBALL_DATA_ID || '5529') // Exemplo - será configurado
 };
 
@@ -168,7 +168,7 @@ class FootballAPIService {
         throw new Error('API key não configurada. Configure RAPIDAPI_KEY nas variáveis de ambiente.');
       }
 
-        const teamId = MARITIMO_TEAM_IDS['API-Football']; // 4281 para CS Marítimo
+        const teamId = MARITIMO_TEAM_IDS['API-Football']; // 214 para CS Marítimo
         
         console.log(`🔍 Attempting to fetch recent matches for CS Marítimo (Team ID: ${teamId})`);
         
@@ -597,7 +597,63 @@ class FootballAPIService {
 
       await client.query('BEGIN');
 
-      // Desativar votações ativas
+      // VERIFICAR se já existe uma votação para este jogo específico
+      const existingVotingCheck = await client.query(
+        'SELECT id, is_active FROM match_voting WHERE match_id = $1 ORDER BY created_at DESC LIMIT 1',
+        [lastMatch.fixture.id]
+      );
+
+      if (existingVotingCheck.rows.length > 0) {
+        const existingVoting = existingVotingCheck.rows[0];
+        
+        if (existingVoting.is_active) {
+          // Já existe uma votação ativa para este jogo
+          console.log(`✅ Voting already exists and is active for match ${lastMatch.fixture.id}`);
+          await client.query('ROLLBACK');
+          return {
+            success: true,
+            message: `Votação já existe para ${lastMatch.teams.home.name} vs ${lastMatch.teams.away.name}`,
+            matchInfo: {
+              homeTeam: lastMatch.teams.home.name,
+              awayTeam: lastMatch.teams.away.name,
+              matchDate: new Date(lastMatch.fixture.date).toISOString().split('T')[0],
+              fixtureId: lastMatch.fixture.id,
+              existingVotingId: existingVoting.id
+            }
+          };
+        } else {
+          // Existe uma votação inativa para este jogo - reactivar em vez de criar nova
+          console.log(`🔄 Reactivating existing voting for match ${lastMatch.fixture.id}`);
+          
+          // Desativar outras votações ativas
+          await client.query('UPDATE match_voting SET is_active = false WHERE is_active = true');
+          
+          // Reativar a votação existente para este jogo
+          await client.query(
+            'UPDATE match_voting SET is_active = true WHERE id = $1',
+            [existingVoting.id]
+          );
+          
+          await client.query('COMMIT');
+          
+          return {
+            success: true,
+            message: `Votação reativada para ${lastMatch.teams.home.name} vs ${lastMatch.teams.away.name}`,
+            matchInfo: {
+              homeTeam: lastMatch.teams.home.name,
+              awayTeam: lastMatch.teams.away.name,
+              matchDate: new Date(lastMatch.fixture.date).toISOString().split('T')[0],
+              fixtureId: lastMatch.fixture.id,
+              reactivatedVotingId: existingVoting.id
+            }
+          };
+        }
+      }
+
+      // Se não existe nenhuma votação para este jogo, criar uma nova
+      console.log(`🆕 Creating new voting for match ${lastMatch.fixture.id}`);
+
+      // Desativar votações ativas (de outros jogos)
       await client.query('UPDATE match_voting SET is_active = false WHERE is_active = true');
 
       // Criar nova votação
