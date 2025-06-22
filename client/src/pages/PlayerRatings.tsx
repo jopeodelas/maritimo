@@ -1,11 +1,8 @@
 import { useState, useEffect } from 'react';
 import Navbar from '../components/Navbar';
-import OptimizedImage from '../components/OptimizedImage';
 import PlayerImage from '../components/PlayerImage';
 import { createStyles } from '../styles/styleUtils';
-import { getPlayerImageUrl } from '../utils/imageUtils';
 import * as playerRatingsService from '../services/playerRatingsService';
-import * as matchService from '../services/matchService';
 import type { 
   MatchVoting, 
   Player, 

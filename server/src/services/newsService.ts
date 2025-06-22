@@ -42,15 +42,12 @@ class NewsService {
     if (this.isUpdating) return;
     
     this.isUpdating = true;
-    console.log('Starting news update from real news sources...');
     
     try {
       // Fetch all Marítimo-related news (not just transfers)
       const allNews = await realNewsService.fetchAllMaritimoNews();
       
       if (allNews.length > 0) {
-        console.log(`Successfully fetched ${allNews.length} news items`);
-        
         // Remove duplicates based on URL, title, and content similarity
         const existingUrls = new Set(this.news.map(item => item.url));
         const existingTitleSignatures = new Set(this.news.map(item => this.createTitleSignature(item.title)));
@@ -61,8 +58,6 @@ class NewsService {
                  !existingTitleSignatures.has(titleSignature);
         });
         
-        console.log(`Found ${newNews.length} new news items after duplicate filtering`);
-        
         // Add new news to the beginning
         this.news = [...newNews, ...this.news];
         
@@ -71,15 +66,11 @@ class NewsService {
         this.news = this.news.slice(0, 100);
         
         this.lastUpdate = new Date();
-        console.log(`News updated successfully. Total: ${this.news.length}`);
       } else {
-        console.log('No new news found from scraping');
-        
         // If we have no news at all, generate minimal fallback data
         if (this.news.length === 0) {
           this.news = this.generateFallbackNews();
           this.lastUpdate = new Date();
-          console.log('Generated fallback news as no real data was available');
         }
       }
     } catch (error) {
@@ -89,7 +80,6 @@ class NewsService {
       if (this.news.length === 0) {
         this.news = this.generateFallbackNews();
         this.lastUpdate = new Date();
-        console.log('Generated fallback news due to scraping error');
       }
     } finally {
       this.isUpdating = false;

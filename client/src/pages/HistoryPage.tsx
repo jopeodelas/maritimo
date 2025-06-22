@@ -1,7 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useAuth } from '../contexts/AuthContext';
 import Navbar from '../components/Navbar';
-import OptimizedImage from '../components/OptimizedImage';
 import LayoutStabilizer from '../components/LayoutStabilizer';
 import { createStyles } from '../styles/styleUtils';
 
@@ -16,7 +14,6 @@ interface HistoryEvent {
 }
 
 const HistoryPage = () => {
-  const { user } = useAuth();
   const [selectedCategory, setSelectedCategory] = useState<string>('todos');
   const [selectedEvent, setSelectedEvent] = useState<HistoryEvent | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);

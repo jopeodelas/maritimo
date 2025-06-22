@@ -4,7 +4,6 @@ import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import PlayerImage from '../components/PlayerImage';
 import { createStyles } from '../styles/styleUtils';
-import { getPlayerImageUrl } from '../utils/imageUtils';
 import api from '../services/api';
 
 interface CustomPoll {
@@ -135,11 +134,8 @@ const AdminPage = () => {
 
   const fetchUsers = async () => {
     setLoadingUsers(true);
-    console.log('Fetching users from /admin/users...');
     try {
       const response = await api.get('/admin/users');
-      console.log('Users response:', response);
-      console.log('Users data:', response.data);
       setUsers(response.data);
     } catch (error) {
       console.error('Error fetching users:', error);
@@ -165,8 +161,6 @@ const AdminPage = () => {
     setLoadingPlayers(true);
     try {
       const response = await api.get('/players');
-      console.log('Players response:', response);
-      console.log('Players data:', response.data);
       setPlayers(response.data.players || response.data);
     } catch (error) {
       console.error('Error fetching players:', error);
@@ -180,8 +174,6 @@ const AdminPage = () => {
     setLoadingRumors(true);
     try {
       const response = await api.get('/admin/transfer/rumors');
-      console.log('Rumors response:', response);
-      console.log('Rumors data:', response.data);
       setRumors(response.data.data || []);
     } catch (error) {
       console.error('Error fetching rumors:', error);
@@ -458,19 +450,6 @@ const AdminPage = () => {
     } catch (error: any) {
       console.error('Error approving rumor:', error);
       alert(error.response?.data?.message || 'Erro ao aprovar rumor');
-    }
-  };
-
-  const disapproveRumor = async (rumorId: string | number, rumor?: TransferRumor) => {
-    try {
-      // Use dbId if available, otherwise try to parse from id string
-      const numericId = rumor?.dbId || (typeof rumorId === 'number' ? rumorId : parseInt(String(rumorId).split('_')[1]) || Date.now());
-      await api.post(`/admin/transfer/rumors/${numericId}/disapprove`);
-      fetchRumors();
-      alert('Rumor desaprovado com sucesso');
-    } catch (error: any) {
-      console.error('Error disapproving rumor:', error);
-      alert(error.response?.data?.message || 'Erro ao desaprovar rumor');
     }
   };
 

@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { getPlayerImageUrl, getWorkingImageUrl } from '../utils/imageUtils';
+import { getPlayerImageUrl } from '../utils/imageUtils';
 
 interface PlayerImageProps {
   imageUrl?: string;

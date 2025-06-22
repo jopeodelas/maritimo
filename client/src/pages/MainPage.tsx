@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import Navbar from "../components/Navbar";
-import OptimizedImage from "../components/OptimizedImage";
 import PlayerImage from "../components/PlayerImage";
 import LayoutStabilizer from "../components/LayoutStabilizer";
 import { createStyles } from "../styles/styleUtils";
@@ -10,7 +9,6 @@ import api from "../services/api";
 import transferService from "../services/transferService";
 import type { TransferRumor, TransferStats } from "../services/transferService";
 import type { Player } from "../types";
-import { getPlayerImageUrl } from '../utils/imageUtils';
 
 interface CustomPoll {
   id: number;
@@ -43,7 +41,6 @@ const MainPage = () => {
 
   // Custom polls states
   const [customPolls, setCustomPolls] = useState<CustomPoll[]>([]);
-  const [loadingCustomPolls, setLoadingCustomPolls] = useState(false);
 
   useEffect(() => {
     fetchTopVotedPlayers();
@@ -217,14 +214,11 @@ const MainPage = () => {
   };
 
   const fetchCustomPolls = async () => {
-    setLoadingCustomPolls(true);
     try {
       const response = await api.get('/custom-polls');
       setCustomPolls(response.data);
     } catch (error) {
       console.error("Error fetching custom polls:", error);
-    } finally {
-      setLoadingCustomPolls(false);
     }
   };
 

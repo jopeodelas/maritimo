@@ -1,11 +1,8 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import Navbar from '../components/Navbar';
-import OptimizedImage from '../components/OptimizedImage';
 import PlayerImage from '../components/PlayerImage';
 import { createStyles } from '../styles/styleUtils';
-import { getPlayerImageUrl } from '../utils/imageUtils';
-import api from '../services/api';
 
 interface Player {
   id: number;

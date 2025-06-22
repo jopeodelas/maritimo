@@ -46,11 +46,7 @@ const getImageVariations = (imageUrl: string): string[] => {
 
 // Centralized function for getting player image URLs
 export const getPlayerImageUrl = (imageUrl: string): string => {
-  console.log('=== getPlayerImageUrl GLOBAL ===');
-  console.log('Input imageUrl:', imageUrl);
-  
   if (!imageUrl) {
-    console.log('No image URL provided, using default');
     return '/images/default-player.png';
   }
   
@@ -59,14 +55,11 @@ export const getPlayerImageUrl = (imageUrl: string): string => {
   if (imageUrl.startsWith('/images/')) {
     // Old players - already have the correct path
     finalUrl = imageUrl;
-    console.log('OLD PLAYER: Using existing path:', finalUrl);
   } else {
     // New players - construct the path for client static files
     finalUrl = `/images/${imageUrl}`;
-    console.log('NEW PLAYER: Using client static files:', finalUrl);
   }
   
-  console.log('FINAL URL:', finalUrl);
   return finalUrl;
 };
 
@@ -74,21 +67,16 @@ export const getPlayerImageUrl = (imageUrl: string): string => {
 export const getWorkingImageUrl = async (imageUrl: string): Promise<string> => {
   const variations = getImageVariations(getPlayerImageUrl(imageUrl));
   
-  console.log('Testing image variations:', variations);
-  
   for (const variation of variations) {
     try {
       const response = await fetch(variation, { method: 'HEAD' });
       if (response.ok) {
-        console.log('Working image found:', variation);
         return variation;
       }
     } catch (error) {
-      console.log('Failed to load:', variation);
       continue;
     }
   }
   
-  console.log('No working image found, using default');
   return '/images/default-player.png';
 }; 

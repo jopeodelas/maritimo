@@ -1,13 +1,8 @@
-import { useNavigate } from "react-router-dom";
-import { useAuth } from "../contexts/AuthContext";
 import Navbar from "../components/Navbar";
 import LayoutStabilizer from "../components/LayoutStabilizer";
 import { createStyles } from "../styles/styleUtils";
 
 const Schedule = () => {
-  const navigate = useNavigate();
-  const { user } = useAuth();
-
   const styles = createStyles({
     container: {
       minHeight: "100vh",

@@ -1,11 +1,7 @@
 import { useState, useEffect } from 'react';
-import { useAuth } from '../contexts/AuthContext';
-import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
-import OptimizedImage from '../components/OptimizedImage';
 import PlayerImage from '../components/PlayerImage';
 import { createStyles } from '../styles/styleUtils';
-import { getPlayerImageUrl } from '../utils/imageUtils';
 import api from '../services/api';
 
 interface Player {

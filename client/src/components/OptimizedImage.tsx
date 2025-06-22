@@ -23,13 +23,11 @@ const OptimizedImage = ({
 }: OptimizedImageProps) => {
   const [imageSrc, setImageSrc] = useState<string>(src);
   const [isLoaded, setIsLoaded] = useState(false);
-  const [hasError, setHasError] = useState(false);
   const [fallbackAttempts, setFallbackAttempts] = useState(0);
   const imgRef = useRef<HTMLImageElement>(null);
 
   useEffect(() => {
     setImageSrc(src);
-    setHasError(false);
     setIsLoaded(false);
     setFallbackAttempts(0);
   }, [src]);
@@ -39,13 +37,10 @@ const OptimizedImage = ({
   };
 
   const handleError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
-    console.log(`Image load error for: ${imageSrc}, attempts: ${fallbackAttempts}`);
-    
     if (fallbackAttempts === 0) {
       // First attempt: try without .webp if it was webp
       if (imageSrc.includes('.webp')) {
         const fallbackSrc = imageSrc.replace('.webp', '.png').replace('.webp', '.jpg');
-        console.log(`First fallback attempt: ${fallbackSrc}`);
         setImageSrc(fallbackSrc);
         setFallbackAttempts(1);
         return;
@@ -56,9 +51,7 @@ const OptimizedImage = ({
     
     if (fallbackAttempts <= 1 && !imageSrc.includes('default-player.png')) {
       // Final fallback: use default player image
-      console.log('Using default player image fallback');
       setImageSrc('/images/default-player.png');
-      setHasError(true);
       setFallbackAttempts(2);
     }
     

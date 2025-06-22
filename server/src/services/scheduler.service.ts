@@ -7,8 +7,6 @@ class SchedulerService {
 
   // Iniciar verificação automática de novos jogos
   startAutoVotingCheck() {
-    console.log('🕐 Starting automatic voting check every 12 hours...');
-    
     // Verificar imediatamente
     this.checkForNewVotings();
     
@@ -23,23 +21,18 @@ class SchedulerService {
     if (this.intervalId) {
       clearInterval(this.intervalId);
       this.intervalId = null;
-      console.log('⏹️ Stopped automatic voting check');
     }
   }
 
   // Verificar se há novos jogos para criar votações
   private async checkForNewVotings() {
     try {
-      console.log('🔄 Scheduled check for new Marítimo matches...');
-      
       // Verificar se precisa de sincronização
       const syncStatus = await footballCacheService.needsSync();
       
       if (syncStatus.needsFullSync) {
-        console.log('📥 Running full sync...');
         await footballCacheService.fullSync();
       } else if (syncStatus.needsCheckSync) {
-        console.log('⚡ Running quick sync...');
         await footballCacheService.quickSync();
       }
       
@@ -57,18 +50,13 @@ class SchedulerService {
       const latestMatch = await footballCacheService.getLatestUnprocessedMatch();
       
       if (latestMatch) {
-        console.log(`🆕 Found unprocessed match: ${latestMatch.home_team} vs ${latestMatch.away_team}`);
-        
         // Tentar criar votação usando dados do cache
         const result = await footballAPIService.createAutoVotingFromRealMatch();
         
         if (result.success) {
           // Marcar como processado
           await footballCacheService.markMatchAsProcessed(latestMatch.fixture_id);
-          console.log('✅ Voting created and match marked as processed');
         }
-      } else {
-        console.log('✅ No new unprocessed matches found');
       }
     } catch (error) {
       console.error('❌ Error creating voting from latest match:', error);
@@ -78,7 +66,6 @@ class SchedulerService {
   // Criar votação automática imediatamente (para testes)
   async createVotingNow() {
     try {
-      console.log('⚡ Manual trigger: Creating voting from latest match...');
       const result = await footballAPIService.createAutoVotingFromRealMatch();
       return result;
     } catch (error) {

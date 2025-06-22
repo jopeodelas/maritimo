@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef } from 'react';
-import { useAuth } from '../contexts/AuthContext';
 import Navbar from '../components/Navbar';
 import { createStyles } from '../styles/styleUtils';
 import api from '../services/api';
@@ -32,7 +31,6 @@ interface Tentativa {
 }
 
 const MaritodlePage = () => {
-  const { user } = useAuth();
   const [nomes, setNomes] = useState<string[]>([]);
   const [inputValue, setInputValue] = useState('');
   const [tentativas, setTentativas] = useState<Tentativa[]>([]);
@@ -41,8 +39,8 @@ const MaritodlePage = () => {
   const [error, setError] = useState('');
   const [filteredNomes, setFilteredNomes] = useState<string[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
-  const [clue1, setClue1] = useState('');
-  const [clue2, setClue2] = useState('');
+  const [clue1] = useState('');
+  const [clue2] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [modalType, setModalType] = useState<'vitoria' | 'derrota'>('vitoria');
   const [showCongrats, setShowCongrats] = useState(false);
@@ -1113,42 +1111,6 @@ const MaritodlePage = () => {
     'Nacionalidade', 'Contribuições', 'Período'
   ];
 
-  const renderFeedbackIndicator = (display: any) => {
-    if (display.type === 'square') {
-      return (
-        <div 
-          style={{
-            ...styles.feedbackSquare,
-            backgroundColor: display.color
-          }}
-        />
-      );
-    } else if (display.type === 'arrow') {
-      return (
-        <div 
-          style={{
-            ...styles.feedbackArrowSquare,
-            backgroundColor: display.color
-          }}
-        >
-          {display.direction === 'up' ? <div style={styles.arrowUp}></div> : <div style={styles.arrowDown}></div>}
-        </div>
-      );
-    } else if (display.type === 'x') {
-      return (
-        <div 
-          style={{
-            ...styles.feedbackX,
-            color: display.color
-          }}
-        >
-          X
-        </div>
-      );
-    }
-    return null;
-  };
-
   const renderLegendIndicator = (type: string, color: string, direction?: string) => {
     if (type === 'square') {
       return (
@@ -1185,7 +1147,7 @@ const MaritodlePage = () => {
     return null;
   };
 
-  const renderFeedbackContent = (feedback: Feedback, coluna: string, palpite: any, segredo: any) => {
+  const renderFeedbackContent = (feedback: Feedback, coluna: string, palpite: any) => {
     const display = getIconeDisplay(feedback);
     
     // Determinar o texto baseado EXCLUSIVAMENTE na coluna, ignorando o feedback.coluna
@@ -1466,7 +1428,7 @@ const MaritodlePage = () => {
                             } : {})
                           }}
                         >
-                          {renderFeedbackContent(feedback, coluna, tentativa.palpite_dados, gameState?.segredo_completo)}
+                          {renderFeedbackContent(feedback, coluna, tentativa.palpite_dados)}
                         </td>
                       );
                     })}

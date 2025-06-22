@@ -1,8 +1,6 @@
 import { useState, useEffect } from 'react';
 import { createStyles } from '../styles/styleUtils';
-import OptimizedImage from './OptimizedImage';
 import PlayerImage from './PlayerImage';
-import { getPlayerImageUrl } from '../utils/imageUtils';
 import api from '../services/api';
 import * as matchService from '../services/matchService';
 import type { Player, MatchVoting } from '../types';

@@ -105,7 +105,7 @@ class RealNewsService {
           
           await this.delay(1000);
         } catch (error) {
-          console.log(`Failed to fetch direct news for query: ${query}`);
+          // Silently continue to next query
         }
       }
 
@@ -142,7 +142,7 @@ class RealNewsService {
           allNews.push(...maritimoNews);
           await this.delay(1000);
         } catch (error) {
-          console.log(`Failed to fetch RSS from ${source.name}`);
+          // Silently continue to next source
         }
       }
 
@@ -181,7 +181,7 @@ class RealNewsService {
           // Delay between requests
           await this.delay(1000);
         } catch (error) {
-          console.log(`Failed to fetch from Google News for query: ${query}`);
+          // Silently continue to next query
         }
       }
 
@@ -194,7 +194,6 @@ class RealNewsService {
 
   private async fetchFromNewsAPI(): Promise<TransferRumor[]> {
     if (!this.NEWS_API_KEY) {
-      console.log('News API key not available');
       return [];
     }
 
@@ -232,7 +231,7 @@ class RealNewsService {
           
           await this.delay(1000);
         } catch (error) {
-          console.log(`Failed to fetch from News API for query: ${query}`);
+          // Silently continue to next query
         }
       }
 
@@ -281,7 +280,7 @@ class RealNewsService {
         allNews.push(...maritimoNews);
         await this.delay(1000);
       } catch (error) {
-        console.log(`Failed to fetch RSS from ${source.name}`);
+        // Silently continue to next source
       }
     }
 
@@ -302,11 +301,7 @@ class RealNewsService {
           const link = this.extractXMLContent(itemXml, 'link');
           const pubDate = this.extractXMLContent(itemXml, 'pubDate');
           
-          console.log(`📰 Google News Item:`, {
-            title: title?.substring(0, 50) + '...',
-            pubDate: pubDate,
-            hasDate: !!pubDate
-          });
+          // Processing Google News item
           
           if (title && this.isMaritimoRelated(title + ' ' + description)) {
             const cleanedDescription = this.cleanText(description);
@@ -343,11 +338,7 @@ class RealNewsService {
           const link = this.extractXMLContent(itemXml, 'link');
           const pubDate = this.extractXMLContent(itemXml, 'pubDate');
           
-          console.log(`📰 ${sourceName} Item:`, {
-            title: title?.substring(0, 50) + '...',
-            pubDate: pubDate,
-            hasDate: !!pubDate
-          });
+          // Processing RSS item
           
           if (title) {
             const cleanedDescription = this.cleanText(description);
@@ -597,8 +588,7 @@ class RealNewsService {
           return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
         }
         const lowerText = normalize(item.title + ' ' + item.description);
-        // DEBUG: log para ver o texto processado
-        console.log('DEBUG official check:', lowerText);
+        // Check for official indicators
         // Indicadores oficiais
         const officialIndicators = [
           'oficial', 'apresentado', 'confirmado', 'anunciado', 'apresentacao', 'oficializa', 'oficializado',
@@ -622,7 +612,7 @@ class RealNewsService {
           transferInfo.club = 'CS Marítimo';
           transferInfo.type = 'compra';
           transferInfo.value = 'Valor não revelado';
-          console.log('DEBUG: Forçando Vítor Matos como confirmado com confiabilidade 5 e clube correto (CS Marítimo)');
+          // Force Vítor Matos as confirmed with high reliability
         }
         rumors.push({
           id: `real_${contentHash}_${index}`,
@@ -1157,7 +1147,6 @@ class RealNewsService {
       if (['vítor matos', 'vitor matos'].includes(rumor.player_name.toLowerCase())) {
         if (!bestVitorMatosRumor) {
           bestVitorMatosRumor = rumor;
-          console.log(`RealNews: First Vítor Matos rumor - ${rumor.source}`);
         } else {
           // Keep the best one
           const shouldReplace = 
@@ -1166,10 +1155,7 @@ class RealNewsService {
             (rumor.reliability === bestVitorMatosRumor.reliability && rumor.source !== 'Google News' && bestVitorMatosRumor.source === 'Google News');
           
           if (shouldReplace) {
-            console.log(`RealNews: Replacing Vítor Matos rumor - ${bestVitorMatosRumor.source} -> ${rumor.source}`);
             bestVitorMatosRumor = rumor;
-          } else {
-            console.log(`RealNews: Discarding Vítor Matos rumor - ${rumor.source}`);
           }
         }
         return false; // Don't add yet, will add the best one at the end
@@ -1186,7 +1172,6 @@ class RealNewsService {
     // Add the single best Vítor Matos rumor
     if (bestVitorMatosRumor) {
       filteredRumors.push(bestVitorMatosRumor);
-      console.log(`RealNews: Added SINGLE Vítor Matos rumor - ${(bestVitorMatosRumor as TransferRumor).source || 'Unknown'}`);
     }
 
     return filteredRumors;
