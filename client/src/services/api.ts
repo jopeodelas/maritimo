@@ -1,8 +1,10 @@
 import axios from 'axios';
 
-// FORÇA A URL DA API - TEMPORÁRIO PARA DEBUG
-const apiBaseUrl = 'http://13.60.228.50/api';
+// EMERGENCY HOTFIX - Check for window override first
+const emergencyURL = (window as any).VITE_API_URL_OVERRIDE;
+const apiBaseUrl = emergencyURL || 'http://13.60.228.50/api';
 console.log('🔥 API BASE URL:', apiBaseUrl);
+console.log('🔥 Emergency override exists:', !!emergencyURL);
 
 const api = axios.create({
   baseURL: apiBaseUrl,
