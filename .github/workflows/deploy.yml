@@ -1,0 +1,46 @@
+name: CI e Deploy para GitHub Pages
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+# Permissões para ler o repositório, criar artefactos e escrever nas Pages
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout do repositório
+        uses: actions/checkout@v4
+
+      - name: Instalar dependências
+        run: npm install
+        working-directory: ./client
+
+      - name: Build do projecto
+        run: npm run build
+        working-directory: ./client
+
+      - name: Fazer upload do artefacto para Pages
+        uses: actions/upload-pages-artifact@v3
+        with:
+          # Ajusta este caminho à pasta que contém os ficheiros estáticos gerados
+          path: ./client/dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy para GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
