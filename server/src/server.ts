@@ -58,6 +58,10 @@ app.use(cors({
   origin: [
     'http://localhost:5173',
     'http://localhost:5173/',
+    'https://maritimofans.pt',
+    'https://maritimofans.pt/',
+    'http://maritimofans.pt',
+    'http://maritimofans.pt/',
     config.clientUrl
   ],
   credentials: true,
