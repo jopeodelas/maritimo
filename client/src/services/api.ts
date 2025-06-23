@@ -1,8 +1,8 @@
 import axios from 'axios';
 
-// DIRECT IP SOLUTION - WHAT ACTUALLY WORKS
-const apiBaseUrl = 'http://13.60.228.50/api';
-console.log('🎯 USING DIRECT IP:', apiBaseUrl);
+// HTTPS SOLUTION - After SSL setup on server
+const apiBaseUrl = 'https://13.60.228.50/api';
+console.log('🔒 USING HTTPS:', apiBaseUrl);
 
 const api = axios.create({
   baseURL: apiBaseUrl,
