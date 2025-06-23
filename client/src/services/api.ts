@@ -1,5 +1,6 @@
 import axios from 'axios';
 
+// Updated API endpoint - v2
 const apiBaseUrl = import.meta.env.VITE_API_URL || 'https://api.maritimofans.pt/api';
 
 const api = axios.create({
