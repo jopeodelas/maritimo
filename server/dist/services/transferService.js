@@ -69,13 +69,10 @@ class TransferService {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 // Primeiro, tentar buscar da base de dados
-                console.log('📊 GetRumors: Tentando buscar rumores da base de dados...');
                 const dbRumors = yield this.getRumorsFromDB();
                 if (dbRumors.length > 0) {
-                    console.log(`📊 GetRumors: Encontrados ${dbRumors.length} rumores na base de dados`);
                     return dbRumors;
                 }
-                console.log('📊 GetRumors: Base de dados vazia, usando sistema de fallback...');
                 // Fallback para o sistema antigo se a base de dados estiver vazia
                 if (!this.lastUpdate || Date.now() - this.lastUpdate.getTime() > 60 * 60 * 1000) {
                     yield this.updateRumors();
@@ -85,7 +82,7 @@ class TransferService {
                 return this.rumors.filter(rumor => rumor.isMainTeam !== false || rumor.category === 'coach');
             }
             catch (error) {
-                console.error('📊 GetRumors: Erro ao buscar da base de dados, usando fallback:', error);
+                console.error('Error fetching rumors from database, using fallback:', error);
                 // Fallback para o sistema antigo em caso de erro
                 if (!this.lastUpdate || Date.now() - this.lastUpdate.getTime() > 60 * 60 * 1000) {
                     yield this.updateRumors();
@@ -96,7 +93,6 @@ class TransferService {
     }
     refreshRumors() {
         return __awaiter(this, void 0, void 0, function* () {
-            console.log('🔄 RefreshRumors: Atualizando rumores e guardando novos na base de dados...');
             // Primeiro, atualizar com novos rumores do sistema de scraping
             yield this.updateRumors();
             // Apply corrections to existing Vítor Matos rumors
@@ -104,26 +100,20 @@ class TransferService {
             // Guardar novos rumores na base de dados
             yield this.saveNewRumorsToDB();
             // Retornar rumores da base de dados (fonte única da verdade)
-            console.log('🔄 RefreshRumors: Retornando rumores da base de dados...');
             return yield this.getRumorsFromDB();
         });
     }
     correctVitorMatosRumors() {
-        console.log('🔧 Aplicando correções específicas para Vítor Matos...');
         // First pass: correct status and reliability
         this.rumors.forEach((rumor, index) => {
             if (['vítor matos', 'vitor matos'].includes(rumor.player_name.toLowerCase())) {
-                const oldStatus = rumor.status;
-                const oldReliability = rumor.reliability;
                 rumor.status = 'confirmado';
                 rumor.reliability = 5;
-                console.log(`Corrigido: ${rumor.player_name} - Status: ${oldStatus} -> ${rumor.status}, Confiabilidade: ${oldReliability} -> ${rumor.reliability}`);
             }
         });
         // Second pass: keep only ONE Vítor Matos rumor
         const vitorMatosRumors = this.rumors.filter(rumor => ['vítor matos', 'vitor matos'].includes(rumor.player_name.toLowerCase()));
         if (vitorMatosRumors.length > 1) {
-            console.log(`🗑️ Removendo ${vitorMatosRumors.length - 1} duplicados do Vítor Matos...`);
             // Find the best one (prefer more recent, then better source)
             const bestRumor = vitorMatosRumors.reduce((best, current) => {
                 if (new Date(current.date) > new Date(best.date))
@@ -141,7 +131,6 @@ class TransferService {
             this.rumors = this.rumors.filter(rumor => !['vítor matos', 'vitor matos'].includes(rumor.player_name.toLowerCase()));
             // Add back only the best one
             this.rumors.unshift(bestRumor);
-            console.log(`✅ Mantido apenas 1 rumor do Vítor Matos: ${bestRumor.source} (${bestRumor.date})`);
         }
     }
     getStats() {
@@ -163,18 +152,15 @@ class TransferService {
     }
     addManualRumor(rumor, req) {
         return __awaiter(this, void 0, void 0, function* () {
-            console.log('➕ AddManualRumor: Adicionando rumor manual à base de dados...');
             // SPECIAL HANDLING: Force correct status and info for Vítor Matos
             if (['vítor matos', 'vitor matos'].includes(rumor.player_name.toLowerCase())) {
                 rumor.status = 'confirmado';
                 rumor.reliability = 5;
                 rumor.club = 'CS Marítimo'; // CORREÇÃO: Sempre CS Marítimo
                 rumor.type = 'compra'; // CORREÇÃO: Sempre compra (chegada ao Marítimo)
-                console.log('AddManualRumor: Forçando Vítor Matos como confirmado com confiabilidade 5 e clube correto (CS Marítimo)');
             }
             // Adicionar rumor diretamente à base de dados
             const newRumor = yield this.createRumorInDB(rumor);
-            console.log(`➕ AddManualRumor: Rumor criado na base de dados com ID ${newRumor.dbId}`);
             return newRumor;
         });
     }
@@ -183,20 +169,16 @@ class TransferService {
             if (this.isUpdating)
                 return;
             this.isUpdating = true;
-            console.log('Starting enhanced transfer rumors update with improved filtering...');
             try {
                 // Scrape real news from Portuguese sports websites
                 const scrapedRumors = yield realNewsService_1.realNewsService.fetchRealTransferNews();
                 if (scrapedRumors.length > 0) {
-                    console.log(`Successfully scraped ${scrapedRumors.length} potential transfer rumors`);
                     // Enhanced processing with strict filtering
                     const processedRumors = this.enhanceRumorAnalysis(scrapedRumors);
                     // Apply strict filtering for quality and relevance
                     const filteredRumors = this.applyStrictFiltering(processedRumors);
-                    console.log(`${filteredRumors.length} rumors passed strict filtering (${processedRumors.length - filteredRumors.length} filtered out)`);
                     // Advanced duplicate detection
                     const newRumors = this.advancedDuplicateFilter(filteredRumors);
-                    console.log(`Found ${newRumors.length} new unique rumors after advanced duplicate detection`);
                     // Add new rumors to the beginning
                     this.rumors = [...newRumors, ...this.rumors];
                     // Sort by date (newest first) and limit to 50
@@ -205,7 +187,6 @@ class TransferService {
                     // Rebuild caches for duplicate detection
                     this.rebuildCaches();
                     this.lastUpdate = new Date();
-                    console.log(`Transfer rumors updated successfully. Total: ${this.rumors.length} (Main team: ${this.rumors.filter(r => r.isMainTeam).length})`);
                 }
             }
             catch (error) {
@@ -231,7 +212,6 @@ class TransferService {
             if (['vítor matos', 'vitor matos'].includes(rumor.player_name.toLowerCase())) {
                 enhancedRumor.status = 'confirmado';
                 enhancedRumor.reliability = 5;
-                console.log('TransferService: Forçando Vítor Matos como confirmado com confiabilidade 5');
             }
             // New: Categorize and check if main team related
             enhancedRumor.isMainTeam = this.isMainTeamRelated(rumor.player_name, rumor.description || '');
@@ -249,27 +229,22 @@ class TransferService {
         return rumors.filter(rumor => {
             // Filter 1: Must have a valid player name
             if (!rumor.player_name || rumor.player_name.length < 3) {
-                console.log(`Filtered out: Invalid player name - ${rumor.player_name}`);
                 return false;
             }
             // Filter 2: Must be clearly transfer-related
             if (!this.isValidTransferRumor(rumor)) {
-                console.log(`Filtered out: Not a valid transfer rumor - ${rumor.description}`);
                 return false;
             }
             // Filter 3: Filter out obvious non-football content
             if (this.isNonFootballContent(rumor.description || '')) {
-                console.log(`Filtered out: Non-football content - ${rumor.description}`);
                 return false;
             }
             // Filter 4: Minimum reliability threshold
             if (rumor.reliability < 2) {
-                console.log(`Filtered out: Low reliability (${rumor.reliability}) - ${rumor.player_name}`);
                 return false;
             }
             // Filter 5: UPDATED - Allow coaches even with medium reliability
             if (!rumor.isMainTeam && rumor.category !== 'coach' && rumor.reliability < 4) {
-                console.log(`Filtered out: Non-main team with low reliability - ${rumor.player_name}`);
                 return false;
             }
             return true;
@@ -284,7 +259,6 @@ class TransferService {
             if (['vítor matos', 'vitor matos'].includes(rumor.player_name.toLowerCase())) {
                 if (!bestVitorMatosRumor) {
                     bestVitorMatosRumor = rumor;
-                    console.log(`Vítor Matos: First rumor found - ${rumor.source} (reliability: ${rumor.reliability})`);
                 }
                 else {
                     // Compare and keep the best one
@@ -292,11 +266,7 @@ class TransferService {
                         (rumor.reliability === bestVitorMatosRumor.reliability && new Date(rumor.date) > new Date(bestVitorMatosRumor.date)) ||
                         (rumor.reliability === bestVitorMatosRumor.reliability && new Date(rumor.date).getTime() === new Date(bestVitorMatosRumor.date).getTime() && rumor.source.length > bestVitorMatosRumor.source.length);
                     if (shouldReplace) {
-                        console.log(`Vítor Matos: Replacing rumor - Old: ${bestVitorMatosRumor.source} (${bestVitorMatosRumor.reliability}) -> New: ${rumor.source} (${rumor.reliability})`);
                         bestVitorMatosRumor = rumor;
-                    }
-                    else {
-                        console.log(`Vítor Matos: Keeping existing rumor, discarding: ${rumor.source} (${rumor.reliability})`);
                     }
                 }
                 continue;
@@ -306,15 +276,11 @@ class TransferService {
                 uniqueRumors.push(rumor);
                 this.updateSignatureCaches(rumor);
             }
-            else {
-                console.log(`Filtered duplicate: ${rumor.player_name} - ${rumor.type} - ${rumor.club}`);
-            }
         }
         // Add the single best Vítor Matos rumor
         if (bestVitorMatosRumor) {
             uniqueRumors.push(bestVitorMatosRumor);
             this.updateSignatureCaches(bestVitorMatosRumor);
-            console.log(`Added SINGLE Vítor Matos rumor: ${bestVitorMatosRumor.player_name} - ${bestVitorMatosRumor.source} - ${bestVitorMatosRumor.reliability}`);
         }
         return uniqueRumors;
     }
@@ -819,9 +785,7 @@ class TransferService {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 if (this.rumors.length > 0) {
-                    console.log('Migrando rumores existentes para a base de dados...');
                     yield transfer_rumor_model_1.TransferRumorModel.migrateFromMemory(this.rumors);
-                    console.log('Migração concluída!');
                 }
             }
             catch (error) {
@@ -966,13 +930,11 @@ class TransferService {
                 // Buscar novos rumores
                 const scrapedRumors = yield realNewsService_1.realNewsService.fetchRealTransferNews();
                 if (scrapedRumors.length > 0) {
-                    console.log(`Processando ${scrapedRumors.length} rumores descobertos...`);
                     for (const rumor of scrapedRumors) {
                         try {
                             // Verificar se já existe na base de dados
                             const exists = yield transfer_rumor_model_1.TransferRumorModel.existsByUniqueId(rumor.id);
                             if (!exists) {
-                                console.log(`📅 SaveToDB: Guardando ${rumor.player_name} com data: ${rumor.date}`);
                                 yield transfer_rumor_model_1.TransferRumorModel.create({
                                     unique_id: rumor.id,
                                     player_name: rumor.player_name,
@@ -989,17 +951,12 @@ class TransferService {
                                     position: rumor.position,
                                     is_approved: rumor.reliability >= 4 // Auto-aprovar rumores de alta confiabilidade
                                 });
-                                console.log(`✅ SaveToDB: ${rumor.player_name} guardado com sucesso`);
-                            }
-                            else {
-                                console.log(`⏭️ SaveToDB: ${rumor.player_name} já existe na BD, saltando...`);
                             }
                         }
                         catch (error) {
                             console.error(`Erro ao guardar rumor ${rumor.id}:`, error);
                         }
                     }
-                    console.log('Rumores processados e guardados na base de dados');
                 }
             }
             catch (error) {
@@ -1018,10 +975,8 @@ class TransferService {
                 if (!isNaN(dateObj.getTime())) {
                     formattedDate = dateObj.toISOString().split('T')[0];
                 }
-                console.log(`📅 ConvertDBRumor: ${dbRumor.player_name} - Original: ${dbRumor.date}, Formatted: ${formattedDate}`);
             }
             catch (error) {
-                console.log(`📅 ConvertDBRumor: Erro ao formatar data para ${dbRumor.player_name}: ${error}`);
                 formattedDate = dbRumor.date; // Manter original se houver erro
             }
         }

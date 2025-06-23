@@ -21,7 +21,6 @@ class SchedulerService {
     }
     // Iniciar verificação automática de novos jogos
     startAutoVotingCheck() {
-        console.log('🕐 Starting automatic voting check every 12 hours...');
         // Verificar imediatamente
         this.checkForNewVotings();
         // Configurar verificação periódica
@@ -34,22 +33,18 @@ class SchedulerService {
         if (this.intervalId) {
             clearInterval(this.intervalId);
             this.intervalId = null;
-            console.log('⏹️ Stopped automatic voting check');
         }
     }
     // Verificar se há novos jogos para criar votações
     checkForNewVotings() {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                console.log('🔄 Scheduled check for new Marítimo matches...');
                 // Verificar se precisa de sincronização
                 const syncStatus = yield footballCache_service_1.default.needsSync();
                 if (syncStatus.needsFullSync) {
-                    console.log('📥 Running full sync...');
                     yield footballCache_service_1.default.fullSync();
                 }
                 else if (syncStatus.needsCheckSync) {
-                    console.log('⚡ Running quick sync...');
                     yield footballCache_service_1.default.quickSync();
                 }
                 // Verificar se há jogos não processados para criar votações
@@ -66,17 +61,12 @@ class SchedulerService {
             try {
                 const latestMatch = yield footballCache_service_1.default.getLatestUnprocessedMatch();
                 if (latestMatch) {
-                    console.log(`🆕 Found unprocessed match: ${latestMatch.home_team} vs ${latestMatch.away_team}`);
                     // Tentar criar votação usando dados do cache
                     const result = yield footballAPI_service_1.default.createAutoVotingFromRealMatch();
                     if (result.success) {
                         // Marcar como processado
                         yield footballCache_service_1.default.markMatchAsProcessed(latestMatch.fixture_id);
-                        console.log('✅ Voting created and match marked as processed');
                     }
-                }
-                else {
-                    console.log('✅ No new unprocessed matches found');
                 }
             }
             catch (error) {
@@ -88,7 +78,6 @@ class SchedulerService {
     createVotingNow() {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                console.log('⚡ Manual trigger: Creating voting from latest match...');
                 const result = yield footballAPI_service_1.default.createAutoVotingFromRealMatch();
                 return result;
             }

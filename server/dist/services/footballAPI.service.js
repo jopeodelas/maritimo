@@ -34,7 +34,7 @@ const API_CONFIGS = [
 ];
 // ID do CS Marítimo nas diferentes APIs
 const MARITIMO_TEAM_IDS = {
-    'API-Football': 4281,
+    'API-Football': 214,
     'Football-Data': parseInt(process.env.MARITIMO_FOOTBALL_DATA_ID || '5529') // Exemplo - será configurado
 };
 // Liga Portugal 2 ID (Segunda Liga)
@@ -75,7 +75,7 @@ class FootballAPIService {
                         team.name.toLowerCase().includes('maritimo') ||
                         team.name.toLowerCase().includes('cs marítimo')) &&
                         team.country === 'Portugal' &&
-                        team.id === 4281; // Garantir que é o CS Marítimo correto
+                        team.id === 214; // Garantir que é o CS Marítimo correto
                 });
                 if (maritimoTeam) {
                     console.log(`✅ Found CS Marítimo: ${maritimoTeam.team.name} (ID: ${maritimoTeam.team.id})`);
@@ -121,7 +121,7 @@ class FootballAPIService {
                 if (!process.env.RAPIDAPI_KEY || process.env.RAPIDAPI_KEY === 'demo_key') {
                     throw new Error('API key não configurada. Configure RAPIDAPI_KEY nas variáveis de ambiente.');
                 }
-                const teamId = MARITIMO_TEAM_IDS['API-Football']; // 4281 para CS Marítimo
+                const teamId = MARITIMO_TEAM_IDS['API-Football']; // 214 para CS Marítimo
                 console.log(`🔍 Attempting to fetch recent matches for CS Marítimo (Team ID: ${teamId})`);
                 const data = yield this.makeAPIRequest('/fixtures', {
                     team: teamId,
