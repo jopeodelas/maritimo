@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const apiBaseUrl = import.meta.env.VITE_API_URL || 'https://maritimofans.pt/api';
+const apiBaseUrl = import.meta.env.VITE_API_URL || 'https://api.maritimofans.pt/api';
 
 const api = axios.create({
   baseURL: apiBaseUrl,
