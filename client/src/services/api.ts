@@ -1,7 +1,8 @@
 import axios from 'axios';
 
-// Updated API endpoint - v2
-const apiBaseUrl = import.meta.env.VITE_API_URL || 'http://13.60.228.50/api';
+// FORÇA A URL DA API - TEMPORÁRIO PARA DEBUG
+const apiBaseUrl = 'http://13.60.228.50/api';
+console.log('🔥 API BASE URL:', apiBaseUrl);
 
 const api = axios.create({
   baseURL: apiBaseUrl,
