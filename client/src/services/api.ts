@@ -1,10 +1,8 @@
 import axios from 'axios';
 
-// EMERGENCY HOTFIX - Check for window override first
-const emergencyURL = (window as any).VITE_API_URL_OVERRIDE;
-const apiBaseUrl = emergencyURL || 'http://13.60.228.50/api';
-console.log('🔥 API BASE URL:', apiBaseUrl);
-console.log('🔥 Emergency override exists:', !!emergencyURL);
+// DIRECT IP SOLUTION - WHAT ACTUALLY WORKS
+const apiBaseUrl = 'http://13.60.228.50/api';
+console.log('🎯 USING DIRECT IP:', apiBaseUrl);
 
 const api = axios.create({
   baseURL: apiBaseUrl,
