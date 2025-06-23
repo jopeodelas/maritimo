@@ -33,7 +33,7 @@ fi
 
 EC2_IP=$1
 PEM_KEY=$2
-REPO_URL="https://github.com/seu-usuario/seu-repositorio.git"  # ALTERE AQUI
+REPO_URL="https://github.com/jopeodelas/maritimo.git"
 
 print_status "Iniciando deploy para $EC2_IP"
 
