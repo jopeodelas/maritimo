@@ -234,7 +234,7 @@ const AdminPage = () => {
 
   const deactivatePoll = async (pollId: number) => {
     try {
-      await api.post(`/custom-polls/${pollId}/deactivate`);
+      await api.delete(`/custom-polls/${pollId}`);
       fetchPolls();
     } catch (error: any) {
       console.error('Error deactivating poll:', error);
