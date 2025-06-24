@@ -121,8 +121,24 @@ app.get('/health', (req, res) => {
   });
 });
 
+// Test route for debugging
+app.get('/test-auth', (req, res) => {
+  res.json({ 
+    message: 'Auth test route working!',
+    timestamp: new Date().toISOString()
+  });
+});
+
+// Debug: Log all requests
+app.use((req, res, next) => {
+  console.log(`${new Date().toISOString()} - ${req.method} ${req.path}`);
+  next();
+});
+
 // Routes
+console.log('🔧 Registering routes...');
 app.use('/api/auth', authRoutes);
+console.log('✅ Auth routes registered');
 app.use('/api/players', playersRoutes);
 app.use('/api/votes', votesRoutes);
 app.use('/api/transfer', transferRoutes);
@@ -135,6 +151,7 @@ app.use('/api/admin', userManagementRoutes);
 app.use('/api/maritodle', maritodleRoutes);
 app.use('/api/maritodle-daily', maritodleDailyRoutes);
 app.use('/api/player-ratings', playerRatingsRoutes);
+console.log('✅ All routes registered');
 
 // Error handling
 app.use(notFoundHandler);
