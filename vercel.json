@@ -1,0 +1,35 @@
+{
+  "version": 2,
+  "name": "maritimo-voting-server",
+  "builds": [
+    {
+      "src": "server/src/server.ts",
+      "use": "@vercel/node",
+      "config": {
+        "includeFiles": ["server/src/**", "server/public/**", "server/package.json", "server/tsconfig.json"]
+      }
+    }
+  ],
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "server/src/server.ts"
+    },
+    {
+      "src": "/images/(.*)",
+      "dest": "server/src/server.ts"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "server/src/server.ts"
+    }
+  ],
+  "functions": {
+    "server/src/server.ts": {
+      "maxDuration": 30
+    }
+  },
+  "env": {
+    "NODE_ENV": "production"
+  }
+} 

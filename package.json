@@ -20,5 +20,17 @@
     "@types/styled-jsx": "^2.2.9",
     "ts-node": "^10.9.2",
     "typescript": "^5.8.3"
+  },
+  "name": "maritimo-voting-app",
+  "version": "1.0.0",
+  "description": "CS Marítimo Voting Application",
+  "scripts": {
+    "build": "cd server && npm run build",
+    "start": "cd server && npm start",
+    "dev": "cd server && npm run dev",
+    "install-server": "cd server && npm install"
+  },
+  "engines": {
+    "node": ">=18.0.0"
   }
 }
