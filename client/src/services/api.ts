@@ -2,7 +2,7 @@ import axios from 'axios';
 
 // Production configuration - use deployed server
 const apiBaseUrl = 'https://api.maritimofans.pt/api';
-console.log('🚀 Production API URL:', apiBaseUrl);
+console.log('🚀 Production API URL (Updated):', apiBaseUrl);
 
 const api = axios.create({
   baseURL: apiBaseUrl,
