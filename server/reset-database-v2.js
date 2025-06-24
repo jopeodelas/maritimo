@@ -159,7 +159,7 @@ async function resetDatabase() {
     
     // 2. Ler e processar o ficheiro SQL
     console.log('📄 A ler o ficheiro SQL...');
-    const sqlPath = path.join(__dirname, 'sql', 'maritimo_23-6.sql');
+    const sqlPath = path.join(__dirname, 'sql', 'maritimo_backup_perfeito.sql');
     const sqlContent = fs.readFileSync(sqlPath, 'utf8');
     
     console.log('🔧 A processar o ficheiro SQL...');

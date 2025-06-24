@@ -1,8 +1,8 @@
 import axios from 'axios';
 
-// HTTPS SOLUTION - After SSL setup on server
-const apiBaseUrl = 'https://13.60.228.50/api';
-console.log('🔒 USING HTTPS:', apiBaseUrl);
+// Development configuration - use local server
+const apiBaseUrl = 'http://localhost:3000/api';
+console.log('🛠️ Development API URL:', apiBaseUrl);
 
 const api = axios.create({
   baseURL: apiBaseUrl,
