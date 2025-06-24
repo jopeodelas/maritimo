@@ -89,6 +89,24 @@ const imagesPath = path.resolve(__dirname, '../../public/images');
 console.log('Images directory path:', imagesPath);
 console.log('Directory exists:', require('fs').existsSync(imagesPath));
 
+// Health check route
+app.get('/', (req, res) => {
+  res.json({ 
+    status: 'ok', 
+    message: 'CS Marítimo API is running!',
+    timestamp: new Date().toISOString(),
+    environment: config.nodeEnv
+  });
+});
+
+app.get('/health', (req, res) => {
+  res.json({ 
+    status: 'healthy',
+    uptime: process.uptime(),
+    timestamp: new Date().toISOString()
+  });
+});
+
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/players', playersRoutes);
