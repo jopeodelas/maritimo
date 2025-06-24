@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 // Development configuration - use local server
-const apiBaseUrl = 'http://localhost:3000/api';
+const apiBaseUrl = 'http://localhost:5000/api';
 console.log('🛠️ Development API URL:', apiBaseUrl);
 
 const api = axios.create({

@@ -165,6 +165,8 @@ const LoginPage = () => {
       boxSizing: 'border-box',
       transition: 'border-color 0.3s',
       outline: 'none',
+      backgroundColor: '#FFFFFF',
+      color: '#000000',
     },
     activeInput: {
       borderColor: '#009759',

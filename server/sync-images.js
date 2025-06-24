@@ -28,7 +28,7 @@ function syncImages() {
     // Find new player images (files that start with 'player-' and are not in client)
     const newPlayerImages = serverFiles.filter(file => 
         file.startsWith('player-') && 
-        file.endsWith('.png') && 
+        (file.endsWith('.png') || file.endsWith('.jpg') || file.endsWith('.jpeg')) && 
         !clientFiles.includes(file)
     );
     

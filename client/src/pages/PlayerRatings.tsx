@@ -501,7 +501,7 @@ const PlayerRatings = () => {
     },
     playerName: {
       fontSize: "clamp(1.2rem, 3vw, 1.8rem)",
-      fontWeight: "800",
+      fontWeight: "900",
       color: "white",
       margin: "0 0 clamp(0.3rem, 1vh, 0.5rem) 0",
       textShadow: "0 2px 4px rgba(0, 0, 0, 0.5)",
@@ -509,7 +509,7 @@ const PlayerRatings = () => {
     playerPosition: {
       fontSize: "clamp(0.9rem, 2vw, 1.1rem)",
       color: "rgba(255, 255, 255, 0.8)",
-      fontWeight: "600",
+      fontWeight: "700",
       background: "rgba(0, 0, 0, 0.3)",
       padding: "clamp(0.2rem, 0.5vh, 0.3rem) clamp(0.5rem, 1vw, 0.8rem)",
       borderRadius: "clamp(0.5rem, 1vw, 1rem)",
@@ -565,23 +565,26 @@ const PlayerRatings = () => {
       alignItems: "center",
     },
     manOfMatchButton: {
-      width: "clamp(3rem, 6vw, 4rem)",
-      height: "clamp(3rem, 6vw, 4rem)",
+      width: "56px",
+      height: "56px",
+      minWidth: "56px",
+      minHeight: "56px",
       borderRadius: "50%",
-      border: "2px solid rgba(255, 215, 0, 0.3)",
-      background: "rgba(255, 215, 0, 0.1)",
-      fontSize: "clamp(1.5rem, 3vw, 2rem)",
+      border: "2px solid rgba(255, 215, 0, 0.5)",
+      background: "rgba(0, 0, 0, 0.3)",
       cursor: "pointer",
       transition: "all 0.3s ease",
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
+      flexShrink: 0,
+      padding: 0,
     },
     manOfMatchButtonActive: {
-      background: "rgba(255, 215, 0, 0.9)",
+      background: "#FFD700",
       border: "2px solid #FFD700",
-      transform: "scale(1.1)",
-      boxShadow: "0 0 20px rgba(255, 215, 0, 0.6)",
+      transform: "scale(1.05)",
+      boxShadow: "0 0 15px rgba(255, 215, 0, 0.8)",
     },
     submitButton: {
       background: "linear-gradient(135deg, #FFD700 0%, #FFA000 100%)",
@@ -988,19 +991,23 @@ const PlayerRatings = () => {
                     title="Homem do Jogo"
                     className="hover-button"
                   >
-                    {/* Estrela desenhada em SVG */}
-                    <svg 
-                      width="24" 
-                      height="24" 
-                      viewBox="0 0 24 24" 
-                      fill={isManOfMatch ? "#000" : "rgba(255, 215, 0, 0.7)"}
-                      style={{ 
-                        width: "clamp(1.2rem, 2.5vw, 1.8rem)", 
-                        height: "clamp(1.2rem, 2.5vw, 1.8rem)" 
+                    {/* Estrela usando CSS */}
+                    <span 
+                      style={{
+                        fontSize: "36px",
+                        color: isManOfMatch ? "#000000" : "#FFD700",
+                        textShadow: isManOfMatch 
+                          ? "none" 
+                          : "1px 1px 2px rgba(0, 0, 0, 0.8)",
+                        lineHeight: "1",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        fontWeight: "normal"
                       }}
                     >
-                      <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-                    </svg>
+                      ★
+                    </span>
                   </button>
                 </div>
               </div>
