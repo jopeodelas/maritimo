@@ -19,6 +19,7 @@ router.get('/me', auth, getCurrentUser);
 
 // Google OAuth routes
 router.get('/google/url', getGoogleAuthUrl);
+router.get('/google/initiate', getGoogleAuthUrl); // Alias para compatibilidade
 router.get('/google/callback', handleGoogleCallback); 
 router.post('/google/callback', handleGoogleCallback); 
 
