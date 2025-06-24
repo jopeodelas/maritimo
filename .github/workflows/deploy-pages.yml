@@ -39,6 +39,10 @@ jobs:
           cd client
           npm run build
           
+      - name: Add .nojekyll file
+        run: |
+          touch client/dist/.nojekyll
+          
       - name: Setup Pages
         uses: actions/configure-pages@v4
         
