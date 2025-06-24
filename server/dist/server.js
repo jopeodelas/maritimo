@@ -50,7 +50,7 @@ app.use((0, helmet_1.default)({
             scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
             imgSrc: ["'self'", "data:", "blob:"],
             fontSrc: ["'self'"],
-            connectSrc: ["'self'", "http://localhost:5000", "ws://localhost:*"],
+            connectSrc: ["'self'", "https://api.maritimofans.pt", "https://maritimofans.pt", "http://localhost:5000", "ws://localhost:*"],
         },
     },
 }));
@@ -59,11 +59,28 @@ app.use((0, cors_1.default)({
     origin: [
         'http://localhost:5173',
         'http://localhost:5173/',
+        'https://maritimofans.pt',
+        'https://maritimofans.pt/',
+        'http://maritimofans.pt',
+        'http://maritimofans.pt/',
         config_1.default.clientUrl
     ],
     credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Cookie', 'X-Requested-With'],
     optionsSuccessStatus: 200 // For legacy browser support
 }));
+// Handle preflight requests
+app.use((req, res, next) => {
+    if (req.method === 'OPTIONS') {
+        res.header('Access-Control-Allow-Origin', req.headers.origin || '*');
+        res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, PATCH');
+        res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, Cookie, X-Requested-With');
+        res.header('Access-Control-Allow-Credentials', 'true');
+        return res.sendStatus(200);
+    }
+    next();
+});
 app.use((0, cookie_parser_1.default)(config_1.default.cookieSecret));
 app.use(express_1.default.json({ limit: '10mb' }));
 app.use(express_1.default.urlencoded({ extended: true, limit: '10mb' }));
@@ -82,8 +99,38 @@ app.use('/images', (req, res, next) => {
 const imagesPath = path_1.default.resolve(__dirname, '../../public/images');
 console.log('Images directory path:', imagesPath);
 console.log('Directory exists:', require('fs').existsSync(imagesPath));
+// Health check route
+app.get('/', (req, res) => {
+    res.json({
+        status: 'ok',
+        message: 'CS Marítimo API is running!',
+        timestamp: new Date().toISOString(),
+        environment: config_1.default.nodeEnv
+    });
+});
+app.get('/health', (req, res) => {
+    res.json({
+        status: 'healthy',
+        uptime: process.uptime(),
+        timestamp: new Date().toISOString()
+    });
+});
+// Test route for debugging
+app.get('/test-auth', (req, res) => {
+    res.json({
+        message: 'Auth test route working!',
+        timestamp: new Date().toISOString()
+    });
+});
+// Debug: Log all requests
+app.use((req, res, next) => {
+    console.log(`${new Date().toISOString()} - ${req.method} ${req.path}`);
+    next();
+});
 // Routes
+console.log('🔧 Registering routes...');
 app.use('/api/auth', auth_routes_1.default);
+console.log('✅ Auth routes registered');
 app.use('/api/players', players_routes_1.default);
 app.use('/api/votes', votes_routes_1.default);
 app.use('/api/transfer', transfer_routes_1.default);
@@ -96,6 +143,7 @@ app.use('/api/admin', user_management_routes_1.default);
 app.use('/api/maritodle', maritodle_routes_1.default);
 app.use('/api/maritodle-daily', maritodle_daily_routes_1.default);
 app.use('/api/player-ratings', player_ratings_routes_1.default);
+console.log('✅ All routes registered');
 // Error handling
 app.use(error_middleware_1.notFoundHandler);
 app.use(error_middleware_1.errorHandler);
