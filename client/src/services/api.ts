@@ -1,8 +1,8 @@
 import axios from 'axios';
 
-// Development configuration - use local server
-const apiBaseUrl = 'http://localhost:5000/api';
-console.log('🛠️ Development API URL:', apiBaseUrl);
+// Production configuration - use deployed server
+const apiBaseUrl = 'https://api.maritimofans.pt/api';
+console.log('🚀 Production API URL:', apiBaseUrl);
 
 const api = axios.create({
   baseURL: apiBaseUrl,
