@@ -48,7 +48,7 @@ app.use(helmet({
       scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
       imgSrc: ["'self'", "data:", "blob:"],
       fontSrc: ["'self'"],
-      connectSrc: ["'self'", "http://localhost:5000", "ws://localhost:*"],
+      connectSrc: ["'self'", "https://api.maritimofans.pt", "https://maritimofans.pt", "http://localhost:5000", "ws://localhost:*"],
     },
   },
 }));
