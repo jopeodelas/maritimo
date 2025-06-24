@@ -21,7 +21,7 @@ export default defineConfig({
   ],
   server: {
     proxy: {
-      '/api': 'http://localhost:5000'
+      '/api': 'https://api.maritimofans.pt'
     },
     host: true,
     port: 5173
