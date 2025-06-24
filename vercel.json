@@ -4,27 +4,13 @@
   "builds": [
     {
       "src": "server/src/server.ts",
-      "use": "@vercel/node",
-      "config": {
-        "includeFiles": ["server/src/**", "server/public/**", "server/package.json", "server/tsconfig.json"]
-      }
+      "use": "@vercel/node"
     }
   ],
   "routes": [
     {
-      "src": "/api/(.*)",
-      "dest": "server/src/server.ts"
-    },
-    {
-      "src": "/images/(.*)",
-      "dest": "server/src/server.ts"
-    },
-    {
       "src": "/(.*)",
       "dest": "server/src/server.ts"
     }
-  ],
-  "env": {
-    "NODE_ENV": "production"
-  }
+  ]
 } 
