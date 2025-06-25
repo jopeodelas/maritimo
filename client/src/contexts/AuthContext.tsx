@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useEffect} from 'react';
 import type { ReactNode } from 'react';
-import axios from 'axios';
+import api from '../services/api';
 
 interface User {
   id: string;
@@ -37,9 +37,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const response = await axios.get('/api/auth/me', {
-          withCredentials: true,
-        });
+        const response = await api.get('/auth/me');
         setUser(response.data);
       } catch (error: any) {
         if (error.response && error.response.status === 401) {
@@ -75,11 +73,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const handleGoogleCallback = async (code: string) => {
     setLoading(true);
     try {
-      const response = await axios.post(
-        '/api/auth/google/callback',
-        { code },
-        { withCredentials: true }
-      );
+      const response = await api.post('/auth/google/callback', { code });
       setUser(response.data);
     } catch (error) {
       console.error('Error processing Google authentication:', error);
@@ -92,11 +86,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const login = async (email: string, password: string) => {
     setLoading(true);
     try {
-      const response = await axios.post(
-        '/api/auth/login',
-        { email, password },
-        { withCredentials: true }
-      );
+      const response = await api.post('/auth/login', { email, password });
       setUser(response.data);
     } finally {
       setLoading(false);
@@ -111,9 +101,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       localStorage.setItem('googleOAuthState', state);
       
       // Obter a URL de autorização do Google do backend
-      const response = await axios.get('/api/auth/google/url', {
+      const response = await api.get('/auth/google/url', {
         params: { state },
-        withCredentials: true,
       });
       
       console.log('Google Auth URL:', response.data.url); // Para debugging
@@ -130,11 +119,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const register = async (username: string, email: string, password: string) => {
     setLoading(true);
     try {
-      const response = await axios.post(
-        '/api/auth/register',
-        { username, email, password },
-        { withCredentials: true }
-      );
+      const response = await api.post('/auth/register', { username, email, password });
       setUser(response.data);
     } finally {
       setLoading(false);
@@ -143,7 +128,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const logout = async () => {
     try {
-      await axios.post('/api/auth/logout', {}, { withCredentials: true });
+      await api.post('/auth/logout', {});
       setUser(null);
     } catch (error) {
       console.error('Error during logout:', error);

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../services/api';
 import Navbar from '../components/Navbar';
 import PlayerImage from '../components/PlayerImage';
 import { createStyles } from '../styles/styleUtils';
@@ -301,10 +301,12 @@ const Squad = () => {
   useEffect(() => {
     const fetchPlayers = async () => {
       try {
-        const response = await axios.get('/api/players', { withCredentials: true });
-        setPlayers(response.data.players || response.data);
-      } catch (err) {
-        console.error('Error fetching players:', err);
+        setLoading(true);
+        const response = await api.get('/players');
+        setPlayers(response.data || []);
+      } catch (error) {
+        console.error('Error fetching players:', error);
+        setPlayers([]);
       } finally {
         setLoading(false);
       }
