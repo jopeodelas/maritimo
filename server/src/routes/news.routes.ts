@@ -4,10 +4,10 @@ import { auth } from '../middleware/auth.middleware';
 
 const router = Router();
 
-// Get all news
-router.get('/', auth, getNews);
+// Get all news - public access
+router.get('/', getNews);
 
-// Refresh news
+// Refresh news - requires auth
 router.post('/refresh', auth, refreshNews);
 
 export default router; 

@@ -161,7 +161,8 @@ const AdminPage = () => {
     setLoadingPlayers(true);
     try {
       const response = await api.get('/players');
-      setPlayers(response.data.players || response.data);
+      // Fix: The API returns { players: [...], totalUniqueVoters: number }
+      setPlayers(response.data.players || []);
     } catch (error) {
       console.error('Error fetching players:', error);
       alert('Erro ao carregar jogadores: ' + (error as any)?.response?.data?.message || (error as any)?.message);

@@ -303,7 +303,7 @@ const Squad = () => {
       try {
         setLoading(true);
         const response = await api.get('/players');
-        setPlayers(response.data || []);
+        setPlayers(response.data.players || []);
       } catch (error) {
         console.error('Error fetching players:', error);
         setPlayers([]);
