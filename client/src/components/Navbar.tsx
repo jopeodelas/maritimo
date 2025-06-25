@@ -216,7 +216,7 @@ const Navbar = () => {
     <nav style={styles.navbar} role="navigation" aria-label="Main navigation">
       <div style={styles.navContent}>
         <Link 
-          to="/main"
+          to="/home"
           style={styles.logoSection} 
           className="hover-logo"
           aria-label="CS Marítimo - Ir para página principal"
@@ -237,7 +237,7 @@ const Navbar = () => {
 
         <div style={styles.navLinks} role="menubar">
           <Link
-            to="/main"
+            to="/home"
             style={styles.navLink}
             className="hover-nav-link"
             role="menuitem"
@@ -255,7 +255,7 @@ const Navbar = () => {
             Votação
           </Link>
           <Link
-            to="/player-ratings"
+            to="/ratings"
             style={styles.navLink}
             className="hover-nav-link"
             role="menuitem"
