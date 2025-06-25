@@ -12,6 +12,10 @@ const pool = new pg_1.Pool({
     password: process.env.DB_PASSWORD,
     database: process.env.DB_NAME,
     port: parseInt(process.env.DB_PORT || '5432'),
-    ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
+    ssl: process.env.NODE_ENV === 'production' ? {
+        rejectUnauthorized: false
+    } : false,
+    connectionTimeoutMillis: 30000,
+    idleTimeoutMillis: 30000
 });
 exports.default = pool;
