@@ -16,12 +16,9 @@ const api = axios.create({
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    // Handle authentication errors
+    // Log the error for debugging but don't auto-redirect
     if (error.response && error.response.status === 401) {
-      // Optionally redirect to login if not already there
-      if (window.location.pathname !== '/login') {
-        window.location.href = '/login';
-      }
+      console.log('Authentication required for this request');
     }
     return Promise.reject(error);
   }

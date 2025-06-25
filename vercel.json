@@ -3,14 +3,14 @@
   "name": "maritimo-voting-server",
   "builds": [
     {
-      "src": "server/src/server.ts",
+      "src": "server/package.json",
       "use": "@vercel/node"
     }
   ],
   "routes": [
     {
       "src": "/(.*)",
-      "dest": "server/src/server.ts"
+      "dest": "server/dist/server.js"
     }
   ]
 } 
