@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Navbar from "../components/Navbar";
 import { createStyles } from "../styles/styleUtils";
 import { newsService } from "../services/newsService";
@@ -9,29 +9,48 @@ const NewsPage = () => {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
+  const [cacheTime, setCacheTime] = useState<number>(0);
 
-  useEffect(() => {
-    fetchNews();
-  }, []);
+  // PERFORMANCE: Smart caching with stale-while-revalidate strategy
+  const STALE_TIME = 30_000; // 30 seconds
 
-  const fetchNews = async () => {
+  const fetchNews = useCallback(async (forceRefresh = false) => {
+    const now = Date.now();
+    
+    // Use cache if data is fresh and not forcing refresh
+    if (!forceRefresh && news.length > 0 && (now - cacheTime) < STALE_TIME) {
+      console.log('📰 FRONTEND: Using cached news data');
+      setLoading(false);
+      return;
+    }
+
     try {
+      console.log('📰 FRONTEND: Fetching fresh news...');
       const newsData = await newsService.getNews();
       setNews(newsData);
       setLastUpdate(new Date());
+      setCacheTime(now);
+      console.log(`📰 FRONTEND: Loaded ${newsData.length} news items`);
     } catch (error) {
       console.error("Error fetching news:", error);
     } finally {
       setLoading(false);
     }
-  };
+  }, [news.length, cacheTime]);
+
+  useEffect(() => {
+    fetchNews();
+  }, [fetchNews]);
 
   const handleRefreshNews = async () => {
     setRefreshing(true);
     try {
+      console.log('🔄 FRONTEND: Force refreshing news...');
       const newsData = await newsService.refreshNews();
       setNews(newsData);
       setLastUpdate(new Date());
+      setCacheTime(Date.now());
+      console.log(`🔄 FRONTEND: Refreshed ${newsData.length} news items`);
     } catch (error) {
       console.error("Error refreshing news:", error);
     } finally {
@@ -65,8 +84,6 @@ const NewsPage = () => {
         return '#7F8C8D';
     }
   };
-
-
 
   const styles = createStyles({
     container: {

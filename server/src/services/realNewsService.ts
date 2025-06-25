@@ -80,7 +80,7 @@ class RealNewsService {
     const allNews: NewsItem[] = [];
 
     try {
-      // Fetch from Google News RSS directly for news items
+      // OPTIMIZATION: Parallelize Google News RSS searches instead of sequential
       const searchQueries = [
         'CS Marítimo',
         'Marítimo futebol',
@@ -89,7 +89,9 @@ class RealNewsService {
         'CS Marítimo notícias'
       ];
 
-      for (const query of searchQueries) {
+      // Parallel Google News fetches
+      console.log('🚀 PERFORMANCE: Starting parallel Google News fetches...');
+      const googleNewsPromises = searchQueries.map(async (query) => {
         const url = `${this.GOOGLE_NEWS_RSS}?q=${encodeURIComponent(query)}&hl=pt-PT&gl=PT&ceid=PT:pt`;
         
         try {
@@ -100,16 +102,24 @@ class RealNewsService {
             timeout: 8000
           });
 
-          const newsItems = this.parseGoogleNewsRSS(response.data);
-          allNews.push(...newsItems);
-          
-          await this.delay(1000);
+          return this.parseGoogleNewsRSS(response.data);
         } catch (error) {
-          // Silently continue to next query
+          console.log(`⚠️ Google News query failed: ${query}`);
+          return [];
         }
-      }
+      });
 
-      // Fetch from Portuguese sports RSS
+      // Wait for all Google News searches to complete
+      const googleResults = await Promise.allSettled(googleNewsPromises);
+      googleResults.forEach(result => {
+        if (result.status === 'fulfilled') {
+          allNews.push(...result.value);
+        }
+      });
+
+      console.log(`📰 PERFORMANCE: Google News parallel fetch completed - ${allNews.length} items`);
+
+      // OPTIMIZATION: Parallelize Portuguese sports RSS sources
       const rssSources = [
         {
           name: 'Record',
@@ -125,7 +135,8 @@ class RealNewsService {
         }
       ];
 
-      for (const source of rssSources) {
+      console.log('🚀 PERFORMANCE: Starting parallel RSS fetches...');
+      const rssPromises = rssSources.map(async (source) => {
         try {
           const response = await axios.get(source.url, {
             headers: {
@@ -139,12 +150,22 @@ class RealNewsService {
             this.isMaritimoRelated(item.title + ' ' + item.description)
           );
 
-          allNews.push(...maritimoNews);
-          await this.delay(1000);
+          return maritimoNews;
         } catch (error) {
-          // Silently continue to next source
+          console.log(`⚠️ RSS source failed: ${source.name}`);
+          return [];
         }
-      }
+      });
+
+      // Wait for all RSS fetches to complete
+      const rssResults = await Promise.allSettled(rssPromises);
+      rssResults.forEach(result => {
+        if (result.status === 'fulfilled') {
+          allNews.push(...result.value);
+        }
+      });
+
+      console.log(`📰 PERFORMANCE: RSS parallel fetch completed - total ${allNews.length} items`);
 
     } catch (error) {
       console.error('Error fetching direct Marítimo news:', error);

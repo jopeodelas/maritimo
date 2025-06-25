@@ -4,25 +4,56 @@ import { NotFoundError } from '../utils/errorTypes';
 
 const { syncImages } = require('../../sync-images');
 
+// PERFORMANCE: Simple cache for players data
+let playersCache: any = null;
+let playersCacheTime = 0;
+const PLAYERS_CACHE_DURATION = 30_000; // 30 seconds
+
 export const getAllPlayers = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    console.log('=== GET ALL PLAYERS DEBUG ===');
+    console.time('getAllPlayers');
+    console.log('🏃 PLAYERS API: Getting all players...');
+    
+    const now = Date.now();
+    
+    // PERFORMANCE: Check cache first
+    if (playersCache && (now - playersCacheTime) < PLAYERS_CACHE_DURATION) {
+      console.log(`🏃 PERFORMANCE: Serving players from cache (${playersCache.players.length} players)`);
+      console.timeEnd('getAllPlayers');
+      
+      // Set cache headers
+      res.setHeader('Cache-Control', 's-maxage=20, stale-while-revalidate=40');
+      res.setHeader('X-Cache-Status', 'HIT');
+      
+      res.json(playersCache);
+      return;
+    }
+    
+    console.log('🏃 PERFORMANCE: Cache miss - fetching players from DB...');
     const result = await PlayerModel.findAll();
     
-    console.log('Players returned from database:');
-    result.players.forEach(player => {
-      console.log(`- ${player.name}: image_url = "${player.image_url}"`);
-    });
+    // Update cache
+    playersCache = result;
+    playersCacheTime = now;
+    
+    console.log(`🏃 PLAYERS API: Loaded ${result.players.length} players, ${result.totalUniqueVoters} unique voters`);
+    console.timeEnd('getAllPlayers');
+    
+    // Set cache headers
+    res.setHeader('Cache-Control', 's-maxage=20, stale-while-revalidate=40');
+    res.setHeader('X-Cache-Status', 'MISS');
     
     res.json(result);
   } catch (error) {
-    console.error('Error in getAllPlayers:', error);
+    console.error('❌ PLAYERS API Error:', error);
+    console.timeEnd('getAllPlayers');
     next(error);
   }
 };
 
 export const getPlayerById = async (req: Request, res: Response, next: NextFunction) => {
   try {
+    console.time('getPlayerById');
     const id = parseInt(req.params.id);
     const player = await PlayerModel.findById(id);
     
@@ -30,14 +61,20 @@ export const getPlayerById = async (req: Request, res: Response, next: NextFunct
       throw new NotFoundError('Player not found');
     }
     
+    // Set cache headers for individual players
+    res.setHeader('Cache-Control', 's-maxage=60, stale-while-revalidate=120');
+    
+    console.timeEnd('getPlayerById');
     res.json(player);
   } catch (error) {
+    console.timeEnd('getPlayerById');
     next(error);
   }
 };
 
 export const createPlayer = async (req: Request, res: Response, next: NextFunction) => {
   try {
+    console.time('createPlayer');
     console.log('=== CREATE PLAYER REQUEST ===');
     console.log('Request body:', req.body);
     console.log('Request file:', req.file);
@@ -69,6 +106,11 @@ export const createPlayer = async (req: Request, res: Response, next: NextFuncti
     const player = await PlayerModel.create({ name, position, image_url });
     console.log('Player created successfully:', player);
     
+    // PERFORMANCE: Clear players cache when new player is added
+    playersCache = null;
+    playersCacheTime = 0;
+    console.log('🏃 PERFORMANCE: Players cache cleared due to new player creation');
+    
     // AUTOMATIC IMAGE SYNC - Copy new image to client
     console.log('🔄 Syncing images to client...');
     try {
@@ -79,15 +121,18 @@ export const createPlayer = async (req: Request, res: Response, next: NextFuncti
       // Don't fail the request if sync fails
     }
     
+    console.timeEnd('createPlayer');
     res.status(201).json(player);
   } catch (error) {
     console.error('Error creating player:', error);
+    console.timeEnd('createPlayer');
     next(error);
   }
 };
 
 export const updatePlayer = async (req: Request, res: Response, next: NextFunction) => {
   try {
+    console.time('updatePlayer');
     const id = parseInt(req.params.id);
     const { name, position } = req.body;
     
@@ -108,14 +153,22 @@ export const updatePlayer = async (req: Request, res: Response, next: NextFuncti
       throw new NotFoundError('Player not found');
     }
     
+    // PERFORMANCE: Clear players cache when player is updated
+    playersCache = null;
+    playersCacheTime = 0;
+    console.log('🏃 PERFORMANCE: Players cache cleared due to player update');
+    
+    console.timeEnd('updatePlayer');
     res.json(player);
   } catch (error) {
+    console.timeEnd('updatePlayer');
     next(error);
   }
 };
 
 export const deletePlayer = async (req: Request, res: Response, next: NextFunction) => {
   try {
+    console.time('deletePlayer');
     const id = parseInt(req.params.id);
     const result = await PlayerModel.delete(id);
     
@@ -123,8 +176,15 @@ export const deletePlayer = async (req: Request, res: Response, next: NextFuncti
       throw new NotFoundError('Player not found');
     }
     
+    // PERFORMANCE: Clear players cache when player is deleted
+    playersCache = null;
+    playersCacheTime = 0;
+    console.log('🏃 PERFORMANCE: Players cache cleared due to player deletion');
+    
+    console.timeEnd('deletePlayer');
     res.json({ message: 'Player deleted successfully' });
   } catch (error) {
+    console.timeEnd('deletePlayer');
     next(error);
   }
 };

@@ -1,8 +1,16 @@
 import { Request, Response } from 'express';
 import { transferService } from '../services/transferService';
 
+// PERFORMANCE: Simple cache for transfer rumors
+let transferRumorsCache: any = null;
+let transferRumorsCacheTime = 0;
+const TRANSFER_CACHE_DURATION = 60_000; // 1 minute
+
 export const getTransferRumors = async (req: Request, res: Response) => {
   try {
+    console.time('getTransferRumors');
+    console.log('🔄 TRANSFER API: Getting transfer rumors with filters...');
+    
     const { 
       includeYouth = 'false', 
       includeStaff = 'false',
@@ -11,8 +19,54 @@ export const getTransferRumors = async (req: Request, res: Response) => {
       category 
     } = req.query;
 
+    const now = Date.now();
+    const cacheKey = JSON.stringify(req.query);
+    
+    // PERFORMANCE: Check cache first (only for simple queries without complex filters)
+    if (!category && minReliability === '0' && transferRumorsCache && (now - transferRumorsCacheTime) < TRANSFER_CACHE_DURATION) {
+      console.log(`🔄 PERFORMANCE: Serving transfer rumors from cache`);
+      console.timeEnd('getTransferRumors');
+      
+      res.setHeader('X-Cache-Status', 'HIT');
+      
+      // Apply filters to cached data
+      let cachedRumors = transferRumorsCache;
+      
+      if (includeYouth === 'false') {
+        cachedRumors = cachedRumors.filter((rumor: any) => rumor.category !== 'youth');
+      }
+      if (includeStaff === 'false') {
+        cachedRumors = cachedRumors.filter((rumor: any) => rumor.category !== 'staff');
+      }
+      if (includeCoaches === 'false') {
+        cachedRumors = cachedRumors.filter((rumor: any) => rumor.category !== 'coach');
+      }
+      
+      res.json({
+        success: true,
+        data: cachedRumors,
+        filters: {
+          includeYouth: includeYouth === 'true',
+          includeStaff: includeStaff === 'true',
+          includeCoaches: includeCoaches === 'true',
+          minReliability: parseInt(minReliability as string),
+          category: category || 'all'
+        }
+      });
+      return;
+    }
+
+    console.log('🔄 PERFORMANCE: Cache miss - fetching transfer rumors...');
+    
     // Obter rumores usando a lógica unificada (BD com fallback)
     let rumors = await transferService.getRumors();
+    
+    // Update cache only for basic queries
+    if (!category && minReliability === '0') {
+      transferRumorsCache = rumors;
+      transferRumorsCacheTime = now;
+      console.log('🔄 PERFORMANCE: Transfer rumors cached');
+    }
 
     // Apply additional filters based on query parameters
     if (includeYouth === 'false') {
@@ -36,6 +90,10 @@ export const getTransferRumors = async (req: Request, res: Response) => {
       rumors = rumors.filter(rumor => rumor.category === category);
     }
 
+    console.log(`🔄 TRANSFER API: Returning ${rumors.length} filtered transfer rumors`);
+    console.timeEnd('getTransferRumors');
+    
+    res.setHeader('X-Cache-Status', 'MISS');
     res.json({
       success: true,
       data: rumors,
@@ -48,7 +106,8 @@ export const getTransferRumors = async (req: Request, res: Response) => {
       }
     });
   } catch (error) {
-    console.error('Error fetching transfer rumors:', error);
+    console.error('❌ TRANSFER API Error:', error);
+    console.timeEnd('getTransferRumors');
     res.status(500).json({ 
       error: 'Failed to fetch transfer rumors',
       message: 'Unable to retrieve transfer information at this time'

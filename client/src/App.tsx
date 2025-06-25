@@ -6,55 +6,52 @@ import { AuthProvider } from './contexts/AuthContext';
 import './styles/fonts.css';
 import './styles/optimizedStyles.css';
 import './styles/accessibility.css';
+import LayoutStabilizer from './components/LayoutStabilizer';
 
-// Lazy load components
-const HomePage = lazy(() => import('./pages/HomePage'));
-const LoginPage = lazy(() => import('./pages/LoginPage'));
-const RegisterPage = lazy(() => import('./pages/RegisterPage'));
-const VotingPage = lazy(() => import('./pages/VotingPage'));
-const MainPage = lazy(() => import('./pages/MainPage'));
+// PERFORMANCE: Immediately loaded components (critical pages)
+import MainPage from './pages/MainPage';
+import LoginPage from './pages/LoginPage';
+import RegisterPage from './pages/RegisterPage';
+import HomePage from './pages/HomePage';
+
+// PERFORMANCE: Lazy loaded components (less critical pages)
 const NewsPage = lazy(() => import('./pages/NewsPage'));
-const HistoryPage = lazy(() => import('./pages/HistoryPage'));
-const ChatPage = lazy(() => import('./pages/ChatPage'));
-const AdminPage = lazy(() => import('./pages/AdminPage'));
-const MaritodlePage = lazy(() => import('./pages/MaritodlePage'));
-
 const Squad = lazy(() => import('./pages/Squad'));
+const VotingPage = lazy(() => import('./pages/VotingPage'));
+const AdminPage = lazy(() => import('./pages/AdminPage'));
+const ChatPage = lazy(() => import('./pages/ChatPage'));
+const HistoryPage = lazy(() => import('./pages/HistoryPage'));
 const Schedule = lazy(() => import('./pages/Schedule'));
 const PlayerRatings = lazy(() => import('./pages/PlayerRatings'));
+const MaritodlePage = lazy(() => import('./pages/MaritodlePage'));
 
-// Loading fallback component
-const LoadingFallback = () => (
+// PERFORMANCE: Loading component for lazy routes
+const PageLoader = () => (
   <div style={{
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
     height: '100vh',
     background: 'linear-gradient(135deg, #0F1419 0%, #1A252F 50%, #2C3E50 100%)',
-    color: '#FFFFFF',
+    color: '#4CAF50',
     fontSize: '1.2rem',
-    fontFamily: '"Roboto", "Inter", -apple-system, BlinkMacSystemFont, sans-serif'
+    fontWeight: '600'
   }}>
     <div style={{
-      textAlign: 'center',
-      padding: '2rem'
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      gap: '1rem'
     }}>
       <div style={{
-        width: '40px',
-        height: '40px',
-        border: '4px solid #f3f3f3',
-        borderTop: '4px solid #009759',
+        width: '3rem',
+        height: '3rem',
+        border: '3px solid rgba(76, 175, 80, 0.2)',
+        borderTop: '3px solid #4CAF50',
         borderRadius: '50%',
-        animation: 'spin 1s linear infinite',
-        margin: '0 auto 1rem'
-      }}></div>
-      <p>A carregar CS Marítimo...</p>
-      <style>{`
-        @keyframes spin {
-          0% { transform: rotate(0deg); }
-          100% { transform: rotate(360deg); }
-        }
-      `}</style>
+        animation: 'spin 1s linear infinite'
+      }} />
+      A carregar...
     </div>
   </div>
 );
@@ -83,94 +80,102 @@ function App() {
       <style>{globalStyles}</style>
       <AuthProvider>
         <Router>
-          <Suspense fallback={<LoadingFallback />}>
-            <Routes>
-              <Route path="/" element={<HomePage />} />
-              <Route path="/login" element={<LoginPage />} />
-              <Route path="/register" element={<RegisterPage />} />
-              <Route 
-                path="/main" 
-                element={
-                  <ProtectedRoute>
-                    <MainPage />
-                  </ProtectedRoute>
-                } 
-              />
-              <Route 
-                path="/voting" 
-                element={
-                  <ProtectedRoute>
-                    <VotingPage />
-                  </ProtectedRoute>
-                } 
-              />
-              <Route 
-                path="/squad" 
-                element={
-                  <ProtectedRoute>
-                    <Squad />
-                  </ProtectedRoute>
-                } 
-              />
-              <Route 
-                path="/news" 
-                element={
-                  <ProtectedRoute>
-                    <NewsPage />
-                  </ProtectedRoute>
-                } 
-              />
-              <Route 
-                path="/history" 
-                element={
-                  <ProtectedRoute>
-                    <HistoryPage />
-                  </ProtectedRoute>
-                } 
-              />
-              <Route 
-                path="/chat" 
-                element={
-                  <ProtectedRoute>
-                    <ChatPage />
-                  </ProtectedRoute>
-                } 
-              />
-              <Route 
-                path="/schedule" 
-                element={
-                  <ProtectedRoute>
-                    <Schedule />
-                  </ProtectedRoute>
-                } 
-              />
-              <Route 
-                path="/admin" 
-                element={
-                  <ProtectedAdminRoute>
-                    <AdminPage />
-                  </ProtectedAdminRoute>
-                } 
-              />
-              <Route 
-                path="/maritodle" 
-                element={
-                  <ProtectedRoute>
-                    <MaritodlePage />
-                  </ProtectedRoute>
-                } 
-              />
-
-              <Route 
-                path="/player-ratings" 
-                element={
-                  <ProtectedRoute>
-                    <PlayerRatings />
-                  </ProtectedRoute>
-                } 
-              />
-            </Routes>
-          </Suspense>
+          <LayoutStabilizer>
+            <div className="App">
+              <Suspense fallback={<PageLoader />}>
+                <Routes>
+                  {/* Critical routes - immediately loaded */}
+                  <Route path="/" element={<MainPage />} />
+                  <Route path="/login" element={<LoginPage />} />
+                  <Route path="/register" element={<RegisterPage />} />
+                  
+                  {/* Protected routes with lazy loading */}
+                  <Route 
+                    path="/home" 
+                    element={
+                      <ProtectedRoute>
+                        <HomePage />
+                      </ProtectedRoute>
+                    } 
+                  />
+                  <Route 
+                    path="/news" 
+                    element={
+                      <ProtectedRoute>
+                        <NewsPage />
+                      </ProtectedRoute>
+                    } 
+                  />
+                  <Route 
+                    path="/squad" 
+                    element={
+                      <ProtectedRoute>
+                        <Squad />
+                      </ProtectedRoute>
+                    } 
+                  />
+                  <Route 
+                    path="/voting" 
+                    element={
+                      <ProtectedRoute>
+                        <VotingPage />
+                      </ProtectedRoute>
+                    } 
+                  />
+                  <Route 
+                    path="/chat" 
+                    element={
+                      <ProtectedRoute>
+                        <ChatPage />
+                      </ProtectedRoute>
+                    } 
+                  />
+                  <Route 
+                    path="/history" 
+                    element={
+                      <ProtectedRoute>
+                        <HistoryPage />
+                      </ProtectedRoute>
+                    } 
+                  />
+                  <Route 
+                    path="/schedule" 
+                    element={
+                      <ProtectedRoute>
+                        <Schedule />
+                      </ProtectedRoute>
+                    } 
+                  />
+                  <Route 
+                    path="/ratings" 
+                    element={
+                      <ProtectedRoute>
+                        <PlayerRatings />
+                      </ProtectedRoute>
+                    } 
+                  />
+                  <Route 
+                    path="/maritodle" 
+                    element={
+                      <ProtectedRoute>
+                        <MaritodlePage />
+                      </ProtectedRoute>
+                    } 
+                  />
+                  
+                  {/* Admin routes with lazy loading */}
+                  <Route 
+                    path="/admin" 
+                    element={
+                      <ProtectedAdminRoute>
+                        <AdminPage />
+                      </ProtectedAdminRoute>
+                    } 
+                  />
+                </Routes>
+              </Suspense>
+            </div>
+          </LayoutStabilizer>
         </Router>
       </AuthProvider>
     </>

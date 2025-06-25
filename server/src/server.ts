@@ -20,6 +20,7 @@ import maritodleRoutes from './routes/maritodle.routes';
 import maritodleDailyRoutes from './routes/maritodle-daily.routes';
 import playerRatingsRoutes from './routes/player-ratings.routes';
 import { errorHandler, notFoundHandler } from './middleware/error.middleware';
+import cacheMiddleware from './middleware/cache.middleware';
 import schedulerService from './services/scheduler.service';
 import maritodleSchedulerService from './services/maritodle-scheduler.service';
 
@@ -85,6 +86,9 @@ app.use((req, res, next) => {
 app.use(cookieParser(config.cookieSecret));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+// PERFORMANCE: Global cache middleware
+app.use(cacheMiddleware);
 
 // Static files with caching headers and CORS
 app.use('/images', (req, res, next) => {
