@@ -1,16 +1,7 @@
 {
-  "version": 2,
-  "name": "maritimo-voting-server",
-  "builds": [
-    {
-      "src": "server/package.json",
-      "use": "@vercel/node"
+  "functions": {
+    "api/*.ts": {
+      "runtime": "nodejs18.x"
     }
-  ],
-  "routes": [
-    {
-      "src": "/(.*)",
-      "dest": "server/dist/server.js"
-    }
-  ]
+  }
 } 

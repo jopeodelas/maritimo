@@ -157,19 +157,21 @@ console.log('✅ All routes registered');
 app.use(notFoundHandler);
 app.use(errorHandler);
 
-// Start server
-const PORT = config.port;
-app.listen(PORT, () => {
-  console.log(`Server running in ${config.nodeEnv} mode on port ${PORT}`);
-  console.log(`Compression enabled for responses > 1KB`);
-  
-  // Inicializar scheduler para verificação automática de novos jogos
-  console.log('🚀 Initializing automatic voting system...');
-  schedulerService.startAutoVotingCheck();
-  
-  // Inicializar scheduler do maritodle diário
-  console.log('🎮 Initializing Maritodle daily scheduler...');
-  maritodleSchedulerService.startDailyScheduler();
-});
+// Start server only if not in Vercel environment
+if (process.env.NODE_ENV !== 'production' || !process.env.VERCEL) {
+  const PORT = config.port;
+  app.listen(PORT, () => {
+    console.log(`Server running in ${config.nodeEnv} mode on port ${PORT}`);
+    console.log(`Compression enabled for responses > 1KB`);
+    
+    // Inicializar scheduler para verificação automática de novos jogos
+    console.log('🚀 Initializing automatic voting system...');
+    schedulerService.startAutoVotingCheck();
+    
+    // Inicializar scheduler do maritodle diário
+    console.log('🎮 Initializing Maritodle daily scheduler...');
+    maritodleSchedulerService.startDailyScheduler();
+  });
+}
 
 export default app;
