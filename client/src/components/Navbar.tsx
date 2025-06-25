@@ -216,7 +216,7 @@ const Navbar = () => {
     <nav style={styles.navbar} role="navigation" aria-label="Main navigation">
       <div style={styles.navContent}>
         <Link 
-          to="/home"
+          to="/main"
           style={styles.logoSection} 
           className="hover-logo"
           aria-label="CS Marítimo - Ir para página principal"
@@ -237,7 +237,7 @@ const Navbar = () => {
 
         <div style={styles.navLinks} role="menubar">
           <Link
-            to="/home"
+            to="/main"
             style={styles.navLink}
             className="hover-nav-link"
             role="menuitem"

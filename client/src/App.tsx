@@ -86,6 +86,7 @@ function App() {
                 <Routes>
                   {/* Critical routes - immediately loaded */}
                   <Route path="/" element={<MainPage />} />
+                  <Route path="/main" element={<MainPage />} />
                   <Route path="/login" element={<LoginPage />} />
                   <Route path="/register" element={<RegisterPage />} />
                   
