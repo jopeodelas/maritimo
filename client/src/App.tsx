@@ -85,16 +85,16 @@ function App() {
               <Suspense fallback={<PageLoader />}>
                 <Routes>
                   {/* Critical routes - immediately loaded */}
-                  <Route path="/" element={<MainPage />} />
+                  <Route path="/" element={<HomePage />} />
                   <Route path="/login" element={<LoginPage />} />
                   <Route path="/register" element={<RegisterPage />} />
                   
                   {/* Protected routes with lazy loading */}
                   <Route 
-                    path="/home" 
+                    path="/main" 
                     element={
                       <ProtectedRoute>
-                        <HomePage />
+                        <MainPage />
                       </ProtectedRoute>
                     } 
                   />
