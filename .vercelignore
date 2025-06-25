@@ -1,0 +1,9 @@
+server/node_modules
+server/dist
+server/.env
+client/
+deployment/
+scripts/
+*.md
+.git
+.gitignore 

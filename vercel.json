@@ -1,7 +1,21 @@
 {
-  "functions": {
-    "api/*.ts": {
-      "runtime": "nodejs18.x"
+  "version": 2,
+  "builds": [
+    {
+      "src": "server/src/server.ts",
+      "use": "@vercel/node",
+      "config": {
+        "includeFiles": "server/**"
+      }
     }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "server/src/server.ts"
+    }
+  ],
+  "env": {
+    "NODE_ENV": "production"
   }
 } 
