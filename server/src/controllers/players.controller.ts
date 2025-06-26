@@ -32,6 +32,13 @@ export const getAllPlayers = async (req: Request, res: Response, next: NextFunct
     console.log('🏃 PERFORMANCE: Cache miss - fetching players from DB...');
     const result = await PlayerModel.findAll();
     
+    // Debug: Log recent players with image info
+    const recentPlayers = result.players.slice(0, 3);
+    console.log('🔍 DEBUG: Recent players image info:');
+    recentPlayers.forEach(player => {
+      console.log(`  - ID ${player.id}: ${player.name}, image_url: ${player.image_url}, image_mime: ${player.image_mime}`);
+    });
+    
     // Update cache
     playersCache = result;
     playersCacheTime = now;
@@ -140,10 +147,13 @@ export const updatePlayer = async (req: Request, res: Response, next: NextFuncti
     if (name) updateData.name = name;
     if (position) updateData.position = position;
     
-    // Handle image upload if provided
+    // Handle image upload if provided - store in database as BYTEA
     if (req.file) {
-      updateData.image_url = req.file.filename;
-      console.log('Updated with new image:', req.file.filename);
+      updateData.image_data = req.file.buffer;
+      updateData.image_mime = req.file.mimetype;
+      console.log('Updated with new image in database:');
+      console.log('- MIME type:', req.file.mimetype);
+      console.log('- Size:', req.file.size, 'bytes');
     }
     
     const player = await PlayerModel.update(id, updateData);
@@ -193,11 +203,20 @@ export const getPlayerImage = async (req: Request, res: Response, next: NextFunc
     console.time('getPlayerImage');
     const id = parseInt(req.params.id);
     
+    console.log(`🖼️ GET_PLAYER_IMAGE: Request for player ID ${id}`);
+    
     if (isNaN(id)) {
+      console.log(`❌ Invalid player ID: ${req.params.id}`);
       return res.status(400).json({ message: 'Invalid player ID' });
     }
     
     const player = await PlayerModel.findById(id);
+    console.log(`🖼️ Player ${id} found:`, {
+      exists: !!player,
+      hasImageData: !!(player?.image_data),
+      imageMime: player?.image_mime,
+      imageDataSize: player?.image_data ? player.image_data.length : 0
+    });
     
     if (!player || !player.image_data) {
       console.log(`No image found for player ${id}`);

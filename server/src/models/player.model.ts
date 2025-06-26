@@ -117,13 +117,32 @@ export class PlayerModel {
 
   static async update(id: number, player: Partial<Omit<Player, 'id' | 'created_at'>>): Promise<Player | null> {
     try {
-      const { name, position, image_url } = player;
-      const result = await db.query(
-        'UPDATE players SET name = COALESCE($1, name), position = COALESCE($2, position), image_url = COALESCE($3, image_url) WHERE id = $4 RETURNING *',
-        [name, position, image_url, id]
-      );
+      const { name, position, image_url, image_data, image_mime } = player;
+      
+      let query: string;
+      let values: any[];
+      
+      if (image_data && image_mime) {
+        // Update with new image in database as BYTEA
+        query = 'UPDATE players SET name = COALESCE($1, name), position = COALESCE($2, position), image_data = $3, image_mime = $4 WHERE id = $5 RETURNING *';
+        values = [name, position, image_data, image_mime, id];
+        console.log('Updating player with new BYTEA image');
+      } else if (image_url) {
+        // Legacy: update image_url for existing images
+        query = 'UPDATE players SET name = COALESCE($1, name), position = COALESCE($2, position), image_url = COALESCE($3, image_url) WHERE id = $4 RETURNING *';
+        values = [name, position, image_url, id];
+        console.log('Updating player with legacy image_url');
+      } else {
+        // Update only name and position
+        query = 'UPDATE players SET name = COALESCE($1, name), position = COALESCE($2, position) WHERE id = $3 RETURNING *';
+        values = [name, position, id];
+        console.log('Updating player without image changes');
+      }
+      
+      const result = await db.query(query, values);
       return result.rows[0] || null;
     } catch (error) {
+      console.error('Error in PlayerModel.update:', error);
       throw error;
     }
   }
