@@ -46,8 +46,8 @@ const getImageVariations = (imageUrl: string): string[] => {
 
 // Centralized function for getting player image URLs
 export const getPlayerImageUrl = (player: any): string => {
-  // If player has ID but no image_url, it likely has image stored in database
-  if (player.id && !player.image_url) {
+  // If player has image stored in database (indicated by image_mime), use API endpoint
+  if (player.id && player.image_mime) {
     // Use API endpoint to serve image from database
     return `${import.meta.env.VITE_API_URL || 'https://api.maritimofans.pt'}/api/players/${player.id}/image`;
   }
