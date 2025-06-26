@@ -46,21 +46,24 @@ const getImageVariations = (imageUrl: string): string[] => {
 
 // Centralized function for getting player image URLs
 export const getPlayerImageUrl = (player: any): string => {
-  // If player has image stored in database (indicated by image_mime), use API endpoint
-  if (player.id && player.image_mime) {
-    // Use API endpoint to serve image from database
-    return `${import.meta.env.VITE_API_URL || 'https://api.maritimofans.pt'}/api/players/${player.id}/image`;
-  }
-  
-  // Legacy: if player has image_url, use it
+  // Use the image_url directly from the API response
+  // The backend now returns either:
+  // - /api/players/:id/image?v=timestamp for BYTEA images
+  // - /images/filename.png for legacy file-based images
+  // - null for players without images
   if (player.image_url) {
-    if (player.image_url.startsWith('/images/')) {
-      // Old players - already have the correct path
-      return player.image_url;
-    } else {
-      // Old players - construct the path for client static files
-      return `/images/${player.image_url}`;
+    // If it's an API endpoint, prepend the API URL
+    if (player.image_url.startsWith('/api/players/')) {
+      return `${import.meta.env.VITE_API_URL || 'https://api.maritimofans.pt'}${player.image_url}`;
     }
+    
+    // If it's a legacy image path, use it directly
+    if (player.image_url.startsWith('/images/')) {
+      return player.image_url;
+    }
+    
+    // If it's just a filename, construct the legacy path
+    return `/images/${player.image_url}`;
   }
   
   // Fallback to default image

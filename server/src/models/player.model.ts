@@ -25,11 +25,20 @@ export class PlayerModel {
       console.log('Attempting to fetch players from database...');
       
       // Get players with vote counts - exclude BYTEA data for performance
+      // Generate dynamic image_url for players with BYTEA data
       const playersResult = await db.query(`
-        SELECT p.id, p.name, p.position, p.image_url, p.image_mime, p.created_at, COUNT(v.id) as vote_count
+        SELECT p.id, p.name, p.position, 
+               CASE 
+                 WHEN p.image_data IS NOT NULL 
+                 THEN CONCAT('/api/players/', p.id, '/image?v=', EXTRACT(EPOCH FROM p.created_at))
+                 WHEN p.image_url IS NOT NULL
+                 THEN p.image_url
+                 ELSE NULL
+               END AS image_url,
+               p.image_mime, p.created_at, COUNT(v.id) as vote_count
         FROM players p
         LEFT JOIN votes v ON p.id = v.player_id
-        GROUP BY p.id, p.name, p.position, p.image_url, p.image_mime, p.created_at
+        GROUP BY p.id, p.name, p.position, p.image_url, p.image_mime, p.created_at, p.image_data
         ORDER BY vote_count DESC
       `);
 

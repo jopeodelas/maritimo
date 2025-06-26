@@ -36,7 +36,10 @@ export const getAllPlayers = async (req: Request, res: Response, next: NextFunct
     const recentPlayers = result.players.slice(0, 3);
     console.log('🔍 DEBUG: Recent players image info:');
     recentPlayers.forEach(player => {
-      console.log(`  - ID ${player.id}: ${player.name}, image_url: ${player.image_url}, image_mime: ${player.image_mime}`);
+      console.log(`  - ID ${player.id}: ${player.name}`);
+      console.log(`    - image_url: ${player.image_url}`);
+      console.log(`    - image_mime: ${player.image_mime}`);
+      console.log(`    - image_url type: ${typeof player.image_url}`);
     });
     
     // Update cache
@@ -118,6 +121,12 @@ export const createPlayer = async (req: Request, res: Response, next: NextFuncti
     
     const player = await PlayerModel.create(playerData);
     console.log('Player created successfully with ID:', player.id);
+    
+    // Show what the image URL will be when served
+    if (playerData.image_data) {
+      const imageUrl = `/api/players/${player.id}/image?v=${Math.floor(Date.now() / 1000)}`;
+      console.log(`✅ SUCESSO! Imagem carregou para ${player.name}: ${imageUrl}`);
+    }
     
     // PERFORMANCE: Clear players cache when new player is added
     playersCache = null;
