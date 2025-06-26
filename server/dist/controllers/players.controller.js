@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deletePlayer = exports.updatePlayer = exports.createPlayer = exports.getPlayerById = exports.getAllPlayers = void 0;
+exports.getPlayerImage = exports.deletePlayer = exports.updatePlayer = exports.createPlayer = exports.getPlayerById = exports.getAllPlayers = void 0;
 const player_model_1 = require("../models/player.model");
 const errorTypes_1 = require("../utils/errorTypes");
 const { syncImages } = require('../../sync-images');
@@ -130,3 +130,45 @@ const deletePlayer = (req, res, next) => __awaiter(void 0, void 0, void 0, funct
     }
 });
 exports.deletePlayer = deletePlayer;
+const getPlayerImage = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        console.time('getPlayerImage');
+        const id = parseInt(req.params.id);
+        console.log(`🖼️ GET_PLAYER_IMAGE: Request for player ID ${id}`);
+        console.log(`🖼️ Request origin: ${req.headers.origin}`);
+        console.log(`🖼️ Request referer: ${req.headers.referer}`);
+        // Set CORS headers early
+        res.header('Access-Control-Allow-Origin', '*');
+        res.header('Access-Control-Allow-Methods', 'GET');
+        res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+        if (isNaN(id)) {
+            console.log(`❌ Invalid player ID: ${req.params.id}`);
+            return res.status(400).json({ message: 'Invalid player ID' });
+        }
+        const player = yield player_model_1.PlayerModel.findById(id);
+        console.log(`🖼️ Player ${id} found:`, {
+            exists: !!player,
+            hasImageData: !!(player === null || player === void 0 ? void 0 : player.image_data),
+            imageMime: player === null || player === void 0 ? void 0 : player.image_mime,
+            imageDataSize: (player === null || player === void 0 ? void 0 : player.image_data) ? player.image_data.length : 0
+        });
+        if (!player || !player.image_data) {
+            console.log(`❌ No image found for player ${id}`);
+            console.timeEnd('getPlayerImage');
+            return res.status(404).send('Image not found');
+        }
+        // Set appropriate headers for image serving
+        res.setHeader('Content-Type', player.image_mime || 'image/jpeg');
+        res.setHeader('Cache-Control', 'public, max-age=86400'); // 24 hours cache
+        res.setHeader('Content-Length', player.image_data.length);
+        console.log(`✅ Serving image for player ${id} (${player.image_mime}, ${player.image_data.length} bytes)`);
+        console.timeEnd('getPlayerImage');
+        return res.send(player.image_data);
+    }
+    catch (error) {
+        console.error('❌ Error serving player image:', error);
+        console.timeEnd('getPlayerImage');
+        next(error);
+    }
+});
+exports.getPlayerImage = getPlayerImage;

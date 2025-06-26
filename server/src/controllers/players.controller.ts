@@ -213,6 +213,13 @@ export const getPlayerImage = async (req: Request, res: Response, next: NextFunc
     const id = parseInt(req.params.id);
     
     console.log(`🖼️ GET_PLAYER_IMAGE: Request for player ID ${id}`);
+    console.log(`🖼️ Request origin: ${req.headers.origin}`);
+    console.log(`🖼️ Request referer: ${req.headers.referer}`);
+    
+    // Set CORS headers early
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Methods', 'GET');
+    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
     
     if (isNaN(id)) {
       console.log(`❌ Invalid player ID: ${req.params.id}`);
@@ -228,9 +235,9 @@ export const getPlayerImage = async (req: Request, res: Response, next: NextFunc
     });
     
     if (!player || !player.image_data) {
-      console.log(`No image found for player ${id}`);
+      console.log(`❌ No image found for player ${id}`);
       console.timeEnd('getPlayerImage');
-      return res.status(404).json({ message: 'Player image not found' });
+      return res.status(404).send('Image not found');
     }
     
     // Set appropriate headers for image serving
@@ -238,12 +245,12 @@ export const getPlayerImage = async (req: Request, res: Response, next: NextFunc
     res.setHeader('Cache-Control', 'public, max-age=86400'); // 24 hours cache
     res.setHeader('Content-Length', player.image_data.length);
     
-    console.log(`Serving image for player ${id} (${player.image_mime}, ${player.image_data.length} bytes)`);
+    console.log(`✅ Serving image for player ${id} (${player.image_mime}, ${player.image_data.length} bytes)`);
     console.timeEnd('getPlayerImage');
     
     return res.send(player.image_data);
   } catch (error) {
-    console.error('Error serving player image:', error);
+    console.error('❌ Error serving player image:', error);
     console.timeEnd('getPlayerImage');
     next(error);
   }
