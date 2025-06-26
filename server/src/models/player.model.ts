@@ -24,12 +24,12 @@ export class PlayerModel {
     try {
       console.log('Attempting to fetch players from database...');
       
-      // Get players with vote counts
+      // Get players with vote counts - exclude BYTEA data for performance
       const playersResult = await db.query(`
-        SELECT p.*, COUNT(v.id) as vote_count
+        SELECT p.id, p.name, p.position, p.image_url, p.image_mime, p.created_at, COUNT(v.id) as vote_count
         FROM players p
         LEFT JOIN votes v ON p.id = v.player_id
-        GROUP BY p.id
+        GROUP BY p.id, p.name, p.position, p.image_url, p.image_mime, p.created_at
         ORDER BY vote_count DESC
       `);
 
