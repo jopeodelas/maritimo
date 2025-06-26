@@ -86,40 +86,39 @@ export const createPlayer = async (req: Request, res: Response, next: NextFuncti
       throw new Error('Name and position are required');
     }
 
-    // Handle image upload
-    let image_url = '';
+    // Handle image upload - store in database as BYTEA
+    let playerData: any = { name, position };
+    
     if (req.file) {
-      // Store just the filename, not the full path
-      image_url = req.file.filename;
-      console.log('Uploaded file details:');
-      console.log('- Filename:', req.file.filename);
+      // Store image buffer directly in database
+      playerData.image_data = req.file.buffer;
+      playerData.image_mime = req.file.mimetype;
+      console.log('Storing image in database:');
       console.log('- Original name:', req.file.originalname);
-      console.log('- Path:', req.file.path);
-      console.log('- Size:', req.file.size);
-      console.log('- Saving image_url as:', image_url);
+      console.log('- MIME type:', req.file.mimetype);
+      console.log('- Size:', req.file.size, 'bytes');
     } else {
       console.log('No file uploaded!');
       throw new Error('Player image is required');
     }
     
-    console.log('Creating player with data:', { name, position, image_url });
-    const player = await PlayerModel.create({ name, position, image_url });
-    console.log('Player created successfully:', player);
+    console.log('Creating player with data:', { 
+      name: playerData.name, 
+      position: playerData.position,
+      hasImageData: !!playerData.image_data,
+      imageMime: playerData.image_mime
+    });
+    
+    const player = await PlayerModel.create(playerData);
+    console.log('Player created successfully with ID:', player.id);
     
     // PERFORMANCE: Clear players cache when new player is added
     playersCache = null;
     playersCacheTime = 0;
     console.log('🏃 PERFORMANCE: Players cache cleared due to new player creation');
     
-    // AUTOMATIC IMAGE SYNC - Copy new image to client
-    console.log('🔄 Syncing images to client...');
-    try {
-      syncImages();
-      console.log('✅ Images synced successfully!');
-    } catch (syncError) {
-      console.error('❌ Failed to sync images:', syncError);
-      // Don't fail the request if sync fails
-    }
+    // No need for image sync - images are now stored in database
+    console.log('✅ Image stored directly in database - no file sync needed');
     
     console.timeEnd('createPlayer');
     res.status(201).json(player);
@@ -185,6 +184,39 @@ export const deletePlayer = async (req: Request, res: Response, next: NextFuncti
     res.json({ message: 'Player deleted successfully' });
   } catch (error) {
     console.timeEnd('deletePlayer');
+    next(error);
+  }
+};
+
+export const getPlayerImage = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    console.time('getPlayerImage');
+    const id = parseInt(req.params.id);
+    
+    if (isNaN(id)) {
+      return res.status(400).json({ message: 'Invalid player ID' });
+    }
+    
+    const player = await PlayerModel.findById(id);
+    
+    if (!player || !player.image_data) {
+      console.log(`No image found for player ${id}`);
+      console.timeEnd('getPlayerImage');
+      return res.status(404).json({ message: 'Player image not found' });
+    }
+    
+    // Set appropriate headers for image serving
+    res.setHeader('Content-Type', player.image_mime || 'image/jpeg');
+    res.setHeader('Cache-Control', 'public, max-age=86400'); // 24 hours cache
+    res.setHeader('Content-Length', player.image_data.length);
+    
+    console.log(`Serving image for player ${id} (${player.image_mime}, ${player.image_data.length} bytes)`);
+    console.timeEnd('getPlayerImage');
+    
+    return res.send(player.image_data);
+  } catch (error) {
+    console.error('Error serving player image:', error);
+    console.timeEnd('getPlayerImage');
     next(error);
   }
 };

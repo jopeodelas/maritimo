@@ -14,7 +14,7 @@ const SendIcon = () => (
 );
 
 const DeleteIcon = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
     <polyline points="3,6 5,6 21,6"></polyline>
     <path d="m19,6v14a2,2 0 0,1 -2,2H7a2,2 0 0,1 -2,-2V6m3,0V4a2,2 0 0,1 2,-2h4a2,2 0 0,1 2,2v2"></path>
     <line x1="10" y1="11" x2="10" y2="17"></line>
@@ -23,7 +23,7 @@ const DeleteIcon = () => (
 );
 
 const CloseIcon = () => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
     <line x1="18" y1="6" x2="6" y2="18"></line>
     <line x1="6" y1="6" x2="18" y2="18"></line>
   </svg>
@@ -612,9 +612,9 @@ const ChatPage = () => {
     },
 
     actionButton: {
-      width: '40px',
-      height: '40px',
-      borderRadius: '10px',
+      width: '44px',
+      height: '44px',
+      borderRadius: '12px',
       border: 'none',
       cursor: 'pointer',
       display: 'flex',
@@ -622,16 +622,19 @@ const ChatPage = () => {
       justifyContent: 'center',
       transition: 'all 0.2s ease',
       fontSize: '18px',
+      boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
     },
 
     deleteButton: {
-      backgroundColor: 'rgba(239, 68, 68, 0.1)',
+      backgroundColor: 'rgba(239, 68, 68, 0.15)',
       color: '#ef4444',
+      border: '1px solid rgba(239, 68, 68, 0.2)',
     },
 
     closeButton: {
-      backgroundColor: 'rgba(156, 163, 175, 0.1)',
+      backgroundColor: 'rgba(156, 163, 175, 0.15)',
       color: '#9ca3af',
+      border: '1px solid rgba(156, 163, 175, 0.2)',
     },
 
     messagesArea: {
@@ -1283,11 +1286,15 @@ const ChatPage = () => {
         }
 
         .delete-btn:hover {
-          background-color: rgba(239, 68, 68, 0.2);
+          background-color: rgba(239, 68, 68, 0.25);
+          transform: scale(1.05);
+          box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
         }
 
         .close-btn:hover {
-          background-color: rgba(156, 163, 175, 0.2);
+          background-color: rgba(156, 163, 175, 0.25);
+          transform: scale(1.05);
+          box-shadow: 0 4px 12px rgba(156, 163, 175, 0.2);
         }
 
         .send-btn:hover:not(:disabled) {

@@ -2,7 +2,8 @@ import { useState, useRef, useEffect } from 'react';
 import { getPlayerImageUrl } from '../utils/imageUtils';
 
 interface PlayerImageProps {
-  imageUrl?: string;
+  player?: any; // Player object with id, name, image_url, etc.
+  imageUrl?: string; // Legacy support
   playerName: string;
   width?: number | string;
   height?: number | string;
@@ -13,6 +14,7 @@ interface PlayerImageProps {
 }
 
 const PlayerImage = ({ 
+  player,
   imageUrl,
   playerName,
   width = "80", 
@@ -31,12 +33,17 @@ const PlayerImage = ({
   // Cache buster para forçar reload
   const getCacheBuster = () => `?v=${Date.now()}`;
 
-  // Mapeamento direto para jogadores problemáticos com cache busting
-  const getCorrectImageUrl = (playerName: string, originalUrl?: string): string => {
+  // Get correct image URL with new database-first approach
+  const getCorrectImageUrl = (playerName: string, playerObj?: any, originalUrl?: string): string => {
     const name = playerName.toLowerCase();
     const cacheBuster = getCacheBuster();
     
-    // Correções específicas e diretas com cache busting
+    // First priority: if we have a player object, use the new utility function
+    if (playerObj) {
+      return getPlayerImageUrl(playerObj);
+    }
+    
+    // Legacy support: specific fixes for known problematic players with cache busting
     if (name.includes('gonçalo') && name.includes('tabuaço')) {
       const url = `/images/goncalo-tabuaco.png${cacheBuster}`;
       console.log(`🎯 FORÇA Gonçalo Tabuaço: ${url}`);
@@ -55,8 +62,8 @@ const PlayerImage = ({
       return url;
     }
     
-    // Para outros jogadores, usar a lógica normal
-    return getPlayerImageUrl(originalUrl || '');
+    // Fallback to legacy logic
+    return getPlayerImageUrl({ image_url: originalUrl || '' });
   };
 
   // URLs de fallback com cache busting
@@ -89,9 +96,10 @@ const PlayerImage = ({
   };
 
   useEffect(() => {
-    const correctUrl = getCorrectImageUrl(playerName, imageUrl);
+    const correctUrl = getCorrectImageUrl(playerName, player, imageUrl);
     
     console.log(`🔍 PlayerImage para ${playerName}:`, {
+      playerObj: player,
       originalUrl: imageUrl,
       correctUrl: correctUrl,
       fallbacks: getFallbackUrls(playerName)
@@ -104,7 +112,7 @@ const PlayerImage = ({
     setAttemptedUrls([]);
     setIsLoaded(false);
     setUsesFallback(false);
-  }, [imageUrl, playerName]);
+  }, [player, imageUrl, playerName]);
 
   const handleLoad = () => {
     console.log(`✅ 🎉 SUCESSO! Imagem carregou para ${playerName}: ${imageSrc}`);

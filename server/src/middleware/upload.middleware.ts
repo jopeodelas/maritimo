@@ -1,26 +1,7 @@
 import multer from 'multer';
-import path from 'path';
-import fs from 'fs';
 
-// Ensure uploads directory exists
-const uploadsDir = path.join(__dirname, '../../public/images');
-if (!fs.existsSync(uploadsDir)) {
-  fs.mkdirSync(uploadsDir, { recursive: true });
-}
-
-// Configure multer for file uploads
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, uploadsDir);
-  },
-  filename: (req, file, cb) => {
-    // Generate unique filename with timestamp and random string
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    const fileExtension = path.extname(file.originalname);
-    const fileName = `player-${uniqueSuffix}${fileExtension}`;
-    cb(null, fileName);
-  }
-});
+// Use memory storage for storing images directly in database (Vercel compatible)
+const storage = multer.memoryStorage();
 
 // File filter to only allow images
 const fileFilter = (req: any, file: Express.Multer.File, cb: multer.FileFilterCallback) => {

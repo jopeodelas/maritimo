@@ -5,6 +5,8 @@ export interface Player {
   name: string;
   position: string;
   image_url: string;
+  image_data?: Buffer;
+  image_mime?: string;
   created_at: Date;
 }
 
@@ -72,19 +74,40 @@ export class PlayerModel {
   static async create(player: Omit<Player, 'id' | 'created_at'>): Promise<Player> {
     try {
       console.log('=== PLAYER MODEL CREATE ===');
-      console.log('Input data:', player);
+      console.log('Input data:', { 
+        name: player.name, 
+        position: player.position, 
+        image_url: player.image_url,
+        hasImageData: !!player.image_data,
+        image_mime: player.image_mime
+      });
       
-      const { name, position, image_url } = player;
-      console.log('Executing SQL query with values:', [name, position, image_url]);
+      const { name, position, image_url, image_data, image_mime } = player;
       
-      const result = await db.query(
-        'INSERT INTO players (name, position, image_url) VALUES ($1, $2, $3) RETURNING *',
-        [name, position, image_url]
-      );
+      let query: string;
+      let values: any[];
       
-      console.log('Database query result:', result.rows);
-      console.log('Created player:', result.rows[0]);
+      if (image_data && image_mime) {
+        // Store image in database as BYTEA
+        query = 'INSERT INTO players (name, position, image_data, image_mime) VALUES ($1, $2, $3, $4) RETURNING *';
+        values = [name, position, image_data, image_mime];
+        console.log('Storing image in database as BYTEA');
+      } else if (image_url) {
+        // Legacy: store image_url for existing images
+        query = 'INSERT INTO players (name, position, image_url) VALUES ($1, $2, $3) RETURNING *';
+        values = [name, position, image_url];
+        console.log('Storing legacy image_url:', image_url);
+      } else {
+        // No image
+        query = 'INSERT INTO players (name, position) VALUES ($1, $2) RETURNING *';
+        values = [name, position];
+        console.log('Creating player without image');
+      }
       
+      console.log('Executing SQL query:', query);
+      const result = await db.query(query, values);
+      
+      console.log('Player created with ID:', result.rows[0].id);
       return result.rows[0];
     } catch (error) {
       console.error('Error in PlayerModel.create:', error);

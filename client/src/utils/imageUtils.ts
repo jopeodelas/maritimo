@@ -45,22 +45,26 @@ const getImageVariations = (imageUrl: string): string[] => {
 };
 
 // Centralized function for getting player image URLs
-export const getPlayerImageUrl = (imageUrl: string): string => {
-  if (!imageUrl) {
-    return '/images/default-player.png';
+export const getPlayerImageUrl = (player: any): string => {
+  // If player has ID but no image_url, it likely has image stored in database
+  if (player.id && !player.image_url) {
+    // Use API endpoint to serve image from database
+    return `${import.meta.env.VITE_API_URL || 'https://api.maritimofans.pt'}/api/players/${player.id}/image`;
   }
   
-  let finalUrl = '';
-  
-  if (imageUrl.startsWith('/images/')) {
-    // Old players - already have the correct path
-    finalUrl = imageUrl;
-  } else {
-    // New players - construct the path for client static files
-    finalUrl = `/images/${imageUrl}`;
+  // Legacy: if player has image_url, use it
+  if (player.image_url) {
+    if (player.image_url.startsWith('/images/')) {
+      // Old players - already have the correct path
+      return player.image_url;
+    } else {
+      // Old players - construct the path for client static files
+      return `/images/${player.image_url}`;
+    }
   }
   
-  return finalUrl;
+  // Fallback to default image
+  return '/images/default-player.png';
 };
 
 // Função para tentar carregar uma imagem e retornar a primeira que funciona
