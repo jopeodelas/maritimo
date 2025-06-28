@@ -3,9 +3,11 @@ import { useNavigate } from 'react-router-dom';
 import OptimizedImage from '../components/OptimizedImage';
 import maritimoCrest from '../assets/maritimo-crest.png';
 import { createStyles } from '../styles/styleUtils';
+import useIsMobile from '../hooks/useIsMobile';
 
 const HomePage = () => {
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
   
   const handleEnter = () => {
     navigate('/login');
@@ -134,7 +136,7 @@ const HomePage = () => {
   });
   
   return (
-    <div style={styles.homeContainer}>
+    <div style={styles.homeContainer} className={isMobile ? "mobile-homepage-container" : ""}>
       {/* Solid background colors */}
       <div style={styles.solidBackground}></div>
       <div style={styles.solidBackground2}></div>
@@ -143,18 +145,22 @@ const HomePage = () => {
       <div style={styles.fansBackground}></div>
       
       {/* Golden triangles */}
-      <div style={styles.trianglesContainer}>
+      <div style={styles.trianglesContainer} className={isMobile ? "mobile-homepage-triangles" : ""}>
         <div style={styles.triangle}></div>
         <div style={styles.triangle}></div>
         <div style={styles.triangle}></div>
       </div>
       
-      <h1 style={styles.title}>made by fans for fans</h1>
+      <h1 style={styles.title} className={isMobile ? "mobile-homepage-title" : ""}>
+        made by fans for fans
+      </h1>
       
-      <div style={styles.hoverMe}>HOVER ME</div>
+      <div style={styles.hoverMe} className={isMobile ? "mobile-homepage-hover-me" : ""}>
+        HOVER ME
+      </div>
       
       <div style={styles.content}>
-        <div style={styles.logoContainer}>
+        <div style={styles.logoContainer} className={isMobile ? "mobile-homepage-logo-container" : ""}>
           <OptimizedImage 
             src={maritimoCrest} 
             alt="CS Marítimo" 
@@ -167,7 +173,7 @@ const HomePage = () => {
         <button 
           style={styles.enterButton} 
           onClick={handleEnter}
-          className="hover-button"
+          className={isMobile ? "mobile-homepage-button hover-button" : "hover-button"}
         >
           ENTRAR
         </button>

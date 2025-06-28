@@ -3,8 +3,10 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { createStyles } from '../styles/styleUtils';
 import maritimoCrest from '../assets/maritimo-crest.png';
+import useIsMobile from '../hooks/useIsMobile';
 
 const RegisterPage = () => {
+  const isMobile = useIsMobile();
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -257,7 +259,7 @@ const RegisterPage = () => {
   });
 
   return (
-    <div style={styles.container}>
+    <div style={styles.container} className={isMobile ? "mobile-auth-container" : ""}>
       {/* Background elements from HomePage */}
       <div style={styles.solidBackground}></div>
       <div style={styles.solidBackground2}></div>
@@ -271,24 +273,29 @@ const RegisterPage = () => {
       </div>
       
       {/* Register form container */}
-      <div style={styles.formContainer}>
-        <img src={maritimoCrest} alt="CS Marítimo" style={styles.logo} />
-        <h1 style={styles.title}>Register for CS Marítimo Voting</h1>
+      <div style={styles.formContainer} className={isMobile ? "mobile-auth-form-container" : ""}>
+        <img src={maritimoCrest} alt="CS Marítimo" style={styles.logo} className={isMobile ? "mobile-auth-logo" : ""} />
+        <h1 style={styles.title} className={isMobile ? "mobile-auth-title" : ""}>Register for CS Marítimo Voting</h1>
         
-        {error && <p style={styles.error}>{error}</p>}
+        {error && <p style={styles.error} className={isMobile ? "mobile-auth-error" : ""}>{error}</p>}
         
         {/* Google Register Button */}
         <button 
           type="button" 
           style={styles.googleButton}
+          className={isMobile ? "mobile-auth-google-button" : ""}
           onClick={handleGoogleLogin}
           onMouseOver={(e) => {
-            e.currentTarget.style.backgroundColor = '#f5f5f5';
-            e.currentTarget.style.boxShadow = '0 0.3vh 0.5vh rgba(0, 0, 0, 0.2)';
+            if (!isMobile) {
+              e.currentTarget.style.backgroundColor = '#f5f5f5';
+              e.currentTarget.style.boxShadow = '0 0.3vh 0.5vh rgba(0, 0, 0, 0.2)';
+            }
           }}
           onMouseOut={(e) => {
-            e.currentTarget.style.backgroundColor = '#fff';
-            e.currentTarget.style.boxShadow = '0 0.2vh 0.4vh rgba(0, 0, 0, 0.1)';
+            if (!isMobile) {
+              e.currentTarget.style.backgroundColor = '#fff';
+              e.currentTarget.style.boxShadow = '0 0.2vh 0.4vh rgba(0, 0, 0, 0.1)';
+            }
           }}
         >
           <div style={styles.googleButtonContent}>
@@ -302,66 +309,70 @@ const RegisterPage = () => {
         </button>
         
         {/* Divider */}
-        <div style={styles.divider}>
+        <div style={styles.divider} className={isMobile ? "mobile-auth-divider" : ""}>
           <div style={styles.dividerLine}></div>
           <span style={styles.dividerText}>or</span>
           <div style={styles.dividerLine}></div>
         </div>
         
         {/* Regular registration form */}
-        <form style={styles.form} onSubmit={handleSubmit}>
-          <div style={styles.inputGroup}>
-            <label style={styles.label} htmlFor="username">Username</label>
+        <form style={styles.form} className={isMobile ? "mobile-auth-form" : ""} onSubmit={handleSubmit}>
+          <div style={styles.inputGroup} className={isMobile ? "mobile-auth-input-group" : ""}>
+            <label style={styles.label} className={isMobile ? "mobile-auth-label" : ""} htmlFor="username">Username</label>
             <input
               style={styles.input}
+              className={isMobile ? "mobile-auth-input" : ""}
               type="text"
               id="username"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               onFocus={(e) => e.currentTarget.style.borderColor = '#009759'}
-              onBlur={(e) => e.currentTarget.style.borderColor = '#ccc'}
+              onBlur={(e) => e.currentTarget.style.borderColor = isMobile ? '#ddd' : '#ccc'}
               required
             />
           </div>
           
-          <div style={styles.inputGroup}>
-            <label style={styles.label} htmlFor="email">Email</label>
+          <div style={styles.inputGroup} className={isMobile ? "mobile-auth-input-group" : ""}>
+            <label style={styles.label} className={isMobile ? "mobile-auth-label" : ""} htmlFor="email">Email</label>
             <input
               style={styles.input}
+              className={isMobile ? "mobile-auth-input" : ""}
               type="email"
               id="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               onFocus={(e) => e.currentTarget.style.borderColor = '#009759'}
-              onBlur={(e) => e.currentTarget.style.borderColor = '#ccc'}
+              onBlur={(e) => e.currentTarget.style.borderColor = isMobile ? '#ddd' : '#ccc'}
               required
             />
           </div>
           
-          <div style={styles.inputGroup}>
-            <label style={styles.label} htmlFor="password">Password</label>
+          <div style={styles.inputGroup} className={isMobile ? "mobile-auth-input-group" : ""}>
+            <label style={styles.label} className={isMobile ? "mobile-auth-label" : ""} htmlFor="password">Password</label>
             <input
               style={styles.input}
+              className={isMobile ? "mobile-auth-input" : ""}
               type="password"
               id="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               onFocus={(e) => e.currentTarget.style.borderColor = '#009759'}
-              onBlur={(e) => e.currentTarget.style.borderColor = '#ccc'}
+              onBlur={(e) => e.currentTarget.style.borderColor = isMobile ? '#ddd' : '#ccc'}
               required
             />
           </div>
           
-          <div style={styles.inputGroup}>
-            <label style={styles.label} htmlFor="confirmPassword">Confirm Password</label>
+          <div style={styles.inputGroup} className={isMobile ? "mobile-auth-input-group" : ""}>
+            <label style={styles.label} className={isMobile ? "mobile-auth-label" : ""} htmlFor="confirmPassword">Confirm Password</label>
             <input
               style={styles.input}
+              className={isMobile ? "mobile-auth-input" : ""}
               type="password"
               id="confirmPassword"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               onFocus={(e) => e.currentTarget.style.borderColor = '#009759'}
-              onBlur={(e) => e.currentTarget.style.borderColor = '#ccc'}
+              onBlur={(e) => e.currentTarget.style.borderColor = isMobile ? '#ddd' : '#ccc'}
               required
             />
           </div>
@@ -369,27 +380,34 @@ const RegisterPage = () => {
           <button 
             type="submit" 
             style={styles.button}
+            className={isMobile ? "mobile-auth-button" : ""}
             onMouseOver={(e) => {
-              e.currentTarget.style.backgroundColor = '#FFA726';
-              e.currentTarget.style.boxShadow = '-0.3vw 0.7vh 0.3vh rgba(0, 0, 0, 0.3)';
+              if (!isMobile) {
+                e.currentTarget.style.backgroundColor = '#FFA726';
+                e.currentTarget.style.boxShadow = '-0.3vw 0.7vh 0.3vh rgba(0, 0, 0, 0.3)';
+              }
             }}
             onMouseOut={(e) => {
-              e.currentTarget.style.backgroundColor = '#FFB74D';
-              e.currentTarget.style.boxShadow = '-0.2vw 0.4vh 0.2vh rgba(0, 0, 0, 0.25)';
+              if (!isMobile) {
+                e.currentTarget.style.backgroundColor = '#FFB74D';
+                e.currentTarget.style.boxShadow = '-0.2vw 0.4vh 0.2vh rgba(0, 0, 0, 0.25)';
+              }
             }}
           >
             Register
           </button>
         </form>
         
-        <Link 
-          to="/login" 
-          style={styles.link}
-          onMouseOver={(e) => e.currentTarget.style.color = '#FE0000'}
-          onMouseOut={(e) => e.currentTarget.style.color = '#009759'}
-        >
-          Already have an account? Login here
-        </Link>
+        <div className={isMobile ? "mobile-auth-link" : ""}>
+          <Link 
+            to="/login" 
+            style={styles.link}
+            onMouseOver={(e) => e.currentTarget.style.color = '#FE0000'}
+            onMouseOut={(e) => e.currentTarget.style.color = '#009759'}
+          >
+            Already have an account? Login here
+          </Link>
+        </div>
       </div>
     </div>
   );
