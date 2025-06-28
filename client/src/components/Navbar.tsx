@@ -213,12 +213,12 @@ const Navbar = () => {
   });
 
   return (
-    <nav style={styles.navbar} role="navigation" aria-label="Main navigation">
-      <div style={styles.navContent}>
+    <nav style={styles.navbar} role="navigation" aria-label="Main navigation" className="mobile-landscape-navbar">
+      <div style={styles.navContent} className="mobile-navbar-content">
         <Link 
           to="/main"
           style={styles.logoSection} 
-          className="hover-logo"
+          className="hover-logo mobile-logo-section"
           aria-label="CS Marítimo - Ir para página principal"
         >
           <OptimizedImage 
@@ -235,11 +235,11 @@ const Navbar = () => {
           </div>
         </Link>
 
-        <div style={styles.navLinks} role="menubar">
+        <div style={styles.navLinks} role="menubar" className="mobile-nav-links mobile-landscape-nav-links">
           <Link
             to="/main"
             style={styles.navLink}
-            className="hover-nav-link"
+            className="hover-nav-link mobile-nav-link mobile-landscape-nav-link mobile-small-nav-link mobile-small-landscape-nav-link touch-friendly"
             role="menuitem"
             aria-label="Ir para página inicial"
           >
@@ -248,7 +248,7 @@ const Navbar = () => {
           <Link
             to="/voting"
             style={styles.navLink}
-            className="hover-nav-link"
+            className="hover-nav-link mobile-nav-link mobile-landscape-nav-link mobile-small-nav-link mobile-small-landscape-nav-link touch-friendly"
             role="menuitem"
             aria-label="Ir para página de votação"
           >
@@ -257,7 +257,7 @@ const Navbar = () => {
           <Link
             to="/ratings"
             style={styles.navLink}
-            className="hover-nav-link"
+            className="hover-nav-link mobile-nav-link mobile-landscape-nav-link mobile-small-nav-link mobile-small-landscape-nav-link touch-friendly"
             role="menuitem"
             aria-label="Ir para página de avaliação dos jogadores"
           >
@@ -266,7 +266,7 @@ const Navbar = () => {
           <Link
             to="/squad"
             style={styles.navLink}
-            className="hover-nav-link"
+            className="hover-nav-link mobile-nav-link mobile-landscape-nav-link mobile-small-nav-link mobile-small-landscape-nav-link touch-friendly"
             role="menuitem"
             aria-label="Ir para página do plantel"
           >
@@ -275,7 +275,7 @@ const Navbar = () => {
           <Link
             to="/news"
             style={styles.navLink}
-            className="hover-nav-link"
+            className="hover-nav-link mobile-nav-link mobile-landscape-nav-link mobile-small-nav-link mobile-small-landscape-nav-link touch-friendly"
             role="menuitem"
             aria-label="Ir para página de notícias"
           >
@@ -284,7 +284,7 @@ const Navbar = () => {
           <Link
             to="/schedule"
             style={styles.navLink}
-            className="hover-nav-link"
+            className="hover-nav-link mobile-nav-link mobile-landscape-nav-link mobile-small-nav-link mobile-small-landscape-nav-link touch-friendly"
             role="menuitem"
             aria-label="Ir para página de calendário"
           >
@@ -293,7 +293,7 @@ const Navbar = () => {
           <Link
             to="/history"
             style={styles.navLink}
-            className="hover-nav-link"
+            className="hover-nav-link mobile-nav-link mobile-landscape-nav-link mobile-small-nav-link mobile-small-landscape-nav-link touch-friendly"
             role="menuitem"
             aria-label="Ir para página de história"
           >
@@ -302,7 +302,7 @@ const Navbar = () => {
           <Link
             to="/chat"
             style={styles.navLink}
-            className="hover-nav-link"
+            className="hover-nav-link mobile-nav-link mobile-landscape-nav-link mobile-small-nav-link mobile-small-landscape-nav-link touch-friendly"
             role="menuitem"
             aria-label="Ir para página de discussões"
           >
@@ -317,7 +317,7 @@ const Navbar = () => {
                 border: '2px solid #FFD700',
                 boxShadow: '0 0.2vh 0.8vh rgba(255, 107, 53, 0.3)',
               }}
-              className="hover-nav-link"
+              className="hover-nav-link mobile-nav-link mobile-landscape-nav-link mobile-small-nav-link mobile-small-landscape-nav-link touch-friendly"
               role="menuitem"
               aria-label="Ir para painel de administração"
             >
@@ -326,10 +326,10 @@ const Navbar = () => {
           )}
         </div>
 
-        <div style={styles.rightSection}>
+        <div style={styles.rightSection} className="mobile-right-section">
           <button
             style={styles.logoutButton}
-            className="hover-logout"
+            className="hover-logout touch-friendly-button mobile-button-readable"
             onClick={handleLogout}
             aria-label="Terminar sessão"
           >

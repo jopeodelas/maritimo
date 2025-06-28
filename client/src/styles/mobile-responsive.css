@@ -1,0 +1,230 @@
+/* Mobile Responsive Styles - Mantém estilos desktop intactos */
+
+/* Orientação base - aplicada a todo o body */
+@media (orientation: landscape) {
+  body {
+    flex-direction: row;
+  }
+}
+
+@media (orientation: portrait) {
+  body {
+    flex-direction: column;
+  }
+}
+
+/* Ajustes específicos para dispositivos móveis */
+@media (max-width: 768px) {
+  /* Melhorias para o root container */
+  #root {
+    max-width: 100%;
+    padding: 0;
+    margin: 0;
+  }
+
+  /* Ajustes para orientação portrait em mobile */
+  @media (orientation: portrait) {
+    .mobile-hero-section {
+      padding: 1.5rem 1rem !important;
+      margin-bottom: 1.5rem !important;
+    }
+
+    .mobile-main-grid {
+      grid-template-columns: 1fr !important;
+      gap: 1.5rem !important;
+    }
+
+    .mobile-players-grid {
+      grid-template-columns: repeat(2, 1fr) !important;
+      gap: 1rem !important;
+    }
+
+    .mobile-navbar-content {
+      flex-wrap: wrap !important;
+      gap: 0.5rem !important;
+      min-height: auto !important;
+      padding: 1rem 0.5rem !important;
+    }
+
+    .mobile-nav-links {
+      order: 3 !important;
+      width: 100% !important;
+      justify-content: space-around !important;
+      gap: 0.5rem !important;
+      margin-top: 0.5rem !important;
+    }
+
+    .mobile-nav-link {
+      font-size: 3.5vw !important;
+      padding: 0.6rem 1rem !important;
+      flex: 1 !important;
+      text-align: center !important;
+      min-width: 0 !important;
+    }
+
+    .mobile-logo-section {
+      order: 1 !important;
+      margin-right: 0 !important;
+    }
+
+    .mobile-right-section {
+      order: 2 !important;
+      margin-left: 0 !important;
+    }
+
+    .mobile-transfer-card {
+      padding: 1.25rem 1rem !important;
+    }
+
+    .mobile-transfer-header {
+      flex-direction: column !important;
+      align-items: flex-start !important;
+      gap: 0.75rem !important;
+    }
+
+    .mobile-transfer-details {
+      grid-template-columns: 1fr !important;
+      gap: 1rem !important;
+    }
+
+    .mobile-section-padding {
+      padding: 1.5rem 1rem !important;
+    }
+
+    .mobile-sidebar {
+      order: -1 !important;
+    }
+
+    .mobile-poll-title {
+      white-space: normal !important;
+      overflow: visible !important;
+      text-overflow: unset !important;
+    }
+
+    .mobile-custom-poll-title {
+      white-space: normal !important;
+      overflow: visible !important;
+      text-overflow: unset !important;
+    }
+  }
+
+  /* Ajustes para orientação landscape em mobile */
+  @media (orientation: landscape) {
+    .mobile-landscape-navbar {
+      padding: 0.5rem 1rem !important;
+    }
+
+    .mobile-landscape-content {
+      padding: 7rem 1rem 1rem !important;
+    }
+
+    .mobile-landscape-hero {
+      padding: 1.5rem 2rem !important;
+      margin-bottom: 1.5rem !important;
+    }
+
+    .mobile-landscape-main-grid {
+      grid-template-columns: 2fr 1fr !important;
+      gap: 1.5rem !important;
+    }
+
+    .mobile-landscape-players-grid {
+      grid-template-columns: repeat(4, 1fr) !important;
+      gap: 1rem !important;
+    }
+
+    .mobile-landscape-nav-links {
+      gap: 1rem !important;
+    }
+
+    .mobile-landscape-nav-link {
+      font-size: 2.5vw !important;
+      padding: 0.5rem 1rem !important;
+    }
+
+    .mobile-landscape-transfer-header {
+      flex-direction: row !important;
+      align-items: center !important;
+    }
+
+    .mobile-landscape-transfer-details {
+      grid-template-columns: 1fr auto auto !important;
+    }
+  }
+}
+
+/* Ajustes para telas muito pequenas */
+@media (max-width: 480px) {
+  @media (orientation: portrait) {
+    .mobile-small-players-grid {
+      grid-template-columns: 1fr 1fr !important;
+      gap: 0.75rem !important;
+    }
+
+    .mobile-small-nav-link {
+      font-size: 4vw !important;
+      padding: 0.5rem 0.75rem !important;
+    }
+
+    .mobile-small-section-padding {
+      padding: 1rem 0.75rem !important;
+    }
+
+    .mobile-small-hero {
+      padding: 1rem 0.75rem !important;
+    }
+  }
+
+  @media (orientation: landscape) {
+    .mobile-small-landscape-players-grid {
+      grid-template-columns: repeat(3, 1fr) !important;
+    }
+
+    .mobile-small-landscape-nav-link {
+      font-size: 3vw !important;
+      padding: 0.4rem 0.8rem !important;
+    }
+  }
+}
+
+/* Ajustes para melhorar a interação touch */
+@media (max-width: 768px) {
+  .touch-friendly {
+    min-height: 44px !important;
+    min-width: 44px !important;
+  }
+
+  .touch-friendly-button {
+    padding: 0.75rem 1.5rem !important;
+    font-size: 1rem !important;
+  }
+
+  .touch-friendly-card {
+    padding: 1.25rem !important;
+  }
+
+  /* Reduz animações em mobile para melhor performance */
+  .reduce-motion * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Ajustes específicos para melhorar a legibilidade em mobile */
+@media (max-width: 768px) {
+  .mobile-text-readable {
+    font-size: clamp(1rem, 4vw, 1.25rem) !important;
+    line-height: 1.5 !important;
+  }
+
+  .mobile-title-readable {
+    font-size: clamp(1.5rem, 6vw, 2.5rem) !important;
+    line-height: 1.2 !important;
+  }
+
+  .mobile-button-readable {
+    font-size: clamp(1rem, 4vw, 1.125rem) !important;
+    font-weight: 700 !important;
+  }
+} 
