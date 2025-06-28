@@ -25,7 +25,26 @@ a:hover {
 body {
   margin: 0;
   min-width: 320px;
+  /* Fallback primeiro */
   min-height: 100vh;
+  
+  /* Safe areas para notch/home indicator */
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* Browsers modernos com unidades dinâmicas */
+@supports (height: 100dvh) {
+  body {
+    min-height: 100dvh;
+  }
+}
+
+/* Fallback JS para browsers antigos */
+@supports not (height: 100dvh) {
+  body {
+    min-height: calc(var(--vh, 1vh) * 100);
+  }
 }
 
 h1 {

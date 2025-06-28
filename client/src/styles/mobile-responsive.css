@@ -1,5 +1,136 @@
 /* Mobile Responsive Styles - Usando MobileHeader + MobileSidebar */
 
+/* ===== UTILS VIEWPORT MOBILE MODERNAS ===== */
+
+/*
+  DOCUMENTAÇÃO: Solução para o problema 100vh em mobile
+  
+  Problema: 100vh não funciona bem em mobile devido às barras do browser
+  - iOS Safari: barras flutuantes fazem 100vh ser maior que o viewport visível
+  - Android Chrome: 100vh muda quando as barras aparecem/desaparecem
+  
+  Solução implementada:
+  1. 100vh como fallback
+  2. 100dvh (dynamic viewport height) para browsers modernos
+  3. env(safe-area-inset-*) para respeitar notch/home-indicator  
+  4. JavaScript fallback (--vh) para browsers antigos
+  
+  Classes disponíveis:
+  - .mobile-fullscreen-container: altura total + centralização + safe-areas
+  - .mobile-fullheight-container: altura total + safe-areas (sem centralização)
+  - .mobile-viewport-centered: altura total + centralização (sem safe-areas)
+  - .mobile-viewport-height: só altura dinâmica
+  - .mobile-viewport-center: só centralização
+  - .mobile-safe-areas: só safe-areas
+  
+  Exemplos de uso:
+  
+  // Para uma página de login/homepage que precisa ocupar toda a tela
+  <div className="mobile-fullscreen-container">...</div>
+  
+  // Para um container que precisa da altura total mas sem centralização
+  <div className="mobile-fullheight-container">...</div>
+  
+  // Para aplicar só as safe-areas em headers/footers
+  <header className="mobile-safe-areas">...</header>
+  
+  // Para combinar com suas próprias classes
+  <div className="my-container mobile-viewport-height mobile-safe-areas">...</div>
+*/
+
+/* Aplicar a qualquer container que precise de altura full-screen */
+.mobile-fullscreen-container {
+  /* Fallback primeiro */
+  min-height: 100vh;
+  
+  /* Browsers modernos com unidades dinâmicas */
+  min-height: 100dvh;
+  
+  /* Safe areas para notch/home indicator */
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+  
+  /* Centralização perfeita */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
+  /* Fallback JS para browsers antigos */
+  @supports not (height: 100dvh) {
+    min-height: calc(var(--vh, 1vh) * 100);
+  }
+}
+
+/* Para containers que precisam de height sem centralização */
+.mobile-fullheight-container {
+  /* Fallback primeiro */
+  min-height: 100vh;
+  
+  /* Browsers modernos com unidades dinâmicas */
+  min-height: 100dvh;
+  
+  /* Safe areas para notch/home indicator */
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+  
+  /* Fallback JS para browsers antigos */
+  @supports not (height: 100dvh) {
+    min-height: calc(var(--vh, 1vh) * 100);
+  }
+}
+
+/* Só safe-areas (sem altura) */
+.mobile-safe-areas {
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+}
+
+/* Só altura dinâmica (sem safe-areas) */
+.mobile-viewport-height {
+  /* Fallback primeiro */
+  min-height: 100vh;
+  
+  /* Browsers modernos com unidades dinâmicas */
+  @supports (height: 100dvh) {
+    min-height: 100dvh;
+  }
+  
+  /* Fallback JS para browsers antigos */
+  @supports not (height: 100dvh) {
+    min-height: calc(var(--vh, 1vh) * 100);
+  }
+}
+
+/* Só centralização perfeita */
+.mobile-viewport-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Combo: altura + centralização (sem safe-areas) */
+.mobile-viewport-centered {
+  /* Fallback primeiro */
+  min-height: 100vh;
+  
+  /* Centralização perfeita */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
+  /* Browsers modernos com unidades dinâmicas */
+  @supports (height: 100dvh) {
+    min-height: 100dvh;
+  }
+  
+  /* Fallback JS para browsers antigos */
+  @supports not (height: 100dvh) {
+    min-height: calc(var(--vh, 1vh) * 100);
+  }
+}
+
 /* Ajustes gerais para mobile */
 @media (max-width: 768px) {
   /* Corpo da página em mobile */
@@ -14,9 +145,6 @@
   .mobile-auth-container {
     /* Fallback primeiro */
     min-height: 100vh !important;
-    
-    /* Browsers modernos com unidades dinâmicas */
-    min-height: 100dvh !important;
     
     /* Safe areas para notch/home indicator */
     padding-top: env(safe-area-inset-top) !important;
@@ -36,6 +164,14 @@
     
     overflow: hidden !important;
     box-sizing: border-box !important;
+  }
+  
+  /* Browsers modernos com unidades dinâmicas */
+  @supports (height: 100dvh) {
+    .mobile-homepage-container,
+    .mobile-auth-container {
+      min-height: 100dvh !important;
+    }
   }
   
   /* Fallback JS para browsers antigos (definido via JS) */
