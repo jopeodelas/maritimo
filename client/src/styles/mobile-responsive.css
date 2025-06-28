@@ -67,7 +67,7 @@
     transition-duration: 0.1s !important;
   }
   
-  /* Problema 2: Votação - Text Visibility */
+  /* Problema 2: Votação - Text Visibility para TODA A PÁGINA */
   .mobile-voting-player-name {
     font-size: 1.2rem !important;
     font-weight: 700 !important;
@@ -85,6 +85,37 @@
     font-size: 0.9rem !important;
     font-weight: 600 !important;
     text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8) !important;
+  }
+  
+  /* ADICIONAR: Textos da página de votação */
+  .mobile-voting-selection-info {
+    font-size: 1.1rem !important;
+    font-weight: 700 !important;
+    padding: 1rem !important;
+  }
+  
+  .mobile-voting-button {
+    font-size: 1.2rem !important;
+    font-weight: 700 !important;
+    padding: 1rem 2rem !important;
+  }
+  
+  .mobile-voting-position-title {
+    font-size: 1.4rem !important;
+    font-weight: 700 !important;
+    color: #FFFFFF !important;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8) !important;
+  }
+  
+  .mobile-voting-position-count {
+    font-size: 1rem !important;
+    font-weight: 600 !important;
+    color: #B0BEC5 !important;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8) !important;
+  }
+  
+  .mobile-voting-position-icon {
+    font-size: 1.5rem !important;
   }
   
   /* Problema 3: Avaliação - Ratings em 2 colunas */
@@ -119,40 +150,48 @@
     display: flex !important;
     flex-direction: column !important;
     align-items: center !important;
+    justify-content: center !important;
     background: rgba(30, 40, 50, 0.95) !important;
-    border: 1px solid rgba(76, 175, 80, 0.3) !important;
-    border-radius: 12px !important;
-    padding: 1rem !important;
+    border: 2px solid rgba(76, 175, 80, 0.4) !important;
+    border-radius: 16px !important;
+    padding: 1.2rem !important;
     transition: all 0.3s ease !important;
-    min-height: 200px !important;
-    max-height: 250px !important;
+    min-height: 220px !important;
+    max-height: 280px !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4) !important;
+    backdrop-filter: blur(10px) !important;
   }
   
   .mobile-squad-player-image {
-    width: 80px !important;
-    height: 80px !important;
+    width: 100px !important;
+    height: 100px !important;
     border-radius: 50% !important;
     object-fit: cover !important;
+    object-position: top center !important;
     margin-bottom: 0.75rem !important;
-    border: 2px solid rgba(76, 175, 80, 0.5) !important;
+    border: 3px solid rgba(76, 175, 80, 0.6) !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
   }
   
   .mobile-squad-player-name {
-    font-size: 1rem !important;
+    font-size: 1.1rem !important;
     font-weight: 700 !important;
-    color: white !important;
+    color: #FFFFFF !important;
     text-align: center !important;
-    margin-bottom: 0.25rem !important;
+    margin: 0.5rem 0 0.25rem 0 !important;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8) !important;
     line-height: 1.2 !important;
-    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8) !important;
   }
   
   .mobile-squad-player-position {
-    font-size: 0.85rem !important;
-    color: #4CAF50 !important;
+    font-size: 0.9rem !important;
     font-weight: 600 !important;
+    color: #B0BEC5 !important;
     text-align: center !important;
-    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.6) !important;
+    margin: 0 !important;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8) !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
   }
   
   /* Problema 6: História - Text Readability */

@@ -519,7 +519,7 @@ const VotingPage = () => {
         </div>
 
         {selectedPlayers.length > 0 && (
-          <div style={styles.selectionInfo}>
+          <div style={styles.selectionInfo} className={isMobile ? "mobile-voting-selection-info" : ""}>
             {selectedPlayers.length} player{selectedPlayers.length !== 1 ? 's' : ''} selected for voting
           </div>
         )}
@@ -535,7 +535,7 @@ const VotingPage = () => {
               padding: '1.5vh 3vw',
               fontSize: '1.2vw'
             }}
-            className="hover-button"
+            className={isMobile ? "mobile-voting-button hover-button" : "hover-button"}
           >
             {isSubmitting ? 'Voting...' : `✓ Confirm Votes (${selectedPlayers.length})`}
           </button>
@@ -547,9 +547,9 @@ const VotingPage = () => {
           return (
             <div key={key} style={styles.positionSection}>
               <div style={styles.positionHeader}>
-                <span style={styles.positionIcon}>{group.icon}</span>
-                <h2 style={styles.positionTitle}>{group.title}</h2>
-                <span style={styles.positionCount}>({group.players.length} players)</span>
+                <span style={styles.positionIcon} className={isMobile ? "mobile-voting-position-icon" : ""}>{group.icon}</span>
+                <h2 style={styles.positionTitle} className={isMobile ? "mobile-voting-position-title" : ""}>{group.title}</h2>
+                <span style={styles.positionCount} className={isMobile ? "mobile-voting-position-count" : ""}>({group.players.length} players)</span>
               </div>
               <div style={styles.playersGrid}>
                 {group.players.map((player, index) => renderPlayerCard(player, index))}

@@ -262,22 +262,35 @@ const MobileSidebar = ({ isOpen, onClose }: MobileSidebarProps) => {
               </div>
             </div>
           )}
+          
+          {/* Logout button moved to navigation list */}
+          <div style={styles.navSection}>
+            <div
+              style={{
+                ...styles.navLink,
+                backgroundColor: 'rgba(244, 67, 54, 0.2)',
+                borderLeft: '4px solid rgba(244, 67, 54, 0.5)',
+                margin: '0 0.5rem',
+                borderRadius: '8px',
+                border: '2px solid rgba(244, 67, 54, 0.5)',
+                fontWeight: '700',
+              }}
+              onClick={handleLogout}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = 'rgba(244, 67, 54, 0.4)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = 'rgba(244, 67, 54, 0.2)';
+              }}
+            >
+              <span style={styles.navIcon}>🚪</span>
+              Terminar Sessão
+            </div>
+          </div>
         </nav>
 
         <div style={styles.footer}>
-          <button
-            style={styles.logoutButton}
-            onClick={handleLogout}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = 'rgba(244, 67, 54, 0.4)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = 'rgba(244, 67, 54, 0.2)';
-            }}
-          >
-            <span>🚪</span>
-            Terminar Sessão
-          </button>
+          {/* Footer now empty since logout moved to nav */}
         </div>
       </div>
     </>
