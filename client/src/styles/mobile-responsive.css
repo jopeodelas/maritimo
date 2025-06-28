@@ -6,18 +6,44 @@
   body {
     font-size: 16px;
     line-height: 1.5;
+    margin: 0 !important;
   }
   
-  /* GARANTIR SEM SCROLL NAS PÁGINAS AUTH E HOME */
+  /* SOLUÇÃO MODERNA PARA VIEWPORT MOBILE */
   .mobile-homepage-container,
   .mobile-auth-container {
-    position: fixed !important;
-    top: 0 !important;
-    left: 0 !important;
-    right: 0 !important;
-    bottom: 0 !important;
+    /* Fallback primeiro */
+    min-height: 100vh !important;
+    
+    /* Browsers modernos com unidades dinâmicas */
+    min-height: 100dvh !important;
+    
+    /* Safe areas para notch/home indicator */
+    padding-top: env(safe-area-inset-top) !important;
+    padding-bottom: env(safe-area-inset-bottom) !important;
+    
+    /* Centralização perfeita */
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    
+    /* Reset position */
+    position: relative !important;
+    top: auto !important;
+    left: auto !important;
+    right: auto !important;
+    bottom: auto !important;
+    
     overflow: hidden !important;
     box-sizing: border-box !important;
+  }
+  
+  /* Fallback JS para browsers antigos (definido via JS) */
+  @supports not (height: 100dvh) {
+    .mobile-homepage-container,
+    .mobile-auth-container {
+      min-height: calc(var(--vh, 1vh) * 100) !important;
+    }
   }
   
   /* FIXAR BACKGROUND NO MOBILE - Sem animação */
@@ -81,14 +107,8 @@
   
   /* ===== HOMEPAGE MOBILE ===== */
   .mobile-homepage-container {
-    height: 100vh !important;
-    overflow: hidden !important;
-    display: flex !important;
     flex-direction: column !important;
-    align-items: center !important;
-    justify-content: center !important;
     padding: 0 1rem !important;
-    box-sizing: border-box !important;
     gap: 0 !important;
   }
   
@@ -149,20 +169,14 @@
   
   /* ===== LOGIN/REGISTER MOBILE ===== */
   .mobile-auth-container {
-    height: 100vh !important;
-    overflow: hidden !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    padding: 0.5rem !important;
-    box-sizing: border-box !important;
+    padding: 1rem !important;
   }
   
   .mobile-auth-form-container {
-    width: 98% !important;
-    max-width: 420px !important;
+    width: 100% !important;
+    max-width: 380px !important;
     height: auto !important;
-    max-height: 95vh !important;
+    max-height: 90vh !important;
     background-color: white !important;
     border-radius: 20px !important;
     padding: 1.5rem 1.2rem !important;
@@ -171,6 +185,7 @@
     box-sizing: border-box !important;
     display: flex !important;
     flex-direction: column !important;
+    margin: auto !important;
   }
   
   .mobile-auth-logo {
@@ -258,8 +273,15 @@
     cursor: pointer !important;
     margin: 0.8rem 0 !important;
     transition: all 0.3s ease !important;
-    gap: 0.5rem !important;
+    gap: 0.8rem !important;
     min-height: 50px !important;
+    flex-shrink: 0 !important;
+  }
+  
+  /* Aumentar ícone do Google especificamente */
+  .mobile-auth-google-button img {
+    width: 24px !important;
+    height: 24px !important;
     flex-shrink: 0 !important;
   }
   
@@ -271,20 +293,33 @@
   .mobile-auth-divider {
     display: flex !important;
     align-items: center !important;
+    justify-content: center !important;
     margin: 1rem 0 !important;
     font-size: 1.1rem !important;
     font-weight: 600 !important;
     color: #666 !important;
     flex-shrink: 0 !important;
+    position: relative !important;
+    text-align: center !important;
   }
   
   .mobile-auth-divider::before,
   .mobile-auth-divider::after {
     content: '' !important;
-    flex: 1 !important;
-    height: 2px !important;
+    position: absolute !important;
+    top: 50% !important;
+    width: 35% !important;
+    height: 1px !important;
     background-color: #ddd !important;
-    margin: 0 1rem !important;
+    transform: translateY(-50%) !important;
+  }
+  
+  .mobile-auth-divider::before {
+    left: 0 !important;
+  }
+  
+  .mobile-auth-divider::after {
+    right: 0 !important;
   }
   
   .mobile-auth-link {
@@ -657,7 +692,8 @@
   /* Auth forms para telas pequenas */
   .mobile-auth-form-container {
     padding: 1rem 0.8rem !important;
-    max-height: 98vh !important;
+    max-height: 85vh !important;
+    max-width: 350px !important;
   }
   
   .mobile-auth-title {
