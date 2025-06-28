@@ -36,7 +36,7 @@ const MaritodlePage = () => {
   const [nomes, setNomes] = useState<string[]>([]);
   const [inputValue, setInputValue] = useState('');
   const [tentativas, setTentativas] = useState<Tentativa[]>([]);
-  const [gameState, setGameState] = useState<GameState | null>(null);
+  const [gameState, _setGameState] = useState<GameState | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [filteredNomes, setFilteredNomes] = useState<string[]>([]);
@@ -44,7 +44,7 @@ const MaritodlePage = () => {
   const [clue1] = useState('');
   const [clue2] = useState('');
   const [showModal, setShowModal] = useState(false);
-  const [modalType, setModalType] = useState<'vitoria' | 'derrota'>('vitoria');
+  const [modalType, _setModalType] = useState<'vitoria' | 'derrota'>('vitoria');
   const [showCongrats, setShowCongrats] = useState(false);
   const [latestAttemptIndex, setLatestAttemptIndex] = useState(-1);
   const [flyingLogos, setFlyingLogos] = useState<Array<{id: number, x: number, y: number, vx: number, vy: number, rotation: number, scale: number}>>([]);
