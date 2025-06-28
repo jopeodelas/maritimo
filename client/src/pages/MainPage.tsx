@@ -1,9 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
-import Navbar from "../components/Navbar";
-import MobileHeader from "../components/MobileHeader";
-import MobileSidebar from "../components/MobileSidebar";
+import PageLayout from "../components/PageLayout";
 import PlayerImage from "../components/PlayerImage";
 import LayoutStabilizer from "../components/LayoutStabilizer";
 import { createStyles } from "../styles/styleUtils";
@@ -29,7 +27,6 @@ const MainPage = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const isMobile = useIsMobile();
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [topVotedPlayers, setTopVotedPlayers] = useState<Player[]>([]);
   const [loading, setLoading] = useState(true);
   const [totalVotes, setTotalVotes] = useState(0);
@@ -995,30 +992,22 @@ const MainPage = () => {
 
   if (loading) {
     return (
-      <div style={styles.container}>
-        <div style={styles.backgroundPattern}></div>
-        <Navbar />
-        <div style={styles.content}>
-          <div style={styles.loading}>A carregar dados do Marítimo...</div>
+      <PageLayout>
+        <div style={styles.container}>
+          <div style={styles.backgroundPattern}></div>
+          <div style={styles.content}>
+            <div style={styles.loading}>A carregar dados do Marítimo...</div>
+          </div>
         </div>
-      </div>
+      </PageLayout>
     );
   }
 
   return (
-    <div style={styles.container}>
-      <div style={styles.backgroundPattern}></div>
-      <Navbar />
-      {isMobile && (
-        <>
-          <MobileHeader onMenuToggle={() => setIsSidebarOpen(true)} />
-          <MobileSidebar 
-            isOpen={isSidebarOpen} 
-            onClose={() => setIsSidebarOpen(false)} 
-          />
-        </>
-      )}
-      <div style={styles.content}>
+    <PageLayout>
+      <div style={styles.container}>
+        <div style={styles.backgroundPattern}></div>
+        <div style={styles.content}>
         {/* Hero Section */}
         <div style={styles.heroSection}>
           <div style={styles.heroAccent}></div>
@@ -1213,39 +1202,6 @@ const MainPage = () => {
 
           {/* Sidebar */}
           <div style={styles.sidebar}>
-            {/* Maritodle Game Section */}
-            <div style={styles.gameCard}>
-              <div style={styles.gameHeader}>
-                <h3 style={styles.gameTitle}>Maritodle</h3>
-                <div style={styles.gameBadge}>Novo!</div>
-              </div>
-              <p style={styles.gameDescription}>
-                Adivinha o jogador ou treinador do CS Marítimo! 
-                Um jogo inspirado no Wordle.
-              </p>
-              <div style={styles.gameFeatures}>
-                <div style={styles.gameFeature}>
-                  <span style={styles.gameFeatureIcon}>•</span>
-                  <span style={styles.gameFeatureText}>Tentativas ilimitadas</span>
-                </div>
-                <div style={styles.gameFeature}>
-                  <span style={styles.gameFeatureIcon}>•</span>
-                  <span style={styles.gameFeatureText}>Pistas após 6 e 9 tentativas</span>
-                </div>
-                <div style={styles.gameFeature}>
-                  <span style={styles.gameFeatureIcon}>•</span>
-                  <span style={styles.gameFeatureText}>9 atributos para comparar</span>
-                </div>
-              </div>
-              <button
-                style={styles.gameButton}
-                className="hover-button"
-                onClick={() => navigate("/maritodle")}
-              >
-                Jogar Maritodle
-              </button>
-            </div>
-
             {/* Poll Section */}
             <div style={styles.pollCard}>
               {!hasVoted ? (
@@ -1367,10 +1323,44 @@ const MainPage = () => {
                 )}
               </div>
             ))}
+
+            {/* Maritodle Game Section */}
+            <div style={styles.gameCard}>
+              <div style={styles.gameHeader}>
+                <h3 style={styles.gameTitle}>Maritodle</h3>
+                <div style={styles.gameBadge}>Novo!</div>
+              </div>
+              <p style={styles.gameDescription}>
+                Adivinha o jogador ou treinador do CS Marítimo! 
+                Um jogo inspirado no Wordle.
+              </p>
+              <div style={styles.gameFeatures}>
+                <div style={styles.gameFeature}>
+                  <span style={styles.gameFeatureIcon}>•</span>
+                  <span style={styles.gameFeatureText}>Tentativas ilimitadas</span>
+                </div>
+                <div style={styles.gameFeature}>
+                  <span style={styles.gameFeatureIcon}>•</span>
+                  <span style={styles.gameFeatureText}>Pistas após 6 e 9 tentativas</span>
+                </div>
+                <div style={styles.gameFeature}>
+                  <span style={styles.gameFeatureIcon}>•</span>
+                  <span style={styles.gameFeatureText}>9 atributos para comparar</span>
+                </div>
+              </div>
+              <button
+                style={styles.gameButton}
+                className="hover-button"
+                onClick={() => navigate("/maritodle")}
+              >
+                Jogar Maritodle
+              </button>
+            </div>
           </div>
         </div>
       </div>
     </div>
+    </PageLayout>
   );
 };
 

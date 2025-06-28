@@ -8,6 +8,13 @@
     line-height: 1.5;
   }
   
+  /* FIXAR BACKGROUND NO MOBILE - Sem animação */
+  *[style*="animation"], .backgroundPattern {
+    animation: none !important;
+    animation-duration: 0s !important;
+    animation-iteration-count: 0 !important;
+  }
+  
   /* Melhorar áreas de toque */
   button, .hover-button {
     min-height: 44px;

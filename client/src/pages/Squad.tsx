@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import api from '../services/api';
-import Navbar from '../components/Navbar';
+import PageLayout from '../components/PageLayout';
 import PlayerImage from '../components/PlayerImage';
 import { createStyles } from '../styles/styleUtils';
+import useIsMobile from '../hooks/useIsMobile';
 
 interface Player {
   id: number;
@@ -19,6 +20,7 @@ interface PositionData {
 }
 
 const Squad = () => {
+  const isMobile = useIsMobile();
   const [players, setPlayers] = useState<Player[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentPositionIndex, setCurrentPositionIndex] = useState(0);
@@ -75,7 +77,9 @@ const Squad = () => {
     content: {
       maxWidth: '1400px',
       margin: '0 auto',
-      padding: '2vh 2vw',
+      padding: isMobile 
+        ? '70px 1rem 1rem' // Mobile: padding top para header + spacing
+        : '2vh 2vw', // Desktop original
       position: "relative",
       zIndex: 2,
     },
@@ -196,8 +200,8 @@ const Squad = () => {
     playersGrid: {
       display: "grid",
       gridAutoRows: "1fr",
-      gap: "2%",
-      padding: "2%",
+      gap: isMobile ? "1rem" : "2%",
+      padding: isMobile ? "1rem" : "2%",
       height: "70vh",
       opacity: 1,
       transform: "translateX(0)",
@@ -261,11 +265,11 @@ const Squad = () => {
     playerName: {
       fontSize: "clamp(0.8rem, 1.5vh, 1.1rem)",
       fontWeight: "700",
-      margin: "0",
+      margin: isMobile ? "0.5rem 0 0 0" : "0",
       color: "#FFFFFF",
       lineHeight: "1.2",
       textAlign: "center",
-      padding: "0 2%",
+      padding: isMobile ? "0 0.5rem" : "0 2%",
     },
 
     loading: {
@@ -367,6 +371,12 @@ const Squad = () => {
 
   // Calcular número ideal de colunas baseado no número de jogadores
   const getOptimalColumns = (playerCount: number): number => {
+    if (isMobile) {
+      // Mobile: sempre 2 colunas
+      return 2;
+    }
+    
+    // Desktop: lógica original
     if (playerCount <= 3) return 3;
     if (playerCount <= 6) return 4;
     if (playerCount <= 8) return 4;
@@ -453,25 +463,29 @@ const Squad = () => {
 
   if (loading) {
     return (
-      <div style={styles.container}>
-        <div style={styles.backgroundPattern} className="background-pattern"></div>
-        <Navbar />
-        <div style={styles.content}>
-          <div style={styles.loading}>
-            <div style={styles.loadingSpinner} className="loading-spinner"></div>
-            <p style={styles.loadingText}>A carregar plantel...</p>
+      <PageLayout>
+        <div style={styles.container}>
+          <div style={styles.backgroundPattern} className="background-pattern"></div>
+          <div style={styles.content}>
+            <div style={styles.loading}>
+              <div style={styles.loadingSpinner} className="loading-spinner"></div>
+              <p style={styles.loadingText}>A carregar plantel...</p>
+            </div>
           </div>
         </div>
-      </div>
+      </PageLayout>
     );
   }
 
   return (
-    <div style={styles.container}>
-      <div style={styles.backgroundPattern} className="background-pattern"></div>
-      <Navbar />
+    <PageLayout>
+      <div style={styles.container}>
+        <div style={styles.backgroundPattern} className="background-pattern"></div>
 
-      <div style={{...styles.content, paddingTop: "clamp(8rem, 10vh, 10rem)"}}>
+      <div style={{
+        ...styles.content, 
+        paddingTop: isMobile ? "70px" : "clamp(8rem, 10vh, 10rem)"
+      }}>
         {/* Hero Section */}
         <div style={styles.heroSection}>
           <div style={styles.heroAccent}></div>
@@ -557,6 +571,7 @@ const Squad = () => {
         </div>
       </div>
     </div>
+    </PageLayout>
   );
 };
 

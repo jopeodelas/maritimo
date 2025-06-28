@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
-import Navbar from '../components/Navbar';
+import PageLayout from '../components/PageLayout';
 import PlayerImage from '../components/PlayerImage';
 import { createStyles } from '../styles/styleUtils';
+import useIsMobile from '../hooks/useIsMobile';
 import * as playerRatingsService from '../services/playerRatingsService';
 import type { 
   MatchVoting, 
@@ -35,6 +36,7 @@ interface PlayerRatingState {
 }
 
 const PlayerRatings = () => {
+  const isMobile = useIsMobile();
   const [activeVoting, setActiveVoting] = useState<MatchVoting | null>(null);
   const [playerRatings, setPlayerRatings] = useState<PlayerRatingState[]>([]);
   const [manOfMatchPlayerId, setManOfMatchPlayerId] = useState<number | null>(null);
@@ -385,7 +387,9 @@ const PlayerRatings = () => {
     content: {
       maxWidth: "min(98vw, 110rem)",
       margin: "0 auto",
-      padding: "clamp(8rem, 10vh, 10rem) clamp(0.5rem, 1vw, 1.5rem) clamp(1rem, 2vh, 2rem)",
+      padding: isMobile 
+        ? "70px 1rem 1rem" // Mobile: padding top para header + spacing
+        : "clamp(8rem, 10vh, 10rem) clamp(0.5rem, 1vw, 1.5rem) clamp(1rem, 2vh, 2rem)", // Desktop original
       position: "relative",
       zIndex: 2,
     },
@@ -786,47 +790,49 @@ const PlayerRatings = () => {
 
   if (loading) {
     return (
-      <div style={styles.container}>
-        <div style={styles.backgroundPattern}></div>
-        <Navbar />
-        <div style={styles.content}>
-          <div style={styles.loadingMessage}>
-            <div style={styles.loadingSpinner}></div>
-            <div>A carregar avaliações dos jogadores...</div>
-            <div style={styles.loadingSubtext}>A buscar dados do último jogo do CS Marítimo</div>
+      <PageLayout>
+        <div style={styles.container}>
+          <div style={styles.backgroundPattern}></div>
+          <div style={styles.content}>
+            <div style={styles.loadingMessage}>
+              <div style={styles.loadingSpinner}></div>
+              <div>A carregar avaliações dos jogadores...</div>
+              <div style={styles.loadingSubtext}>A buscar dados do último jogo do CS Marítimo</div>
+            </div>
           </div>
         </div>
-      </div>
+      </PageLayout>
     );
   }
 
   if (error || !activeVoting) {
     return (
-      <div style={styles.container}>
-        <div style={styles.backgroundPattern}></div>
-        <Navbar />
-        <div style={styles.content}>
-          <div style={styles.errorMessage}>
-            {error || 'Não foi possível carregar a votação. Tente recarregar a página.'}
+      <PageLayout>
+        <div style={styles.container}>
+          <div style={styles.backgroundPattern}></div>
+          <div style={styles.content}>
+            <div style={styles.errorMessage}>
+              {error || 'Não foi possível carregar a votação. Tente recarregar a página.'}
+            </div>
+            <button 
+              style={styles.retryButton}
+              onClick={() => {
+                setError(null);
+                fetchActiveVoting();
+              }}
+            >
+              Tentar Novamente
+            </button>
           </div>
-          <button 
-            style={styles.retryButton}
-            onClick={() => {
-              setError(null);
-              fetchActiveVoting();
-            }}
-          >
-            Tentar Novamente
-          </button>
         </div>
-      </div>
+      </PageLayout>
     );
   }
 
   return (
-    <div style={styles.container}>
-      <div style={styles.backgroundPattern}></div>
-      <Navbar />
+    <PageLayout>
+      <div style={styles.container}>
+        <div style={styles.backgroundPattern}></div>
       <div style={styles.content}>
         {/* Hero Section */}
         <div style={styles.heroSection}>
@@ -888,8 +894,8 @@ const PlayerRatings = () => {
           
           {!hasVoted && (
             <div style={styles.rulesBox}>
-              <strong>REGRAS:</strong> Dê uma avaliação de 1-10 a cada jogador e treinador (6 é a média), 
-              e escolha o seu Homem do Jogo para registar o seu voto
+              <strong>COMO AVALIAR:</strong> Dê uma nota de 1 a 10 a cada jogador neste jogo onde 6 é neutro. 
+              Escolha também o seu Homem do Jogo (estrela dourada) para submeter o seu voto.
             </div>
           )}
         </div>
@@ -1061,6 +1067,7 @@ const PlayerRatings = () => {
         )}
       </div>
     </div>
+    </PageLayout>
   );
 };
 

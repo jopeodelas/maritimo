@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
-import Navbar from '../components/Navbar';
+import PageLayout from '../components/PageLayout';
 import PlayerImage from '../components/PlayerImage';
 import { createStyles } from '../styles/styleUtils';
+import useIsMobile from '../hooks/useIsMobile';
 import api from '../services/api';
 
 interface Player {
@@ -13,6 +14,7 @@ interface Player {
 }
 
 const VotingPage = () => {
+  const isMobile = useIsMobile();
   const [players, setPlayers] = useState<Player[]>([]);
   const [userVotes, setUserVotes] = useState<number[]>([]);
   const [selectedPlayers, setSelectedPlayers] = useState<number[]>([]);
@@ -48,7 +50,9 @@ const VotingPage = () => {
     content: {
       maxWidth: '1400px',
       margin: '0 auto',
-      padding: 'clamp(8rem, 10vh, 10rem) 2vw 3vh',
+      padding: isMobile 
+        ? '70px 1rem 1rem' // Mobile: padding top para header + spacing
+        : 'clamp(8rem, 10vh, 10rem) 2vw 3vh', // Desktop original
       position: "relative",
       zIndex: 2,
     },
@@ -199,8 +203,10 @@ const VotingPage = () => {
     },
     playersGrid: {
       display: 'grid',
-      gap: '2vw',
-      gridTemplateColumns: 'repeat(auto-fill, minmax(15vw, 1fr))',
+      gap: isMobile ? '1rem' : '2vw',
+      gridTemplateColumns: isMobile 
+        ? 'repeat(2, 1fr)' // Mobile: 2 colunas
+        : 'repeat(auto-fill, minmax(15vw, 1fr))', // Desktop original
     },
     playerCard: {
       background: 'rgba(40, 55, 70, 0.9)',
@@ -226,7 +232,7 @@ const VotingPage = () => {
     },
     playerImageContainer: {
       position: 'relative',
-      height: '22vh',
+      height: isMobile ? '200px' : '22vh', // Fixed height para mobile
       overflow: 'hidden',
     },
     playerImage: {
@@ -277,7 +283,7 @@ const VotingPage = () => {
       zIndex: 2,
     },
     playerInfo: {
-      padding: '1.5vh 1.5vw',
+      padding: isMobile ? '0.75rem 1rem' : '1.5vh 1.5vw', // Reduzir padding no mobile
     },
     playerName: {
       fontSize: '1.1vw',
@@ -470,24 +476,24 @@ const VotingPage = () => {
 
   if (loading) {
     return (
-      <div style={styles.container}>
-        <div style={styles.backgroundPattern} className="background-pattern"></div>
-        <Navbar />
-        <div style={styles.content}>
-          <div style={styles.loading}>
-            <div style={styles.loadingSpinner} className="loading-spinner"></div>
-            <p style={styles.loadingText}>Loading players...</p>
+      <PageLayout>
+        <div style={styles.container}>
+          <div style={styles.backgroundPattern} className="background-pattern"></div>
+          <div style={styles.content}>
+            <div style={styles.loading}>
+              <div style={styles.loadingSpinner} className="loading-spinner"></div>
+              <p style={styles.loadingText}>Loading players...</p>
+            </div>
           </div>
         </div>
-
-      </div>
+      </PageLayout>
     );
   }
 
   return (
-    <div style={styles.container}>
-      <div style={styles.backgroundPattern} className="background-pattern"></div>
-      <Navbar />
+    <PageLayout>
+      <div style={styles.container}>
+        <div style={styles.backgroundPattern} className="background-pattern"></div>
 
       <div style={styles.content}>
         {/* Hero Section */}
@@ -539,9 +545,8 @@ const VotingPage = () => {
           );
         })}
       </div>
-
-
     </div>
+    </PageLayout>
   );
 };
 
