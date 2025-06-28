@@ -2,9 +2,12 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import Navbar from "../components/Navbar";
+import MobileHeader from "../components/MobileHeader";
+import MobileSidebar from "../components/MobileSidebar";
 import PlayerImage from "../components/PlayerImage";
 import LayoutStabilizer from "../components/LayoutStabilizer";
 import { createStyles } from "../styles/styleUtils";
+import useIsMobile from "../hooks/useIsMobile";
 import api from "../services/api";
 import transferService from "../services/transferService";
 import type { TransferRumor, TransferStats } from "../services/transferService";
@@ -25,6 +28,8 @@ interface CustomPoll {
 const MainPage = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const isMobile = useIsMobile();
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [topVotedPlayers, setTopVotedPlayers] = useState<Player[]>([]);
   const [loading, setLoading] = useState(true);
   const [totalVotes, setTotalVotes] = useState(0);
@@ -267,7 +272,9 @@ const MainPage = () => {
     content: {
       maxWidth: "min(98vw, 110rem)",
       margin: "0 auto",
-      padding: "clamp(8rem, 10vh, 10rem) clamp(0.5rem, 1vw, 1.5rem) clamp(1rem, 2vh, 2rem)",
+      padding: isMobile 
+        ? "70px 1rem 1rem" // Mobile: padding top para header + spacing
+        : "clamp(8rem, 10vh, 10rem) clamp(0.5rem, 1vw, 1.5rem) clamp(1rem, 2vh, 2rem)", // Desktop original
       position: "relative",
       zIndex: 2,
     },
@@ -317,8 +324,8 @@ const MainPage = () => {
     },
     mainGrid: {
       display: "grid",
-      gap: "clamp(1.5rem, 3vh, 2.5rem)",
-      gridTemplateColumns: "1fr 28rem",
+      gap: isMobile ? "1.5rem" : "clamp(1.5rem, 3vh, 2.5rem)",
+      gridTemplateColumns: isMobile ? "1fr" : "1fr 28rem",
       alignItems: "start",
     },
     mainContent: {
@@ -407,9 +414,11 @@ const MainPage = () => {
     },
     playersGrid: {
       display: "grid",
-      gap: "clamp(1rem, 2.5vw, 1.25rem)",
-      gridTemplateColumns: "repeat(auto-fit, minmax(min(15rem, 28vw), 1fr))",
-      marginBottom: "clamp(1.5rem, 3vh, 2rem)",
+      gap: isMobile ? "1rem" : "clamp(1rem, 2.5vw, 1.25rem)",
+      gridTemplateColumns: isMobile 
+        ? "repeat(2, 1fr)" // Mobile: 2 colunas
+        : "repeat(auto-fit, minmax(min(15rem, 28vw), 1fr))", // Desktop original
+      marginBottom: isMobile ? "1.5rem" : "clamp(1.5rem, 3vh, 2rem)",
     },
     playerCard: {
       background: "rgba(40, 55, 70, 0.9)",
@@ -610,7 +619,8 @@ const MainPage = () => {
     sidebar: {
       display: "flex",
       flexDirection: "column",
-      gap: "clamp(1.5rem, 2.5vh, 2rem)",
+      gap: isMobile ? "1.5rem" : "clamp(1.5rem, 2.5vh, 2rem)",
+      order: isMobile ? -1 : 0, // Em mobile, sidebar aparece primeiro
     },
     statsCard: {
       background: "rgba(76, 175, 80, 0.9)",
@@ -999,43 +1009,52 @@ const MainPage = () => {
     <div style={styles.container}>
       <div style={styles.backgroundPattern}></div>
       <Navbar />
-      <div style={styles.content} className="mobile-landscape-content">
+      {isMobile && (
+        <>
+          <MobileHeader onMenuToggle={() => setIsSidebarOpen(true)} />
+          <MobileSidebar 
+            isOpen={isSidebarOpen} 
+            onClose={() => setIsSidebarOpen(false)} 
+          />
+        </>
+      )}
+      <div style={styles.content}>
         {/* Hero Section */}
-        <div style={styles.heroSection} className="mobile-hero-section mobile-landscape-hero mobile-small-hero">
+        <div style={styles.heroSection}>
           <div style={styles.heroAccent}></div>
-          <h1 style={styles.heroTitle} className="mobile-title-readable">
+          <h1 style={styles.heroTitle}>
             Bem-vindo, {user?.username}!
           </h1>
-          <p style={styles.heroSubtitle} className="mobile-text-readable">
+          <p style={styles.heroSubtitle}>
             Centro de Comando do CS Marítimo Fans
           </p>
         </div>
 
-        <div style={styles.mainGrid} className="mobile-main-grid mobile-landscape-main-grid">
+        <div style={styles.mainGrid}>
           {/* Main Content */}
           <div style={styles.mainContent}>
             {/* Top Voted Players Section */}
-            <div style={styles.section} className="mobile-section-padding mobile-small-section-padding">
+            <div style={styles.section}>
               <div style={styles.sectionHeader}>
                 <div style={styles.sectionHeaderLeft}>
-                  <h2 style={styles.sectionTitle} className="mobile-title-readable">
+                  <h2 style={styles.sectionTitle}>
                     Jogadores Mais Votados para Sair
                   </h2>
                   <div style={styles.totalVotesDisplay}>
-                    <span style={styles.totalVotesLabel} className="mobile-text-readable">Total de Votos:</span>
-                    <span style={styles.totalVotesValue} className="mobile-text-readable">{totalVotes.toLocaleString()}</span>
+                    <span style={styles.totalVotesLabel}>Total de Votos:</span>
+                    <span style={styles.totalVotesValue}>{totalVotes.toLocaleString()}</span>
                   </div>
                 </div>
                 <div style={styles.sectionTitleUnderline}></div>
               </div>
 
               <LayoutStabilizer minHeight="400px" className="layout-stable">
-                <div style={styles.playersGrid} className="mobile-players-grid mobile-landscape-players-grid mobile-small-players-grid mobile-small-landscape-players-grid">
+                <div style={styles.playersGrid}>
                   {topVotedPlayers.map((player, index) => (
                     <div
                       key={player.id}
                       style={styles.playerCard}
-                      className="hover-card layout-stable touch-friendly-card"
+                      className="hover-card layout-stable"
                     >
                       <div style={styles.playerRankBadge}>#{index + 1}</div>
                       <LayoutStabilizer 
@@ -1066,7 +1085,7 @@ const MainPage = () => {
               <div style={styles.buttonContainer}>
                 <button
                   style={styles.actionButton}
-                  className="hover-button touch-friendly-button mobile-button-readable"
+                  className="hover-button"
                   onClick={() => navigate("/voting")}
                 >
                   Votar Agora
@@ -1075,28 +1094,28 @@ const MainPage = () => {
             </div>
 
             {/* Transfer Rumors Section */}
-            <div style={styles.section} className="mobile-section-padding mobile-small-section-padding">
+            <div style={styles.section}>
               <div style={styles.sectionHeader}>
                 <div style={styles.sectionHeaderLeft}>
-                  <h2 style={styles.sectionTitle} className="mobile-title-readable">
+                  <h2 style={styles.sectionTitle}>
                     Rumores de Transferências
                   </h2>
                   <div style={styles.transferStatsDisplay}>
                     <div style={styles.transferStat}>
-                      <span style={styles.transferStatLabel} className="mobile-text-readable">Transferências Ativas:</span>
-                      <span style={styles.transferStatValue} className="mobile-text-readable">{transferRumors.length}</span>
+                      <span style={styles.transferStatLabel}>Transferências Ativas:</span>
+                      <span style={styles.transferStatValue}>{transferRumors.length}</span>
                     </div>
                     {transferStats && (
                       <div style={styles.transferStat}>
-                        <span style={styles.transferStatLabel} className="mobile-text-readable">Confiabilidade Média:</span>
-                        <span style={styles.transferStatValue} className="mobile-text-readable">{transferStats.averageReliability}</span>
+                        <span style={styles.transferStatLabel}>Confiabilidade Média:</span>
+                        <span style={styles.transferStatValue}>{transferStats.averageReliability}</span>
                       </div>
                     )}
                   </div>
                 </div>
                 <button
                   style={styles.refreshButton}
-                  className="hover-refresh touch-friendly-button mobile-button-readable"
+                  className="hover-refresh"
                   onClick={handleRefreshRumors}
                   disabled={loadingRumors}
                 >
@@ -1124,10 +1143,10 @@ const MainPage = () => {
                   <div
                     key={rumor.id}
                     style={styles.transferCard}
-                    className="hover-transfer-card mobile-transfer-card touch-friendly-card"
+                    className="hover-transfer-card"
                   >
-                    <div style={styles.transferHeader} className="mobile-transfer-header mobile-landscape-transfer-header">
-                      <div style={styles.transferPlayer} className="mobile-text-readable">
+                    <div style={styles.transferHeader}>
+                      <div style={styles.transferPlayer}>
                         {rumor.player_name}
                       </div>
                       <div
@@ -1135,13 +1154,12 @@ const MainPage = () => {
                           ...styles.transferType,
                           backgroundColor: getTypeColor(rumor.type),
                         }}
-                        className="mobile-text-readable"
                       >
                         {rumor.type}
                       </div>
                     </div>
                     
-                    <div style={styles.transferDetails} className="mobile-transfer-details mobile-landscape-transfer-details">
+                    <div style={styles.transferDetails}>
                       <div style={styles.transferInfo}>
                         <span style={styles.transferClub}>
                           {rumor.type === "compra" ? "De: " : "Para: "}
@@ -1194,9 +1212,9 @@ const MainPage = () => {
           </div>
 
           {/* Sidebar */}
-          <div style={styles.sidebar} className="mobile-sidebar">
+          <div style={styles.sidebar}>
             {/* Maritodle Game Section */}
-            <div style={styles.gameCard} className="touch-friendly-card">
+            <div style={styles.gameCard}>
               <div style={styles.gameHeader}>
                 <h3 style={styles.gameTitle}>Maritodle</h3>
                 <div style={styles.gameBadge}>Novo!</div>
@@ -1221,7 +1239,7 @@ const MainPage = () => {
               </div>
               <button
                 style={styles.gameButton}
-                className="hover-button touch-friendly-button mobile-button-readable"
+                className="hover-button"
                 onClick={() => navigate("/maritodle")}
               >
                 Jogar Maritodle
@@ -1229,11 +1247,11 @@ const MainPage = () => {
             </div>
 
             {/* Poll Section */}
-            <div style={styles.pollCard} className="touch-friendly-card">
+            <div style={styles.pollCard}>
               {!hasVoted ? (
                 /* Front of card - Poll */
                 <div>
-                  <h3 style={styles.pollTitle} className="mobile-poll-title mobile-title-readable">
+                  <h3 style={styles.pollTitle}>
                     Que posição deveríamos reforçar?
                   </h3>
                   
@@ -1246,7 +1264,7 @@ const MainPage = () => {
                           ...(selectedPositions.includes(position.id) ? styles.positionSelected : {})
                         }}
                         onClick={() => handlePositionToggle(position.id)}
-                        className={`hover-position touch-friendly ${selectedPositions.includes(position.id) ? 'selected' : ''}`}
+                        className={`hover-position ${selectedPositions.includes(position.id) ? 'selected' : ''}`}
                       >
                         <span style={styles.positionName}>{position.name}</span>
                       </div>
@@ -1260,7 +1278,7 @@ const MainPage = () => {
                     }}
                     onClick={handleSubmitPoll}
                     disabled={selectedPositions.length === 0}
-                    className="hover-button touch-friendly-button mobile-button-readable"
+                    className="hover-button"
                   >
                     Submeter Resposta
                   </button>
@@ -1272,7 +1290,7 @@ const MainPage = () => {
               ) : (
                 /* Back of card - Results */
                 <div>
-                  <h3 style={styles.pollTitle} className="mobile-poll-title mobile-title-readable">
+                  <h3 style={styles.pollTitle}>
                     Resultados da Poll
                   </h3>
                   
@@ -1300,8 +1318,8 @@ const MainPage = () => {
 
             {/* Custom Polls Section */}
             {customPolls.map((poll) => (
-              <div key={poll.id} style={customPollStyles.customPollCard} className="touch-friendly-card">
-                <h3 style={customPollStyles.customPollTitle} className="mobile-custom-poll-title mobile-title-readable">
+              <div key={poll.id} style={customPollStyles.customPollCard}>
+                <h3 style={customPollStyles.customPollTitle}>
                   {poll.title}
                 </h3>
                 
@@ -1334,7 +1352,7 @@ const MainPage = () => {
                           key={index}
                           style={customPollStyles.customPollOption}
                           onClick={() => handleCustomPollVote(poll.id, index)}
-                          className="hover-position touch-friendly"
+                          className="hover-position"
                         >
                           <span style={customPollStyles.customPollOptionText}>
                             {option}

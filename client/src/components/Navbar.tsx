@@ -2,11 +2,13 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { createStyles } from '../styles/styleUtils';
 import OptimizedImage from './OptimizedImage';
+import useIsMobile from '../hooks/useIsMobile';
 import maritimoCrest from '../assets/maritimo-crest.png';
 
 const Navbar = () => {
   const navigate = useNavigate();
   const { logout, user } = useAuth();
+  const isMobile = useIsMobile();
 
   const handleLogout = () => {
     logout();
@@ -125,100 +127,20 @@ const Navbar = () => {
       textShadow: '0.05vh 0.05vh 0.2vh rgba(0, 0, 0, 0.3)',
       whiteSpace: 'nowrap',
     },
-    '@media (max-width: 1200px)': {
-      navbar: {
-        padding: '1vh 1vw',
-      },
-      navContent: {
-        gap: '1vw',
-      },
-      logoText: {
-        fontSize: '1.8vw',
-      },
-      logoSubtext: {
-        fontSize: '0.8vw',
-      },
-      navLink: {
-        fontSize: '1.2vw',
-        padding: '0.7vh 1vw',
-      },
-      logoutButton: {
-        fontSize: '1.1vw',
-        padding: '0.7vh 1.1vw',
-      },
-    } as any,
-    '@media (max-width: 768px)': {
-      navbar: {
-        padding: '1vh 1vw',
-      },
-      navContent: {
-        gap: '0.8vw',
-      },
-      logoSection: {
-        gap: '0.4vw',
-        marginRight: '0.5vw',
-      },
-      logoImage: {
-        width: '5vw',
-        height: '5vw',
-      },
-      logoText: {
-        fontSize: '2.5vw',
-      },
-      logoSubtext: {
-        fontSize: '1.2vw',
-      },
-      navLinks: {
-        gap: '0.8vw',
-      },
-      navLink: {
-        fontSize: '2.2vw',
-        padding: '0.6vh 1.6vw',
-      },
-      logoutButton: {
-        fontSize: '2vw',
-        padding: '0.6vh 2.1vw',
-      },
-    } as any,
-    '@media (max-width: 480px)': {
-      navContent: {
-        flexWrap: 'wrap',
-        gap: '1vh',
-      },
-      logoSection: {
-        order: 1,
-        width: '100%',
-        justifyContent: 'center',
-      },
-      navLinks: {
-        order: 2,
-        width: '100%',
-        justifyContent: 'center',
-        gap: '3vw',
-      },
-      rightSection: {
-        order: 3,
-        width: '100%',
-        justifyContent: 'center',
-      },
-      navLink: {
-        fontSize: '3.5vw',
-        padding: '1vh 3vw',
-      },
-      logoutButton: {
-        fontSize: '3vw',
-        padding: '1vh 4vw',
-      },
-    } as any,
   });
 
+  // Hide navbar on mobile devices
+  if (isMobile) {
+    return null;
+  }
+
   return (
-    <nav style={styles.navbar} role="navigation" aria-label="Main navigation" className="mobile-landscape-navbar">
-      <div style={styles.navContent} className="mobile-navbar-content">
+    <nav style={styles.navbar} role="navigation" aria-label="Main navigation">
+      <div style={styles.navContent}>
         <Link 
           to="/main"
           style={styles.logoSection} 
-          className="hover-logo mobile-logo-section"
+          className="hover-logo"
           aria-label="CS Marítimo - Ir para página principal"
         >
           <OptimizedImage 
@@ -235,11 +157,11 @@ const Navbar = () => {
           </div>
         </Link>
 
-        <div style={styles.navLinks} role="menubar" className="mobile-nav-links mobile-landscape-nav-links">
+        <div style={styles.navLinks} role="menubar">
           <Link
             to="/main"
             style={styles.navLink}
-            className="hover-nav-link mobile-nav-link mobile-landscape-nav-link mobile-small-nav-link mobile-small-landscape-nav-link touch-friendly"
+            className="hover-nav-link"
             role="menuitem"
             aria-label="Ir para página inicial"
           >
@@ -248,7 +170,7 @@ const Navbar = () => {
           <Link
             to="/voting"
             style={styles.navLink}
-            className="hover-nav-link mobile-nav-link mobile-landscape-nav-link mobile-small-nav-link mobile-small-landscape-nav-link touch-friendly"
+            className="hover-nav-link"
             role="menuitem"
             aria-label="Ir para página de votação"
           >
@@ -257,7 +179,7 @@ const Navbar = () => {
           <Link
             to="/ratings"
             style={styles.navLink}
-            className="hover-nav-link mobile-nav-link mobile-landscape-nav-link mobile-small-nav-link mobile-small-landscape-nav-link touch-friendly"
+            className="hover-nav-link"
             role="menuitem"
             aria-label="Ir para página de avaliação dos jogadores"
           >
@@ -266,7 +188,7 @@ const Navbar = () => {
           <Link
             to="/squad"
             style={styles.navLink}
-            className="hover-nav-link mobile-nav-link mobile-landscape-nav-link mobile-small-nav-link mobile-small-landscape-nav-link touch-friendly"
+            className="hover-nav-link"
             role="menuitem"
             aria-label="Ir para página do plantel"
           >
@@ -275,7 +197,7 @@ const Navbar = () => {
           <Link
             to="/news"
             style={styles.navLink}
-            className="hover-nav-link mobile-nav-link mobile-landscape-nav-link mobile-small-nav-link mobile-small-landscape-nav-link touch-friendly"
+            className="hover-nav-link"
             role="menuitem"
             aria-label="Ir para página de notícias"
           >
@@ -284,7 +206,7 @@ const Navbar = () => {
           <Link
             to="/schedule"
             style={styles.navLink}
-            className="hover-nav-link mobile-nav-link mobile-landscape-nav-link mobile-small-nav-link mobile-small-landscape-nav-link touch-friendly"
+            className="hover-nav-link"
             role="menuitem"
             aria-label="Ir para página de calendário"
           >
@@ -293,7 +215,7 @@ const Navbar = () => {
           <Link
             to="/history"
             style={styles.navLink}
-            className="hover-nav-link mobile-nav-link mobile-landscape-nav-link mobile-small-nav-link mobile-small-landscape-nav-link touch-friendly"
+            className="hover-nav-link"
             role="menuitem"
             aria-label="Ir para página de história"
           >
@@ -302,7 +224,7 @@ const Navbar = () => {
           <Link
             to="/chat"
             style={styles.navLink}
-            className="hover-nav-link mobile-nav-link mobile-landscape-nav-link mobile-small-nav-link mobile-small-landscape-nav-link touch-friendly"
+            className="hover-nav-link"
             role="menuitem"
             aria-label="Ir para página de discussões"
           >
@@ -317,7 +239,7 @@ const Navbar = () => {
                 border: '2px solid #FFD700',
                 boxShadow: '0 0.2vh 0.8vh rgba(255, 107, 53, 0.3)',
               }}
-              className="hover-nav-link mobile-nav-link mobile-landscape-nav-link mobile-small-nav-link mobile-small-landscape-nav-link touch-friendly"
+              className="hover-nav-link"
               role="menuitem"
               aria-label="Ir para painel de administração"
             >
@@ -326,10 +248,10 @@ const Navbar = () => {
           )}
         </div>
 
-        <div style={styles.rightSection} className="mobile-right-section">
+        <div style={styles.rightSection}>
           <button
             style={styles.logoutButton}
-            className="hover-logout touch-friendly-button mobile-button-readable"
+            className="hover-logout"
             onClick={handleLogout}
             aria-label="Terminar sessão"
           >
