@@ -1,14 +1,16 @@
 /* Mobile Responsive Styles - Mantém estilos desktop intactos */
 
-/* Orientação base - aplicada a todo o body */
-@media (orientation: landscape) {
+/* Orientação base - APENAS para dispositivos móveis */
+@media (max-width: 768px) and (orientation: landscape) {
   body {
+    display: flex;
     flex-direction: row;
   }
 }
 
-@media (orientation: portrait) {
+@media (max-width: 768px) and (orientation: portrait) {
   body {
+    display: flex;
     flex-direction: column;
   }
 }
@@ -25,130 +27,130 @@
   /* Ajustes para orientação portrait em mobile */
   @media (orientation: portrait) {
     .mobile-hero-section {
-      padding: 1.5rem 1rem !important;
-      margin-bottom: 1.5rem !important;
+      padding: 1.5rem 1rem;
+      margin-bottom: 1.5rem;
     }
 
     .mobile-main-grid {
-      grid-template-columns: 1fr !important;
-      gap: 1.5rem !important;
+      grid-template-columns: 1fr;
+      gap: 1.5rem;
     }
 
     .mobile-players-grid {
-      grid-template-columns: repeat(2, 1fr) !important;
-      gap: 1rem !important;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1rem;
     }
 
     .mobile-navbar-content {
-      flex-wrap: wrap !important;
-      gap: 0.5rem !important;
-      min-height: auto !important;
-      padding: 1rem 0.5rem !important;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      min-height: auto;
+      padding: 1rem 0.5rem;
     }
 
     .mobile-nav-links {
-      order: 3 !important;
-      width: 100% !important;
-      justify-content: space-around !important;
-      gap: 0.5rem !important;
-      margin-top: 0.5rem !important;
+      order: 3;
+      width: 100%;
+      justify-content: space-around;
+      gap: 0.5rem;
+      margin-top: 0.5rem;
     }
 
     .mobile-nav-link {
-      font-size: 3.5vw !important;
-      padding: 0.6rem 1rem !important;
-      flex: 1 !important;
-      text-align: center !important;
-      min-width: 0 !important;
+      font-size: 3.5vw;
+      padding: 0.6rem 1rem;
+      flex: 1;
+      text-align: center;
+      min-width: 0;
     }
 
     .mobile-logo-section {
-      order: 1 !important;
-      margin-right: 0 !important;
+      order: 1;
+      margin-right: 0;
     }
 
     .mobile-right-section {
-      order: 2 !important;
-      margin-left: 0 !important;
+      order: 2;
+      margin-left: 0;
     }
 
     .mobile-transfer-card {
-      padding: 1.25rem 1rem !important;
+      padding: 1.25rem 1rem;
     }
 
     .mobile-transfer-header {
-      flex-direction: column !important;
-      align-items: flex-start !important;
-      gap: 0.75rem !important;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.75rem;
     }
 
     .mobile-transfer-details {
-      grid-template-columns: 1fr !important;
-      gap: 1rem !important;
+      grid-template-columns: 1fr;
+      gap: 1rem;
     }
 
     .mobile-section-padding {
-      padding: 1.5rem 1rem !important;
+      padding: 1.5rem 1rem;
     }
 
     .mobile-sidebar {
-      order: -1 !important;
+      order: -1;
     }
 
     .mobile-poll-title {
-      white-space: normal !important;
-      overflow: visible !important;
-      text-overflow: unset !important;
+      white-space: normal;
+      overflow: visible;
+      text-overflow: unset;
     }
 
     .mobile-custom-poll-title {
-      white-space: normal !important;
-      overflow: visible !important;
-      text-overflow: unset !important;
+      white-space: normal;
+      overflow: visible;
+      text-overflow: unset;
     }
   }
 
   /* Ajustes para orientação landscape em mobile */
   @media (orientation: landscape) {
     .mobile-landscape-navbar {
-      padding: 0.5rem 1rem !important;
+      padding: 0.5rem 1rem;
     }
 
     .mobile-landscape-content {
-      padding: 7rem 1rem 1rem !important;
+      padding: 7rem 1rem 1rem;
     }
 
     .mobile-landscape-hero {
-      padding: 1.5rem 2rem !important;
-      margin-bottom: 1.5rem !important;
+      padding: 1.5rem 2rem;
+      margin-bottom: 1.5rem;
     }
 
     .mobile-landscape-main-grid {
-      grid-template-columns: 2fr 1fr !important;
-      gap: 1.5rem !important;
+      grid-template-columns: 2fr 1fr;
+      gap: 1.5rem;
     }
 
     .mobile-landscape-players-grid {
-      grid-template-columns: repeat(4, 1fr) !important;
-      gap: 1rem !important;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1rem;
     }
 
     .mobile-landscape-nav-links {
-      gap: 1rem !important;
+      gap: 1rem;
     }
 
     .mobile-landscape-nav-link {
-      font-size: 2.5vw !important;
-      padding: 0.5rem 1rem !important;
+      font-size: 2.5vw;
+      padding: 0.5rem 1rem;
     }
 
     .mobile-landscape-transfer-header {
-      flex-direction: row !important;
-      align-items: center !important;
+      flex-direction: row;
+      align-items: center;
     }
 
     .mobile-landscape-transfer-details {
-      grid-template-columns: 1fr auto auto !important;
+      grid-template-columns: 1fr auto auto;
     }
   }
 }
@@ -157,74 +159,74 @@
 @media (max-width: 480px) {
   @media (orientation: portrait) {
     .mobile-small-players-grid {
-      grid-template-columns: 1fr 1fr !important;
-      gap: 0.75rem !important;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.75rem;
     }
 
     .mobile-small-nav-link {
-      font-size: 4vw !important;
-      padding: 0.5rem 0.75rem !important;
+      font-size: 4vw;
+      padding: 0.5rem 0.75rem;
     }
 
     .mobile-small-section-padding {
-      padding: 1rem 0.75rem !important;
+      padding: 1rem 0.75rem;
     }
 
     .mobile-small-hero {
-      padding: 1rem 0.75rem !important;
+      padding: 1rem 0.75rem;
     }
   }
 
   @media (orientation: landscape) {
     .mobile-small-landscape-players-grid {
-      grid-template-columns: repeat(3, 1fr) !important;
+      grid-template-columns: repeat(3, 1fr);
     }
 
     .mobile-small-landscape-nav-link {
-      font-size: 3vw !important;
-      padding: 0.4rem 0.8rem !important;
+      font-size: 3vw;
+      padding: 0.4rem 0.8rem;
     }
   }
 }
 
-/* Ajustes para melhorar a interação touch */
+/* Ajustes para melhorar a interação touch - APENAS mobile */
 @media (max-width: 768px) {
   .touch-friendly {
-    min-height: 44px !important;
-    min-width: 44px !important;
+    min-height: 44px;
+    min-width: 44px;
   }
 
   .touch-friendly-button {
-    padding: 0.75rem 1.5rem !important;
-    font-size: 1rem !important;
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
   }
 
   .touch-friendly-card {
-    padding: 1.25rem !important;
+    padding: 1.25rem;
   }
 
   /* Reduz animações em mobile para melhor performance */
   .reduce-motion * {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms;
+    animation-iteration-count: 1;
+    transition-duration: 0.01ms;
   }
 }
 
 /* Ajustes específicos para melhorar a legibilidade em mobile */
 @media (max-width: 768px) {
   .mobile-text-readable {
-    font-size: clamp(1rem, 4vw, 1.25rem) !important;
-    line-height: 1.5 !important;
+    font-size: clamp(1rem, 4vw, 1.25rem);
+    line-height: 1.5;
   }
 
   .mobile-title-readable {
-    font-size: clamp(1.5rem, 6vw, 2.5rem) !important;
-    line-height: 1.2 !important;
+    font-size: clamp(1.5rem, 6vw, 2.5rem);
+    line-height: 1.2;
   }
 
   .mobile-button-readable {
-    font-size: clamp(1rem, 4vw, 1.125rem) !important;
-    font-weight: 700 !important;
+    font-size: clamp(1rem, 4vw, 1.125rem);
+    font-weight: 700;
   }
 } 

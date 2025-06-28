@@ -521,46 +521,4 @@ textarea,
   }
 }
 
-/* Additional mobile-specific improvements */
-@media (max-width: 768px) and (orientation: portrait) {
-  /* Improve text readability on mobile portrait */
-  body {
-    font-size: 16px !important;
-    line-height: 1.6 !important;
-  }
-  
-  /* Ensure buttons are large enough for touch */
-  button, .hover-button, .touch-friendly-button {
-    min-height: 44px !important;
-    padding: 0.75rem 1.5rem !important;
-    font-size: 1rem !important;
-  }
-  
-  /* Improve card spacing in portrait mode */
-  .hover-card, .touch-friendly-card {
-    margin-bottom: 1rem !important;
-  }
-  
-  /* Better spacing for navigation in portrait */
-  nav a, .mobile-nav-link {
-    padding: 0.75rem 1rem !important;
-    margin: 0.25rem !important;
-  }
-}
-
-@media (max-width: 768px) and (orientation: landscape) {
-  /* Optimize for landscape mobile viewing */
-  .mobile-landscape-players-grid {
-    grid-template-columns: repeat(4, 1fr) !important;
-  }
-  
-  .mobile-landscape-main-grid {
-    grid-template-columns: 2fr 1fr !important;
-  }
-  
-  /* Compact navigation for landscape */
-  .mobile-landscape-nav-link {
-    padding: 0.5rem 0.75rem !important;
-    font-size: 0.9rem !important;
-  }
-} 
+ 
