@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
-import Navbar from '../components/Navbar';
+import PageLayout from '../components/PageLayout';
 import LayoutStabilizer from '../components/LayoutStabilizer';
 import { createStyles } from '../styles/styleUtils';
+import useIsMobile from '../hooks/useIsMobile';
 
 interface HistoryEvent {
   id: number;
@@ -14,6 +15,7 @@ interface HistoryEvent {
 }
 
 const HistoryPage = () => {
+  const isMobile = useIsMobile();
   const [selectedCategory, setSelectedCategory] = useState<string>('todos');
   const [selectedEvent, setSelectedEvent] = useState<HistoryEvent | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -310,7 +312,9 @@ const HistoryPage = () => {
     content: {
       maxWidth: '1400px',
       margin: '0 auto',
-      padding: '4vh 3vw',
+      padding: isMobile 
+        ? '70px 1rem 1rem' // Mobile: padding top para header + spacing
+        : '4vh 3vw', // Desktop original
       position: 'relative',
       zIndex: 2,
     },
@@ -619,12 +623,14 @@ const HistoryPage = () => {
   }, []);
 
   return (
-    <LayoutStabilizer>
-      <div style={styles.container}>
-        <div style={styles.backgroundPattern}></div>
-        <Navbar />
-                  
-          <div style={{...styles.content, paddingTop: "clamp(8rem, 10vh, 10rem)"}}>
+    <PageLayout>
+      <LayoutStabilizer>
+        <div style={styles.container}>
+          <div style={styles.backgroundPattern}></div>
+          <div style={{
+            ...styles.content, 
+            paddingTop: isMobile ? "70px" : "clamp(8rem, 10vh, 10rem)"
+          }}>
           {/* Hero Section */}
           <div style={styles.heroSection}>
             <div style={styles.heroAccent}></div>
@@ -668,9 +674,22 @@ const HistoryPage = () => {
                   }}
                   onClick={() => openModal(event)}
                 >
-                  <div style={styles.eventYear}>{event.year}</div>
-                  <h3 style={styles.eventTitle}>{event.title}</h3>
-                  <p style={styles.eventDescription}>
+                  <div 
+                    style={styles.eventYear}
+                    className={isMobile ? "mobile-history-event-year" : ""}
+                  >
+                    {event.year}
+                  </div>
+                  <h3 
+                    style={styles.eventTitle}
+                    className={isMobile ? "mobile-history-event-title" : ""}
+                  >
+                    {event.title}
+                  </h3>
+                  <p 
+                    style={styles.eventDescription}
+                    className={isMobile ? "mobile-history-event-description" : ""}
+                  >
                     {event.description.length > 120 
                       ? `${event.description.substring(0, 120)}...` 
                       : event.description}
@@ -680,6 +699,7 @@ const HistoryPage = () => {
                       ...styles.eventCategory,
                       backgroundColor: getCategoryColor(event.category),
                     }}
+                    className={isMobile ? "mobile-history-event-category" : ""}
                   >
                     {categories.find(c => c.id === event.category)?.name}
                   </span>
@@ -721,6 +741,7 @@ const HistoryPage = () => {
         )}
       </div>
     </LayoutStabilizer>
+    </PageLayout>
   );
 };
 

@@ -1,10 +1,12 @@
 import { useState, useEffect, useCallback } from "react";
 import Navbar from "../components/Navbar";
 import { createStyles } from "../styles/styleUtils";
+import useIsMobile from "../hooks/useIsMobile";
 import { newsService } from "../services/newsService";
 import type { NewsItem } from "../services/newsService";
 
 const NewsPage = () => {
+  const isMobile = useIsMobile();
   const [news, setNews] = useState<NewsItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -320,7 +322,12 @@ const NewsPage = () => {
     <div style={styles.container}>
       <div style={styles.backgroundPattern} className="background-pattern"></div>
       <Navbar />
-      <div style={styles.content}>
+      <div style={{
+        ...styles.content,
+        padding: isMobile 
+          ? '70px 1rem 1rem' // Mobile: padding top para header + spacing
+          : "clamp(8rem, 10vh, 10rem) clamp(0.5rem, 1vw, 1.5rem) clamp(1rem, 2vh, 2rem)" // Desktop original
+      }}>
         <div style={styles.heroSection}>
           <div style={styles.heroAccent}></div>
           <h1 style={styles.heroTitle}>Notícias do CS Marítimo</h1>

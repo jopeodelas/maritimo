@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import Navbar from '../components/Navbar';
+import PageLayout from '../components/PageLayout';
 import { createStyles } from '../styles/styleUtils';
+import useIsMobile from '../hooks/useIsMobile';
 import api from '../services/api';
 import type { Discussion, Comment } from '../types';
 
@@ -38,6 +39,7 @@ const PlusIcon = () => (
 
 const ChatPage = () => {
   const { user } = useAuth();
+  const isMobile = useIsMobile();
   const [discussions, setDiscussions] = useState<Discussion[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCreateForm, setShowCreateForm] = useState(false);
@@ -925,12 +927,17 @@ const ChatPage = () => {
   });
 
   return (
-    <div style={styles.container}>
-      <div style={styles.backgroundPattern}></div>
-      <Navbar />
-      
-      {/* Original layout - only show when drawer is closed */}
-      <div style={styles.content}>
+    <PageLayout>
+      <div style={styles.container}>
+        <div style={styles.backgroundPattern}></div>
+        
+        {/* Original layout - only show when drawer is closed */}
+        <div style={{
+          ...styles.content,
+          padding: isMobile 
+            ? '70px 1rem 1rem' // Mobile: padding top para header + spacing
+            : undefined // Desktop original
+        }}>
         {/* Hero Section */}
         <div style={styles.heroSection}>
           <div style={styles.heroAccent}></div>
@@ -972,28 +979,45 @@ const ChatPage = () => {
             A carregar discussões...
           </div>
         ) : (
-          <div style={styles.discussionsList}>
+          <div 
+            style={styles.discussionsList}
+            className={isMobile ? "mobile-chat-discussions-list" : ""}
+          >
             {filteredDiscussions.map((discussion) => (
               <div
                 key={discussion.id}
                 style={styles.discussionCard}
-                className="hover-card"
+                className={isMobile ? "mobile-chat-discussion-item hover-card" : "hover-card"}
                 onClick={() => openDiscussion(discussion)}
               >
                 <div style={styles.discussionHeader}>
                   <div>
-                    <h3 style={styles.discussionTitle}>{discussion.title}</h3>
-                    <div style={styles.discussionMeta}>
+                    <h3 
+                      style={styles.discussionTitle}
+                      className={isMobile ? "mobile-chat-discussion-title" : ""}
+                    >
+                      {discussion.title}
+                    </h3>
+                    <div 
+                      style={styles.discussionMeta}
+                      className={isMobile ? "mobile-chat-discussion-meta" : ""}
+                    >
                       Por {discussion.author_username} • {formatDate(discussion.created_at)}
                     </div>
                   </div>
                 </div>
-                <p style={styles.discussionDescription}>
+                <p 
+                  style={styles.discussionDescription}
+                  className={isMobile ? "mobile-chat-discussion-description" : ""}
+                >
                   {discussion.description.length > 200 
                     ? `${discussion.description.substring(0, 200)}...` 
                     : discussion.description}
                 </p>
-                <div style={styles.discussionStats}>
+                <div 
+                  style={styles.discussionStats}
+                  className={isMobile ? "mobile-chat-discussion-meta" : ""}
+                >
                   <span>{discussion.comment_count} comentários</span>
                   <span>Última atividade: {formatDate(discussion.last_activity)}</span>
                 </div>
@@ -1365,6 +1389,7 @@ const ChatPage = () => {
         }
       `}</style>
     </div>
+    </PageLayout>
   );
 };
 

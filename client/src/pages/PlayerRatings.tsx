@@ -959,7 +959,10 @@ const PlayerRatings = () => {
                 </div>
 
                 <div style={styles.ratingsSection}>
-                  <div style={styles.ratingButtons}>
+                  <div 
+                    style={styles.ratingButtons}
+                    className={isMobile ? "mobile-maritodle-ratings-container" : ""}
+                  >
                     {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((rating) => (
                       <button
                         key={rating}
@@ -973,7 +976,7 @@ const PlayerRatings = () => {
                           handleRatingChange(player.id, rating);
                         }}
                         disabled={hasVoted}
-                        className="hover-button"
+                        className={isMobile ? "mobile-maritodle-rating-item hover-button" : "hover-button"}
                       >
                         {rating}
                       </button>
@@ -983,7 +986,10 @@ const PlayerRatings = () => {
                   {/* REMOVER COMPLETAMENTE - não mostrar número à direita */}
                 </div>
 
-                <div style={styles.manOfMatchSection}>
+                <div 
+                  style={styles.manOfMatchSection}
+                  className={isMobile ? "mobile-maritodle-star-container" : ""}
+                >
                   <button
                     style={{
                       ...styles.manOfMatchButton,

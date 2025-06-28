@@ -271,6 +271,15 @@ const Squad = () => {
       textAlign: "center",
       padding: isMobile ? "0 0.5rem" : "0 2%",
     },
+    playerPosition: {
+      fontSize: "clamp(0.7rem, 1.2vh, 0.9rem)",
+      fontWeight: "600",
+      margin: isMobile ? "0.25rem 0 0 0" : "0.25rem 0 0 0",
+      color: "#4CAF50",
+      lineHeight: "1.1",
+      textAlign: "center",
+      padding: isMobile ? "0 0.5rem" : "0 2%",
+    },
 
     loading: {
       display: 'flex',
@@ -418,26 +427,30 @@ const Squad = () => {
     <div 
       key={player.id} 
       style={styles.playerCard}
-      className="hover-player-card"
+      className={isMobile ? "mobile-squad-player-card hover-player-card" : "hover-player-card"}
       onMouseEnter={(e) => {
-        const card = e.currentTarget;
-        card.style.transform = 'translateY(-1vh) scale(1.02)';
-        card.style.boxShadow = '0 6px 20px rgba(76, 175, 80, 0.4)';
-        card.style.borderColor = 'rgba(76, 175, 80, 1)';
-        const glow = card.querySelector('.player-glow') as HTMLElement;
-        if (glow) glow.style.opacity = '1';
-        const image = card.querySelector('img') as HTMLElement;
-        if (image) image.style.transform = 'scale(1.05)';
+        if (!isMobile) {
+          const card = e.currentTarget;
+          card.style.transform = 'translateY(-1vh) scale(1.02)';
+          card.style.boxShadow = '0 6px 20px rgba(76, 175, 80, 0.4)';
+          card.style.borderColor = 'rgba(76, 175, 80, 1)';
+          const glow = card.querySelector('.player-glow') as HTMLElement;
+          if (glow) glow.style.opacity = '1';
+          const image = card.querySelector('img') as HTMLElement;
+          if (image) image.style.transform = 'scale(1.05)';
+        }
       }}
       onMouseLeave={(e) => {
-        const card = e.currentTarget;
-        card.style.transform = 'translateY(0) scale(1)';
-        card.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.4)';
-        card.style.borderColor = 'rgba(76, 175, 80, 0.6)';
-        const glow = card.querySelector('.player-glow') as HTMLElement;
-        if (glow) glow.style.opacity = '0';
-        const image = card.querySelector('img') as HTMLElement;
-        if (image) image.style.transform = 'scale(1)';
+        if (!isMobile) {
+          const card = e.currentTarget;
+          card.style.transform = 'translateY(0) scale(1)';
+          card.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.4)';
+          card.style.borderColor = 'rgba(76, 175, 80, 0.6)';
+          const glow = card.querySelector('.player-glow') as HTMLElement;
+          if (glow) glow.style.opacity = '0';
+          const image = card.querySelector('img') as HTMLElement;
+          if (image) image.style.transform = 'scale(1)';
+        }
       }}
     >
       <div style={styles.playerCardGlow} className="player-glow"></div>
@@ -450,6 +463,7 @@ const Squad = () => {
           imageUrl={player.image_url}
           playerName={player.name}
           style={styles.playerImage}
+          className={isMobile ? "mobile-squad-player-image" : ""}
           loading="lazy"
           width="200"
           height="200"
@@ -457,7 +471,18 @@ const Squad = () => {
         />
       </div>
       
-      <h3 style={styles.playerName}>{player.name}</h3>
+      <h3 
+        style={styles.playerName}
+        className={isMobile ? "mobile-squad-player-name" : ""}
+      >
+        {player.name}
+      </h3>
+      <p 
+        style={styles.playerPosition}
+        className={isMobile ? "mobile-squad-player-position" : ""}
+      >
+        {player.position}
+      </p>
     </div>
   );
 

@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
-import Navbar from '../components/Navbar';
+import PageLayout from '../components/PageLayout';
 import { createStyles } from '../styles/styleUtils';
+import useIsMobile from '../hooks/useIsMobile';
 import api from '../services/api';
 import maritimoLogo from '../assets/maritimo-crest.png';
 
@@ -31,6 +32,7 @@ interface Tentativa {
 }
 
 const MaritodlePage = () => {
+  const isMobile = useIsMobile();
   const [nomes, setNomes] = useState<string[]>([]);
   const [inputValue, setInputValue] = useState('');
   const [tentativas, setTentativas] = useState<Tentativa[]>([]);
@@ -413,17 +415,7 @@ const MaritodlePage = () => {
     }
   };
 
-  const desistir = async () => {
-    try {
-      const response = await api.post('/maritodle/desistir');
-      const state: GameState = response.data;
-      setGameState(state);
-      setModalType('derrota');
-      setShowModal(true);
-    } catch (error) {
-      console.error('Erro ao desistir:', error);
-    }
-  };
+  // Função desistir removida conforme solicitado
 
   const selecionarNome = (nome: string) => {
     setInputValue(nome);
@@ -1244,10 +1236,15 @@ const MaritodlePage = () => {
   };
 
   return (
-    <div style={styles.container}>
-      <div style={styles.backgroundPattern}></div>
-      <Navbar />
-      <div style={styles.content}>
+    <PageLayout>
+      <div style={styles.container}>
+        <div style={styles.backgroundPattern}></div>
+        <div style={{
+          ...styles.content,
+          padding: isMobile 
+            ? '70px 1rem 1rem' // Mobile: padding top para header + spacing
+            : 'clamp(8rem, 10vh, 10rem) 2vw clamp(8rem, 10vh, 10rem)' // Desktop original
+        }}>
         {/* Hero Section */}
         <div style={styles.heroSection}>
           <div style={styles.heroAccent}></div>
@@ -1315,14 +1312,7 @@ const MaritodlePage = () => {
             >
               {loading ? 'Enviando...' : 'Enviar'}
             </button>
-            <button
-              type="button"
-              style={styles.giveUpButton}
-              onClick={desistir}
-              disabled={loading || gameState?.venceu || gameState?.perdeu || tentativas.length === 0}
-            >
-              Desistir
-            </button>
+            {/* Botão desistir removido conforme solicitado */}
 
           </form>
           {error && <div style={styles.error}>{error}</div>}
@@ -1638,6 +1628,7 @@ const MaritodlePage = () => {
         )}
       </div>
     </div>
+    </PageLayout>
   );
 };
 

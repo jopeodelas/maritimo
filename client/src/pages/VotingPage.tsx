@@ -461,10 +461,23 @@ const VotingPage = () => {
         </div>
         
         <div style={styles.playerInfo}>
-          <h3 style={styles.playerName}>{player.name}</h3>
-          <p style={styles.playerPosition}>{player.position}</p>
+          <h3 
+            style={styles.playerName}
+            className={isMobile ? "mobile-voting-player-name" : ""}
+          >
+            {player.name}
+          </h3>
+          <p 
+            style={styles.playerPosition}
+            className={isMobile ? "mobile-voting-player-position" : ""}
+          >
+            {player.position}
+          </p>
           <div style={styles.playerStats}>
-            <div style={styles.voteCount}>
+            <div 
+              style={styles.voteCount}
+              className={isMobile ? "mobile-voting-player-votes" : ""}
+            >
                {player.vote_count} votes
             </div>
             <div style={styles.playerNumber}>#{index + 1}</div>
