@@ -1,5 +1,5 @@
 import { useEffect, useRef, useCallback } from 'react';
-import { track } from '@vercel/analytics';
+import ReactGA from 'react-ga4';
 import { useAuth } from '../contexts/AuthContext';
 import api from '../services/api';
 
@@ -33,8 +33,13 @@ const getPagePerformance = () => {
     ttfb: navigation?.responseStart - navigation?.requestStart,
     fcp: fcp,
     lcp: lcp,
-    // Note: CLS e FID requerem APIs mais específicas que serão capturadas pelo Vercel Speed Insights
+    // Note: CLS e FID requerem APIs mais específicas que podem ser capturadas separadamente
   };
+};
+
+// Verificar se Google Analytics está ativo
+const isGAEnabled = () => {
+  return import.meta.env.PROD && typeof window !== 'undefined' && 'gtag' in window;
 };
 
 export const useAnalytics = () => {
@@ -92,13 +97,8 @@ export const useAnalytics = () => {
 
   // Inicializar sessão
   useEffect(() => {
-    const sessionId = getSessionId();
-    
     // Enviar sessão para PostgreSQL
     sendSessionToPostgreSQL();
-    
-    // Rastrear page view
-    trackPageView();
     
     // Enviar performance após carregamento completo
     if (document.readyState === 'complete') {
@@ -111,7 +111,7 @@ export const useAnalytics = () => {
     return () => {
       window.removeEventListener('load', sendPerformanceToPostgreSQL);
     };
-  }, []); // Só executa uma vez por sessão
+  }, [sendSessionToPostgreSQL, sendPerformanceToPostgreSQL]);
 
   // Rastrear page view
   const trackPageView = useCallback((customData?: any) => {
@@ -125,14 +125,20 @@ export const useAnalytics = () => {
       }
     };
 
-    // Enviar para Vercel
-    track('page_view', eventData.eventData);
+    // Enviar para Google Analytics
+    if (isGAEnabled()) {
+      ReactGA.send({
+        hitType: 'pageview',
+        page: window.location.pathname + window.location.search,
+        title: document.title
+      });
+    }
     
     // Enviar para PostgreSQL
     sendToPostgreSQL(eventData);
     
     eventsCountRef.current++;
-  }, [sendToPostgreSQL]);
+  }, [sendToPostgreSQL, user, getSessionId]);
 
   // Rastrear evento personalizado
   const trackEvent = useCallback((eventName: string, eventCategory?: string, eventData?: any) => {
@@ -147,14 +153,26 @@ export const useAnalytics = () => {
       }
     };
 
-    // Enviar para Vercel
-    track(eventName, fullEventData.eventData);
+    // Enviar para Google Analytics
+    if (isGAEnabled()) {
+      ReactGA.event({
+        action: eventName,
+        category: eventCategory || 'user_interaction',
+        label: eventData?.label || undefined,
+        value: eventData?.value || undefined
+      });
+    }
     
     // Enviar para PostgreSQL
     sendToPostgreSQL(fullEventData);
     
     eventsCountRef.current++;
-  }, [sendToPostgreSQL]);
+  }, [sendToPostgreSQL, user, getSessionId]);
+
+  // Rastrear page view automático quando o hook é inicializado
+  useEffect(() => {
+    trackPageView();
+  }, [trackPageView]);
 
   // Eventos específicos do CS Marítimo
   const trackVote = useCallback((playerId: number, rating: number, matchId?: number) => {
@@ -162,7 +180,9 @@ export const useAnalytics = () => {
       playerId,
       rating,
       matchId,
-      userAuthenticated: !!user
+      userAuthenticated: !!user,
+      label: `Player ${playerId}`,
+      value: rating
     });
   }, [trackEvent, user]);
 
@@ -170,7 +190,9 @@ export const useAnalytics = () => {
     trackEvent('poll_vote', 'polls', {
       pollId,
       optionId,
-      userAuthenticated: !!user
+      userAuthenticated: !!user,
+      label: `Poll ${pollId}`,
+      value: optionId
     });
   }, [trackEvent, user]);
 
@@ -179,7 +201,9 @@ export const useAnalytics = () => {
       success,
       attempts,
       playerId,
-      userAuthenticated: !!user
+      userAuthenticated: !!user,
+      label: success ? 'Success' : 'Failed',
+      value: attempts
     });
   }, [trackEvent, user]);
 
@@ -187,7 +211,8 @@ export const useAnalytics = () => {
     trackEvent('player_view', 'content', {
       playerId,
       source, // 'squad', 'ratings', 'search', etc.
-      userAuthenticated: !!user
+      userAuthenticated: !!user,
+      label: `Player ${playerId} from ${source}`
     });
   }, [trackEvent, user]);
 
@@ -195,14 +220,16 @@ export const useAnalytics = () => {
     trackEvent('news_view', 'content', {
       newsId,
       title,
-      userAuthenticated: !!user
+      userAuthenticated: !!user,
+      label: title
     });
   }, [trackEvent, user]);
 
   const trackTransferView = useCallback ((rumorId: number) => {
     trackEvent('transfer_view', 'content', {
       rumorId,
-      userAuthenticated: !!user
+      userAuthenticated: !!user,
+      label: `Transfer Rumor ${rumorId}`
     });
   }, [trackEvent, user]);
 
@@ -210,14 +237,17 @@ export const useAnalytics = () => {
     trackEvent('search', 'interaction', {
       query,
       results,
-      userAuthenticated: !!user
+      userAuthenticated: !!user,
+      label: query,
+      value: results
     });
   }, [trackEvent, user]);
 
   const trackAuth = useCallback((action: 'login' | 'logout' | 'register') => {
     trackEvent('auth', 'user', {
       action,
-      userId: user?.id
+      userId: user?.id,
+      label: action
     });
   }, [trackEvent, user]);
 
@@ -225,7 +255,8 @@ export const useAnalytics = () => {
     trackEvent('error', 'system', {
       error,
       context,
-      userAuthenticated: !!user
+      userAuthenticated: !!user,
+      label: `${context}: ${error}`
     });
   }, [trackEvent, user]);
 
@@ -233,7 +264,8 @@ export const useAnalytics = () => {
     trackEvent('button_click', 'interaction', {
       buttonName,
       context,
-      userAuthenticated: !!user
+      userAuthenticated: !!user,
+      label: `${context}: ${buttonName}`
     });
   }, [trackEvent, user]);
 
@@ -241,7 +273,9 @@ export const useAnalytics = () => {
     trackEvent('section_view', 'content', {
       sectionName,
       timeSpent,
-      userAuthenticated: !!user
+      userAuthenticated: !!user,
+      label: sectionName,
+      value: timeSpent
     });
   }, [trackEvent, user]);
 
@@ -250,7 +284,9 @@ export const useAnalytics = () => {
       formName,
       success,
       errors,
-      userAuthenticated: !!user
+      userAuthenticated: !!user,
+      label: `${formName}: ${success ? 'Success' : 'Failed'}`,
+      value: success ? 1 : 0
     });
   }, [trackEvent, user]);
 

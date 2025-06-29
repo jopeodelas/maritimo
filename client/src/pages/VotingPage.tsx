@@ -4,6 +4,7 @@ import PlayerImage from '../components/PlayerImage';
 import { createStyles } from '../styles/styleUtils';
 import useIsMobile from '../hooks/useIsMobile';
 import api from '../services/api';
+import { useAnalytics } from '../hooks/useAnalytics';
 
 interface Player {
   id: number;
@@ -20,6 +21,8 @@ const VotingPage = () => {
   const [selectedPlayers, setSelectedPlayers] = useState<number[]>([]);
   const [loading, setLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const analytics = useAnalytics();
 
   const styles = createStyles({
     container: {
@@ -354,11 +357,21 @@ const VotingPage = () => {
     
     setIsSubmitting(true);
     try {
+      // Analytics: rastrear tentativa de voto
+      analytics.trackButtonClick('submit_votes', 'voting_page');
+      
       await Promise.all(
         selectedPlayers.map(playerId => 
           api.post('/votes', { playerId })
         )
       );
+      
+      // Analytics: rastrear votos submetidos com sucesso
+      selectedPlayers.forEach(playerId => {
+        analytics.trackVote(playerId, 1); // 1 = voto simples
+      });
+      
+      analytics.trackFormSubmit('player_voting', true);
       
       setUserVotes([...userVotes, ...selectedPlayers]);
       setPlayers(players.map(player => 
@@ -369,6 +382,9 @@ const VotingPage = () => {
       setSelectedPlayers([]);
     } catch (err) {
       console.error(err);
+      // Analytics: rastrear erro na votação
+      analytics.trackError(err instanceof Error ? err.message : 'Unknown error', 'voting_submission');
+      analytics.trackFormSubmit('player_voting', false, [err instanceof Error ? err.message : 'Unknown error']);
     } finally {
       setIsSubmitting(false);
     }

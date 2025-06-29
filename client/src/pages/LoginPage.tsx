@@ -4,9 +4,11 @@ import { useAuth } from '../contexts/AuthContext';
 import { createStyles } from '../styles/styleUtils';
 import maritimoCrest from '../assets/maritimo-crest.png';
 import useIsMobile from '../hooks/useIsMobile';
+import { useAnalytics } from '../hooks/useAnalytics';
 
 const LoginPage = () => {
   const isMobile = useIsMobile();
+  const analytics = useAnalytics();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -18,19 +20,31 @@ const LoginPage = () => {
     setError('');
     
     try {
+      analytics.trackButtonClick('login_submit', 'auth_form');
       await login(email, password);
+      analytics.trackAuth('login');
+      analytics.trackFormSubmit('login_form', true);
       navigate('/main');
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Login failed. Please try again.');
+      const errorMessage = err.response?.data?.message || 'Login failed. Please try again.';
+      setError(errorMessage);
+      analytics.trackError(errorMessage, 'login_form');
+      analytics.trackFormSubmit('login_form', false, [errorMessage]);
     }
   };
 
   const handleGoogleLogin = async () => {
     try {
+      analytics.trackButtonClick('google_login', 'auth_form');
       await loginWithGoogle();
+      analytics.trackAuth('login');
+      analytics.trackEvent('google_login_success', 'auth');
       navigate('/main');
     } catch (err: any) {
-      setError('Google login failed. Please try again.');
+      const errorMessage = 'Google login failed. Please try again.';
+      setError(errorMessage);
+      analytics.trackError(errorMessage, 'google_login');
+      analytics.trackEvent('google_login_failed', 'auth', { error: err.message });
     }
   };
 
