@@ -39,7 +39,11 @@ const getPagePerformance = () => {
 
 // Verificar se Google Analytics está ativo
 const isGAEnabled = () => {
-  return import.meta.env.PROD && typeof window !== 'undefined' && 'gtag' in window;
+  const measurementId = import.meta.env.VITE_GA4_MEASUREMENT_ID;
+  return import.meta.env.PROD && 
+         measurementId && 
+         measurementId !== 'G-XXXXXXXXXX' && 
+         typeof window !== 'undefined';
 };
 
 export const useAnalytics = () => {
@@ -47,6 +51,18 @@ export const useAnalytics = () => {
   const sessionIdRef = useRef<string | null>(null);
   const pageLoadTimeRef = useRef<number>(Date.now());
   const eventsCountRef = useRef<number>(0);
+
+  // Debug Google Analytics status
+  useEffect(() => {
+    const measurementId = import.meta.env.VITE_GA4_MEASUREMENT_ID;
+    const isEnabled = isGAEnabled();
+    console.log('🔍 GA4 Debug Info:', {
+      isProd: import.meta.env.PROD,
+      measurementId,
+      isEnabled,
+      windowGtag: 'gtag' in window
+    });
+  }, []);
 
   // Obter ou criar session ID
   const getSessionId = useCallback(() => {
