@@ -19,6 +19,7 @@ import userManagementRoutes from './routes/user-management.routes';
 import maritodleRoutes from './routes/maritodle.routes';
 import maritodleDailyRoutes from './routes/maritodle-daily.routes';
 import playerRatingsRoutes from './routes/player-ratings.routes';
+import analyticsRoutes from './routes/analytics.routes';
 import { errorHandler, notFoundHandler } from './middleware/error.middleware';
 import cacheMiddleware from './middleware/cache.middleware';
 import schedulerService from './services/scheduler.service';
@@ -155,6 +156,7 @@ app.use('/api/admin', userManagementRoutes);
 app.use('/api/maritodle', maritodleRoutes);
 app.use('/api/maritodle-daily', maritodleDailyRoutes);
 app.use('/api/player-ratings', playerRatingsRoutes);
+app.use('/api/analytics', analyticsRoutes);
 console.log('✅ All routes registered');
 
 // Error handling
