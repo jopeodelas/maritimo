@@ -46,7 +46,7 @@ Adicione a variável de ambiente na plataforma:
 - 🔍 **Pesquisas** - `search`
 - 🔐 **Autenticação** - `auth` (login/logout/register)
 - 🖱️ **Interações** - `button_click`, `form_submit`
-- ❌ **Erros** - `error`
+- ❌ **Erros** - `errorr`
 
 ## 📈 Dashboards Disponíveis
 
