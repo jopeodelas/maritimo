@@ -6,40 +6,78 @@ import './index.css';
 import './styles/mobile-responsive.css';
 import { GA_CONFIG } from './config/analytics';
 
-// Inicializar Google Analytics
-if (GA_CONFIG.isEnabled()) {
+// Inicializar Google Analytics com logs detalhados
+console.log('🚀 Starting GA4 initialization...');
+
+const gaEnabled = GA_CONFIG.isEnabled();
+const measurementId = GA_CONFIG.measurementId;
+const clientId = GA_CONFIG.getClientId();
+
+console.log('🔍 GA4 Pre-init check:', {
+  enabled: gaEnabled,
+  measurementId: measurementId,
+  clientId: clientId,
+  environment: import.meta.env.MODE,
+  isProd: import.meta.env.PROD,
+  windowAvailable: typeof window !== 'undefined'
+});
+
+if (gaEnabled) {
   try {
     const options = GA_CONFIG.getOptions();
-    ReactGA.initialize(GA_CONFIG.measurementId!, options);
+    console.log('⚙️ GA4 Options:', options);
     
-    console.log('✅ Google Analytics 4 SUCCESSFULLY initialized:', {
-      measurementId: GA_CONFIG.measurementId,
-      clientId: GA_CONFIG.getClientId(),
-      options: options
-    });
+    ReactGA.initialize(measurementId!, options);
+    console.log('✅ ReactGA.initialize completed');
     
-    // Enviar page view inicial com informações únicas do utilizador
-    ReactGA.send({
-      hitType: 'pageview',
+    // Verificar se gtag foi carregado
+    setTimeout(() => {
+      const hasGtag = typeof window !== 'undefined' && 'gtag' in window;
+      console.log('🔍 Post-init gtag check:', {
+        hasGtag,
+        gtagType: hasGtag ? typeof (window as any).gtag : 'undefined'
+      });
+    }, 1000);
+    
+    // Enviar page view inicial
+    const initialPageData = {
+      hitType: 'pageview' as const,
       page: window.location.pathname + window.location.search,
       title: document.title || 'CS Marítimo Fans',
-      client_id: GA_CONFIG.getClientId()
-    });
+      client_id: clientId
+    };
     
-    // Enviar evento personalizado para garantir que o utilizador é único
-    ReactGA.event({
+    console.log('📊 Sending initial page view:', initialPageData);
+    ReactGA.send(initialPageData);
+    
+    // Enviar evento de sessão
+    const sessionEvent = {
       action: 'session_start',
       category: 'engagement',
-      label: `unique_visitor_${GA_CONFIG.getClientId().substr(-8)}`,
+      label: `unique_visitor_${clientId.substr(-8)}`,
       value: 1
-    });
+    };
     
-    console.log('📊 Initial tracking sent to GA4 with unique client ID');
+    console.log('📊 Sending session start event:', sessionEvent);
+    ReactGA.event(sessionEvent);
+    
+    console.log('✅ GA4 initialization and initial tracking completed successfully!');
+    
   } catch (error) {
     console.error('❌ Error initializing Google Analytics:', error);
+    console.error('❌ Error details:', {
+      name: error instanceof Error ? error.name : 'Unknown',
+      message: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined
+    });
   }
 } else {
-  console.log('🔧 Google Analytics 4 NOT initialized - check configuration');
+  console.log('🔧 Google Analytics 4 NOT initialized');
+  console.log('🔍 Reason:', {
+    measurementId: measurementId || 'MISSING',
+    isValidFormat: measurementId ? measurementId.startsWith('G-') : false,
+    environment: import.meta.env.MODE
+  });
 }
 
 ReactDOM.createRoot(document.getElementById('root')!).render(

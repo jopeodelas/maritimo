@@ -48,7 +48,22 @@ const getPagePerformance = () => {
 
 // Verificar se Google Analytics está ativo
 const isGAEnabled = () => {
-  return GA_CONFIG.isEnabled() && typeof window !== 'undefined' && 'gtag' in window;
+  const configEnabled = GA_CONFIG.isEnabled();
+  const hasWindow = typeof window !== 'undefined';
+  const hasGtag = hasWindow && 'gtag' in window;
+  
+  // Log para debug
+  console.log('🔍 isGAEnabled check:', {
+    configEnabled,
+    hasWindow,
+    hasGtag,
+    measurementId: GA_CONFIG.measurementId,
+    final: configEnabled && hasWindow
+  });
+  
+  // Não verificar gtag porque pode não ter carregado ainda
+  // O GA4 deve funcionar através do ReactGA mesmo sem gtag global
+  return configEnabled && hasWindow;
 };
 
 export const useAnalytics = () => {
@@ -159,12 +174,22 @@ export const useAnalytics = () => {
 
     // Enviar para Google Analytics
     if (isGAEnabled()) {
-      ReactGA.send({
-        hitType: 'pageview',
+      const pageData = {
         page: window.location.pathname + window.location.search,
         title: document.title,
         client_id: GA_CONFIG.getClientId()
+      };
+      
+      console.log('📊 Sending GA4 page view:', pageData);
+      
+      ReactGA.send({
+        hitType: 'pageview',
+        ...pageData
       });
+      
+      console.log('📊 GA4 page view sent successfully');
+    } else {
+      console.log('📊 GA4 disabled - not sending page view');
     }
     
     // Enviar para PostgreSQL
@@ -188,6 +213,13 @@ export const useAnalytics = () => {
 
     // Enviar para Google Analytics
     if (isGAEnabled()) {
+      console.log('📊 Sending GA4 event:', eventName, {
+        category: eventCategory,
+        label: eventData?.label,
+        value: eventData?.value,
+        clientId: GA_CONFIG.getClientId()
+      });
+      
       ReactGA.event({
         action: eventName,
         category: eventCategory || 'user_interaction',
@@ -195,17 +227,26 @@ export const useAnalytics = () => {
         value: eventData?.value || undefined
       });
       
-      // Também enviar como gtag para garantir client_id único
-      if (typeof window !== 'undefined' && 'gtag' in window) {
-        (window as any).gtag('event', eventName, {
-          event_category: eventCategory || 'user_interaction',
-          event_label: eventData?.label || undefined,
-          value: eventData?.value || undefined,
-          client_id: GA_CONFIG.getClientId(),
-          user_id: user?.id ? `user_${user.id}` : undefined,
-          custom_parameter_1: 'maritimo_fans'
-        });
+      // Tentar também enviar como gtag direto para garantir client_id único
+      try {
+        if (typeof window !== 'undefined' && 'gtag' in window) {
+          (window as any).gtag('event', eventName, {
+            event_category: eventCategory || 'user_interaction',
+            event_label: eventData?.label || undefined,
+            value: eventData?.value || undefined,
+            client_id: GA_CONFIG.getClientId(),
+            user_id: user?.id ? `user_${user.id}` : undefined,
+            custom_parameter_1: 'maritimo_fans'
+          });
+          console.log('📊 GA4 gtag event sent successfully');
+        } else {
+          console.log('📊 GA4 gtag not available, using ReactGA only');
+        }
+      } catch (error) {
+        console.warn('📊 GA4 gtag error (using ReactGA only):', error);
       }
+    } else {
+      console.log('📊 GA4 disabled - not sending event:', eventName);
     }
     
     // Enviar para PostgreSQL
