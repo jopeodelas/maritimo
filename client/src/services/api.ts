@@ -24,8 +24,7 @@ api.interceptors.request.use(
       config.url = `${config.url}${separator}_t=${Date.now()}`;
     }
     
-    // Adicionar headers CORS necessários
-    config.headers.set('Origin', window.location.origin);
+    // Adicionar headers CORS necessários (exceto Origin que é automático)
     config.headers.set('X-Requested-With', 'XMLHttpRequest');
     
     return config;

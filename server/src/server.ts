@@ -203,6 +203,16 @@ app.get('/health', (req, res) => {
   });
 });
 
+// Health check route dentro do /api
+app.get('/api/health', (req, res) => {
+  res.json({ 
+    status: 'healthy',
+    uptime: process.uptime(),
+    timestamp: new Date().toISOString(),
+    environment: config.nodeEnv
+  });
+});
+
 // Test route for debugging
 app.get('/test-auth', (req, res) => {
   res.json({ 
@@ -211,9 +221,22 @@ app.get('/test-auth', (req, res) => {
   });
 });
 
-// Debug: Log all requests
+// Debug: Log all requests com informações CORS
 app.use((req, res, next) => {
-  console.log(`${new Date().toISOString()} - ${req.method} ${req.path}`);
+  const origin = req.headers.origin;
+  const userAgent = req.headers['user-agent']?.substring(0, 50) || 'unknown';
+  
+  console.log(`📡 ${new Date().toISOString()} - ${req.method} ${req.path}`, {
+    origin: origin || 'no-origin',
+    userAgent,
+    ip: req.ip || req.connection.remoteAddress
+  });
+  
+  // Log problemas CORS potenciais
+  if (origin && !origin.includes('maritimofans.pt') && !origin.includes('localhost')) {
+    console.warn(`⚠️ Unexpected origin: ${origin}`);
+  }
+  
   next();
 });
 

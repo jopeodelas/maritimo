@@ -2,7 +2,6 @@ import { Request, Response, NextFunction } from 'express';
 import { VoteModel } from '../models/vote.model';
 import { PlayerModel } from '../models/player.model';
 import { BadRequestError, NotFoundError } from '../utils/errorTypes';
-import { AuthRequest } from '../middleware/auth.middleware';
 
 // PERFORMANCE: Simple cache for user votes
 let userVotesCache = new Map<number, any>();

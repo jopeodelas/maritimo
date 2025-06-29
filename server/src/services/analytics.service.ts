@@ -1,5 +1,5 @@
 import { Pool } from 'pg';
-import { db } from '../config/db';
+import db from '../config/db';
 
 interface AnalyticsEvent {
   eventName: string;
