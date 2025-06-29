@@ -259,14 +259,14 @@ const VotingPage = () => {
       opacity: 1,
     },
     checkIcon: {
-      width: '3vw',
-      height: '3vw',
+      width: isMobile ? '3rem' : '4.5vw', // Aumentado de 3vw para 4.5vw (desktop) e fixo em 3rem (mobile)
+      height: isMobile ? '3rem' : '4.5vw', // Aumentado de 3vw para 4.5vw (desktop) e fixo em 3rem (mobile)
       backgroundColor: '#1A252F',
       borderRadius: '50%',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      fontSize: '1.5vw',
+      fontSize: isMobile ? '1.5rem' : '2.25vw', // Aumentado de 1.5vw para 2.25vw (desktop) e fixo em 1.5rem (mobile)
       color: '#4CAF50',
       fontWeight: 'bold',
     },
@@ -276,11 +276,12 @@ const VotingPage = () => {
       right: '1vw',
       backgroundColor: '#F44336',
       color: 'white',
-      padding: '0.5vh 1vw',
-      borderRadius: '2vw',
-      fontSize: '0.8vw',
-      fontWeight: '600',
+      padding: isMobile ? '0.5rem 1rem' : '0.75vh 1.5vw', // Aumentado de '0.5vh 1vw' para '0.75vh 1.5vw' (desktop) e fixo para mobile
+      borderRadius: isMobile ? '1rem' : '2vw',
+      fontSize: isMobile ? '0.75rem' : '1vw', // Aumentado de 0.8vw para 1vw (desktop) e fixo em 0.75rem (mobile)
+      fontWeight: '700', // Aumentado de 600 para 700
       zIndex: 2,
+      boxShadow: '0 0.25rem 0.75rem rgba(244, 67, 54, 0.4)', // Adicionada sombra para maior visibilidade
     },
     playerInfo: {
       padding: isMobile ? '0.75rem 1rem' : '1.5vh 1.5vw', // Reduzir padding no mobile

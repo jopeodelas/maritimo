@@ -1198,10 +1198,215 @@ const MainPage = () => {
                 ))
               )}
             </div>
+
+            {/* Mobile: Maritodle Game Section movido para o main content */}
+            {isMobile && (
+              <div style={styles.section}>
+                <div style={styles.sectionHeader}>
+                  <div style={styles.sectionHeaderLeft}>
+                    <h2 style={styles.sectionTitle}>Maritodle</h2>
+                    <div style={styles.gameBadge}>Novo!</div>
+                  </div>
+                  <div style={styles.sectionTitleUnderline}></div>
+                </div>
+                <p style={styles.gameDescription}>
+                  Adivinha o jogador ou treinador do CS Marítimo! 
+                  Um jogo inspirado no Wordle.
+                </p>
+                <div style={styles.gameFeatures}>
+                  <div style={styles.gameFeature}>
+                    <span style={styles.gameFeatureIcon}>•</span>
+                    <span style={styles.gameFeatureText}>Tentativas ilimitadas</span>
+                  </div>
+                  <div style={styles.gameFeature}>
+                    <span style={styles.gameFeatureIcon}>•</span>
+                    <span style={styles.gameFeatureText}>Pistas após 6 e 9 tentativas</span>
+                  </div>
+                  <div style={styles.gameFeature}>
+                    <span style={styles.gameFeatureIcon}>•</span>
+                    <span style={styles.gameFeatureText}>9 atributos para comparar</span>
+                  </div>
+                </div>
+                <div style={styles.buttonContainer}>
+                  <button
+                    style={styles.actionButton}
+                    className="hover-button"
+                    onClick={() => navigate("/maritodle")}
+                  >
+                    Jogar Maritodle
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Mobile: Poll Section movido para o main content */}
+            {isMobile && (
+              <div style={styles.section}>
+                <div style={styles.sectionHeader}>
+                  <div style={styles.sectionHeaderLeft}>
+                    <h2 style={styles.sectionTitle}>
+                      Que posição deveríamos reforçar?
+                    </h2>
+                  </div>
+                  <div style={styles.sectionTitleUnderline}></div>
+                </div>
+                
+                {!hasVoted ? (
+                  /* Front of card - Poll */
+                  <div>
+                    <div style={styles.positionsList}>
+                      {positions.map((position) => (
+                        <div
+                          key={position.id}
+                          style={{
+                            ...styles.positionOption,
+                            ...(selectedPositions.includes(position.id) ? styles.positionSelected : {})
+                          }}
+                          onClick={() => handlePositionToggle(position.id)}
+                          className={`hover-position ${selectedPositions.includes(position.id) ? 'selected' : ''}`}
+                        >
+                          <span style={styles.positionName}>{position.name}</span>
+                        </div>
+                      ))}
+                    </div>
+                    
+                    <div style={styles.buttonContainer}>
+                      <button
+                        style={{
+                          ...styles.actionButton,
+                          ...(selectedPositions.length === 0 ? styles.pollSubmitDisabled : {})
+                        }}
+                        onClick={handleSubmitPoll}
+                        disabled={selectedPositions.length === 0}
+                        className="hover-button"
+                      >
+                        Submeter Resposta
+                      </button>
+                    </div>
+                    
+                    <p style={styles.pollInfo}>
+                      Selecione uma ou mais posições
+                    </p>
+                  </div>
+                ) : (
+                  /* Back of card - Results */
+                  <div>
+                    <div style={styles.resultsList}>
+                      {positions
+                        .sort((a, b) => (pollResults[b.id] || 0) - (pollResults[a.id] || 0))
+                        .map((position) => (
+                          <div key={position.id} style={styles.resultItem}>
+                            <div style={styles.resultPosition}>
+                              <span>{position.name}</span>
+                            </div>
+                            <span style={styles.resultPercentage}>
+                              {calculatePollPercentage(pollResults[position.id] || 0)}%
+                            </span>
+                          </div>
+                        ))}
+                    </div>
+                    
+                    <p style={styles.pollInfo}>
+                      Total de votos: {totalPollVotes}
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Mobile: Custom Polls Section movido para o main content */}
+            {isMobile && customPolls.map((poll) => (
+              <div key={poll.id} style={styles.section}>
+                <div style={styles.sectionHeader}>
+                  <div style={styles.sectionHeaderLeft}>
+                    <h2 style={styles.sectionTitle}>
+                      {poll.title}
+                    </h2>
+                  </div>
+                  <div style={styles.sectionTitleUnderline}></div>
+                </div>
+                
+                {poll.user_voted_option !== undefined ? (
+                  /* Show results if user has voted */
+                  <div>
+                    <div style={styles.resultsList}>
+                      {poll.options.map((option, index) => (
+                        <div key={index} style={styles.resultItem}>
+                          <div style={styles.resultPosition}>
+                            <span>{option}</span>
+                            {poll.user_voted_option === index && " ✓"}
+                          </div>
+                          <span style={styles.resultPercentage}>
+                            {calculateCustomPollPercentage(poll.votes[index] || 0, poll.total_votes)}%
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                    <p style={styles.pollInfo}>
+                      Total de votos: {poll.total_votes}
+                    </p>
+                  </div>
+                ) : (
+                  /* Show voting options if user hasn't voted */
+                  <div>
+                    <div style={styles.positionsList}>
+                      {poll.options.map((option, index) => (
+                        <div
+                          key={index}
+                          style={styles.positionOption}
+                          onClick={() => handleCustomPollVote(poll.id, index)}
+                          className="hover-position"
+                        >
+                          <span style={styles.positionName}>
+                            {option}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                    <p style={styles.pollInfo}>
+                      Clique numa opção para votar
+                    </p>
+                  </div>
+                )}
+              </div>
+            ))}
           </div>
 
-          {/* Sidebar */}
-          <div style={styles.sidebar}>
+          {/* Sidebar - Only visible on desktop */}
+          <div style={{...styles.sidebar, ...(isMobile ? {display: 'none'} : {})}}>
+            {/* Maritodle Game Section - Movido para primeiro na desktop */}
+            <div style={styles.gameCard}>
+              <div style={styles.gameHeader}>
+                <h3 style={styles.gameTitle}>Maritodle</h3>
+                <div style={styles.gameBadge}>Novo!</div>
+              </div>
+              <p style={styles.gameDescription}>
+                Adivinha o jogador ou treinador do CS Marítimo! 
+                Um jogo inspirado no Wordle.
+              </p>
+              <div style={styles.gameFeatures}>
+                <div style={styles.gameFeature}>
+                  <span style={styles.gameFeatureIcon}>•</span>
+                  <span style={styles.gameFeatureText}>Tentativas ilimitadas</span>
+                </div>
+                <div style={styles.gameFeature}>
+                  <span style={styles.gameFeatureIcon}>•</span>
+                  <span style={styles.gameFeatureText}>Pistas após 6 e 9 tentativas</span>
+                </div>
+                <div style={styles.gameFeature}>
+                  <span style={styles.gameFeatureIcon}>•</span>
+                  <span style={styles.gameFeatureText}>9 atributos para comparar</span>
+                </div>
+              </div>
+              <button
+                style={styles.gameButton}
+                className="hover-button"
+                onClick={() => navigate("/maritodle")}
+              >
+                Jogar Maritodle
+              </button>
+            </div>
+
             {/* Poll Section */}
             <div style={styles.pollCard}>
               {!hasVoted ? (
@@ -1323,39 +1528,6 @@ const MainPage = () => {
                 )}
               </div>
             ))}
-
-            {/* Maritodle Game Section */}
-            <div style={styles.gameCard}>
-              <div style={styles.gameHeader}>
-                <h3 style={styles.gameTitle}>Maritodle</h3>
-                <div style={styles.gameBadge}>Novo!</div>
-              </div>
-              <p style={styles.gameDescription}>
-                Adivinha o jogador ou treinador do CS Marítimo! 
-                Um jogo inspirado no Wordle.
-              </p>
-              <div style={styles.gameFeatures}>
-                <div style={styles.gameFeature}>
-                  <span style={styles.gameFeatureIcon}>•</span>
-                  <span style={styles.gameFeatureText}>Tentativas ilimitadas</span>
-                </div>
-                <div style={styles.gameFeature}>
-                  <span style={styles.gameFeatureIcon}>•</span>
-                  <span style={styles.gameFeatureText}>Pistas após 6 e 9 tentativas</span>
-                </div>
-                <div style={styles.gameFeature}>
-                  <span style={styles.gameFeatureIcon}>•</span>
-                  <span style={styles.gameFeatureText}>9 atributos para comparar</span>
-                </div>
-              </div>
-              <button
-                style={styles.gameButton}
-                className="hover-button"
-                onClick={() => navigate("/maritodle")}
-              >
-                Jogar Maritodle
-              </button>
-            </div>
           </div>
         </div>
       </div>
