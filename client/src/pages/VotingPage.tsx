@@ -276,12 +276,12 @@ const VotingPage = () => {
       right: '1vw',
       backgroundColor: '#F44336',
       color: 'white',
-      padding: isMobile ? '0.5rem 1rem' : '0.75vh 1.5vw', // Aumentado de '0.5vh 1vw' para '0.75vh 1.5vw' (desktop) e fixo para mobile
-      borderRadius: isMobile ? '1rem' : '2vw',
-      fontSize: isMobile ? '0.75rem' : '1vw', // Aumentado de 0.8vw para 1vw (desktop) e fixo em 0.75rem (mobile)
-      fontWeight: '700', // Aumentado de 600 para 700
+      padding: isMobile ? '0.4rem 0.8rem' : '0.6vh 1.2vw', // Diminuído um pouco de 0.75vh 1.5vw para 0.6vh 1.2vw (desktop) e 0.4rem 0.8rem (mobile)
+      borderRadius: isMobile ? '0.8rem' : '1.5vw',
+      fontSize: isMobile ? '0.7rem' : '0.9vw', // Diminuído de 1vw para 0.9vw (desktop) e 0.75rem para 0.7rem (mobile)
+      fontWeight: '700', // Mantido
       zIndex: 2,
-      boxShadow: '0 0.25rem 0.75rem rgba(244, 67, 54, 0.4)', // Adicionada sombra para maior visibilidade
+      boxShadow: '0 0.25rem 0.75rem rgba(244, 67, 54, 0.4)', // Mantida sombra
     },
     playerInfo: {
       padding: isMobile ? '0.75rem 1rem' : '1.5vh 1.5vw', // Reduzir padding no mobile
@@ -479,7 +479,7 @@ const VotingPage = () => {
               style={styles.voteCount}
               className={isMobile ? "mobile-voting-player-votes" : ""}
             >
-               {player.vote_count} votes
+               {player.vote_count} votos
             </div>
             <div style={styles.playerNumber}>#{index + 1}</div>
           </div>
@@ -496,7 +496,7 @@ const VotingPage = () => {
           <div style={styles.content}>
             <div style={styles.loading}>
               <div style={styles.loadingSpinner} className="loading-spinner"></div>
-              <p style={styles.loadingText}>Loading players...</p>
+              <p style={styles.loadingText}>A carregar jogadores...</p>
             </div>
           </div>
         </div>
@@ -521,7 +521,7 @@ const VotingPage = () => {
 
         {selectedPlayers.length > 0 && (
           <div style={styles.selectionInfo} className={isMobile ? "mobile-voting-selection-info" : ""}>
-            {selectedPlayers.length} player{selectedPlayers.length !== 1 ? 's' : ''} selected for voting
+            {selectedPlayers.length} jogador{selectedPlayers.length !== 1 ? 'es' : ''} selecionado{selectedPlayers.length !== 1 ? 's' : ''} para votação
           </div>
         )}
 
@@ -533,12 +533,13 @@ const VotingPage = () => {
               ...styles.modernButton,
               ...styles.confirmButton,
               ...(selectedPlayers.length === 0 || isSubmitting ? styles.confirmButton.disabled : {}),
-              padding: '1.5vh 3vw',
-              fontSize: '1.2vw'
+              padding: isMobile ? '1rem 2rem' : '1.5vh 3vw', // Fixo para mobile
+              fontSize: isMobile ? '1rem' : '1.2vw', // Fixo para mobile
+              borderRadius: isMobile ? '0.75rem' : '0.5vw', // Cantos redondos para mobile
             }}
             className={isMobile ? "mobile-voting-button hover-button" : "hover-button"}
           >
-            {isSubmitting ? 'Voting...' : `✓ Confirm Votes (${selectedPlayers.length})`}
+            {isSubmitting ? 'A votar...' : `✓ Confirmar Votos (${selectedPlayers.length})`}
           </button>
         </div>
 
@@ -550,7 +551,7 @@ const VotingPage = () => {
               <div style={styles.positionHeader}>
                 <span style={styles.positionIcon} className={isMobile ? "mobile-voting-position-icon" : ""}>{group.icon}</span>
                 <h2 style={styles.positionTitle} className={isMobile ? "mobile-voting-position-title" : ""}>{group.title}</h2>
-                <span style={styles.positionCount} className={isMobile ? "mobile-voting-position-count" : ""}>({group.players.length} players)</span>
+                <span style={styles.positionCount} className={isMobile ? "mobile-voting-position-count" : ""}>({group.players.length} jogadores)</span>
               </div>
               <div style={styles.playersGrid}>
                 {group.players.map((player, index) => renderPlayerCard(player, index))}

@@ -1,8 +1,11 @@
-import Navbar from "../components/Navbar";
+import PageLayout from "../components/PageLayout";
 import LayoutStabilizer from "../components/LayoutStabilizer";
 import { createStyles } from "../styles/styleUtils";
+import useIsMobile from "../hooks/useIsMobile";
 
 const Schedule = () => {
+  const isMobile = useIsMobile();
+  
   const styles = createStyles({
     container: {
       minHeight: "100vh",
@@ -32,7 +35,9 @@ const Schedule = () => {
     content: {
       maxWidth: "min(98vw, 110rem)",
       margin: "0 auto",
-      padding: "clamp(8rem, 10vh, 10rem) clamp(0.5rem, 1vw, 1.5rem) clamp(1rem, 2vh, 2rem)",
+      padding: isMobile 
+        ? "70px 1rem 1rem" // Mobile: padding top para header + spacing
+        : "clamp(8rem, 10vh, 10rem) clamp(0.5rem, 1vw, 1.5rem) clamp(1rem, 2vh, 2rem)", // Desktop original
       position: "relative",
       zIndex: 2,
     },
@@ -157,46 +162,47 @@ const Schedule = () => {
   });
 
   return (
-    <div style={styles.container}>
-      <div style={styles.backgroundPattern}></div>
-      <Navbar />
-      <LayoutStabilizer>
-        <div style={styles.content}>
-          <div style={styles.heroSection}>
-            <div style={styles.heroAccent}></div>
-            <h1 style={styles.heroTitle}>Calendário e Resultados</h1>
-          </div>
-          <div style={styles.messageContainer}>
-            <div style={styles.calendarIcon}>
-              <div style={styles.calendarRings}>
-                <div style={styles.calendarRing}></div>
-                <div style={styles.calendarRing}></div>
-              </div>
-              <div style={styles.calendarTop}></div>
-              <div style={styles.calendarBody}>
-                <div style={styles.calendarLine}></div>
-                <div style={styles.calendarLine}></div>
-                <div style={styles.calendarLine}></div>
-              </div>
+    <PageLayout>
+      <div style={styles.container}>
+        <div style={styles.backgroundPattern}></div>
+        <LayoutStabilizer>
+          <div style={styles.content}>
+            <div style={styles.heroSection}>
+              <div style={styles.heroAccent}></div>
+              <h1 style={styles.heroTitle}>Calendário e Resultados</h1>
             </div>
-            <p style={styles.message}>
-              O calendário da nova época ainda não foi divulgado.
-            </p>
-            <p style={styles.subMessage}>
-              Esta página será atualizada assim que o calendário oficial for publicado.
-              Fique atento para acompanhar todos os jogos e resultados do CS Marítimo!
-            </p>
+            <div style={styles.messageContainer}>
+              <div style={styles.calendarIcon}>
+                <div style={styles.calendarRings}>
+                  <div style={styles.calendarRing}></div>
+                  <div style={styles.calendarRing}></div>
+                </div>
+                <div style={styles.calendarTop}></div>
+                <div style={styles.calendarBody}>
+                  <div style={styles.calendarLine}></div>
+                  <div style={styles.calendarLine}></div>
+                  <div style={styles.calendarLine}></div>
+                </div>
+              </div>
+              <p style={styles.message}>
+                O calendário da nova época ainda não foi divulgado.
+              </p>
+              <p style={styles.subMessage}>
+                Esta página será atualizada assim que o calendário oficial for publicado.
+                Fique atento para acompanhar todos os jogos e resultados do CS Marítimo!
+              </p>
+            </div>
           </div>
-        </div>
-      </LayoutStabilizer>
-      <style>{`
-        @keyframes float {
-          0%, 100% { transform: translateY(0px) rotate(0deg); }
-          33% { transform: translateY(-10px) rotate(1deg); }
-          66% { transform: translateY(5px) rotate(-1deg); }
-        }
-      `}</style>
-    </div>
+        </LayoutStabilizer>
+        <style>{`
+          @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            33% { transform: translateY(-10px) rotate(1deg); }
+            66% { transform: translateY(5px) rotate(-1deg); }
+          }
+        `}</style>
+      </div>
+    </PageLayout>
   );
 };
 

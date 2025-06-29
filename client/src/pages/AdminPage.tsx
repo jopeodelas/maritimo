@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import Navbar from '../components/Navbar';
+import PageLayout from '../components/PageLayout';
 import PlayerImage from '../components/PlayerImage';
 import { createStyles } from '../styles/styleUtils';
 import useIsMobile from '../hooks/useIsMobile';
@@ -470,7 +470,9 @@ const AdminPage = () => {
     content: {
       maxWidth: "1200px",
       margin: "0 auto",
-      padding: "clamp(8rem, 10vh, 10rem) 1rem 2rem",
+      padding: isMobile 
+        ? "70px 1rem 1rem" // Mobile: padding top para header + spacing
+        : "clamp(8rem, 10vh, 10rem) 1rem 2rem", // Desktop original
     },
     header: {
       textAlign: "center" as const,
@@ -1088,14 +1090,9 @@ const AdminPage = () => {
   }
 
   return (
-    <div style={styles.container}>
-      <Navbar />
-      <div style={{
-        ...styles.content,
-        padding: isMobile 
-          ? '70px 1rem 1rem' // Mobile: padding top para header + spacing
-          : styles.content.padding // Desktop original
-      }}>
+    <PageLayout>
+      <div style={styles.container}>
+        <div style={styles.content}>
         <div style={styles.header}>
           <h1 style={styles.title}>Painel de Administração</h1>
           <p style={styles.subtitle}>Bem-vindo, {user?.username}</p>
@@ -1422,6 +1419,7 @@ const AdminPage = () => {
         )}
       </div>
     </div>
+    </PageLayout>
   );
 };
 

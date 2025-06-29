@@ -15,7 +15,7 @@ const PageLayout = ({ children }: PageLayoutProps) => {
 
   return (
     <>
-      <Navbar />
+      {!isMobile && <Navbar />}
       {isMobile && (
         <>
           <MobileHeader onMenuToggle={() => setIsSidebarOpen(true)} />

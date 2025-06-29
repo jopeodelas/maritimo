@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import Navbar from "../components/Navbar";
+import PageLayout from "../components/PageLayout";
 import { createStyles } from "../styles/styleUtils";
 import useIsMobile from "../hooks/useIsMobile";
 import { newsService } from "../services/newsService";
@@ -116,7 +116,9 @@ const NewsPage = () => {
     content: {
       maxWidth: "min(98vw, 110rem)",
       margin: "0 auto",
-      padding: "clamp(8rem, 10vh, 10rem) clamp(0.5rem, 1vw, 1.5rem) clamp(1rem, 2vh, 2rem)",
+      padding: isMobile 
+        ? "70px 1rem 1rem" // Mobile: padding top para header + spacing
+        : "clamp(8rem, 10vh, 10rem) clamp(0.5rem, 1vw, 1.5rem) clamp(1rem, 2vh, 2rem)", // Desktop original
       position: "relative",
       zIndex: 2,
     },
@@ -306,28 +308,24 @@ const NewsPage = () => {
 
   if (loading) {
     return (
-      <div style={styles.container}>
-        <div style={styles.backgroundPattern} className="background-pattern"></div>
-        <Navbar />
-        <div style={styles.content}>
-          <div style={styles.loading}>
-            🔄 A carregar notícias do CS Marítimo...
+      <PageLayout>
+        <div style={styles.container}>
+          <div style={styles.backgroundPattern} className="background-pattern"></div>
+          <div style={styles.content}>
+            <div style={styles.loading}>
+              🔄 A carregar notícias do CS Marítimo...
+            </div>
           </div>
         </div>
-      </div>
+      </PageLayout>
     );
   }
 
   return (
-    <div style={styles.container}>
-      <div style={styles.backgroundPattern} className="background-pattern"></div>
-      <Navbar />
-      <div style={{
-        ...styles.content,
-        padding: isMobile 
-          ? '70px 1rem 1rem' // Mobile: padding top para header + spacing
-          : "clamp(8rem, 10vh, 10rem) clamp(0.5rem, 1vw, 1.5rem) clamp(1rem, 2vh, 2rem)" // Desktop original
-      }}>
+    <PageLayout>
+      <div style={styles.container}>
+        <div style={styles.backgroundPattern} className="background-pattern"></div>
+        <div style={styles.content}>
         <div style={styles.heroSection}>
           <div style={styles.heroAccent}></div>
           <h1 style={styles.heroTitle}>Notícias do CS Marítimo</h1>
@@ -399,6 +397,7 @@ const NewsPage = () => {
         )}
       </div>
     </div>
+    </PageLayout>
   );
 };
 

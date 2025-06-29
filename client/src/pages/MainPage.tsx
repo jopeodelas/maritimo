@@ -734,7 +734,7 @@ const MainPage = () => {
       padding: "clamp(1rem, 2vh, 1.25rem) clamp(2rem, 4vw, 2.5rem)",
       borderRadius: "clamp(0.75rem, 2vw, 1rem)",
       fontSize: "clamp(1rem, 2.2vw, 1.125rem)",
-      fontWeight: "800",
+      fontWeight: "900", // Aumentado de 800 para 900 (máximo)
       cursor: "pointer",
       transition: "all 0.3s ease",
       textTransform: "uppercase",
@@ -1201,16 +1201,13 @@ const MainPage = () => {
 
             {/* Mobile: Maritodle Game Section movido para o main content */}
             {isMobile && (
-              <div style={styles.section}>
-                <div style={styles.sectionHeader}>
-                  <div style={styles.sectionHeaderLeft}>
-                    <h2 style={styles.sectionTitle}>Maritodle</h2>
-                    <div style={styles.gameBadge}>Novo!</div>
-                  </div>
-                  <div style={styles.sectionTitleUnderline}></div>
+              <div style={styles.gameCard}>
+                <div style={styles.gameHeader}>
+                  <h3 style={styles.gameTitle}>Maritodle</h3>
+                  <div style={styles.gameBadge}>Novo!</div>
                 </div>
                 <p style={styles.gameDescription}>
-                  Adivinha o jogador ou treinador do CS Marítimo! 
+                  Adivinha o jogador do CS Marítimo diáriamente! 
                   Um jogo inspirado no Wordle.
                 </p>
                 <div style={styles.gameFeatures}>
@@ -1227,33 +1224,26 @@ const MainPage = () => {
                     <span style={styles.gameFeatureText}>9 atributos para comparar</span>
                   </div>
                 </div>
-                <div style={styles.buttonContainer}>
-                  <button
-                    style={styles.actionButton}
-                    className="hover-button"
-                    onClick={() => navigate("/maritodle")}
-                  >
-                    Jogar Maritodle
-                  </button>
-                </div>
+                <button
+                  style={styles.gameButton}
+                  className="hover-button"
+                  onClick={() => navigate("/maritodle")}
+                >
+                  Jogar Maritodle
+                </button>
               </div>
             )}
 
             {/* Mobile: Poll Section movido para o main content */}
             {isMobile && (
-              <div style={styles.section}>
-                <div style={styles.sectionHeader}>
-                  <div style={styles.sectionHeaderLeft}>
-                    <h2 style={styles.sectionTitle}>
-                      Que posição deveríamos reforçar?
-                    </h2>
-                  </div>
-                  <div style={styles.sectionTitleUnderline}></div>
-                </div>
-                
+              <div style={styles.pollCard}>
                 {!hasVoted ? (
                   /* Front of card - Poll */
                   <div>
+                    <h3 style={styles.pollTitle}>
+                      Que posição deveríamos reforçar?
+                    </h3>
+                    
                     <div style={styles.positionsList}>
                       {positions.map((position) => (
                         <div
@@ -1270,19 +1260,17 @@ const MainPage = () => {
                       ))}
                     </div>
                     
-                    <div style={styles.buttonContainer}>
-                      <button
-                        style={{
-                          ...styles.actionButton,
-                          ...(selectedPositions.length === 0 ? styles.pollSubmitDisabled : {})
-                        }}
-                        onClick={handleSubmitPoll}
-                        disabled={selectedPositions.length === 0}
-                        className="hover-button"
-                      >
-                        Submeter Resposta
-                      </button>
-                    </div>
+                    <button
+                      style={{
+                        ...styles.pollSubmitButton,
+                        ...(selectedPositions.length === 0 ? styles.pollSubmitDisabled : {})
+                      }}
+                      onClick={handleSubmitPoll}
+                      disabled={selectedPositions.length === 0}
+                      className="hover-button"
+                    >
+                      Submeter Resposta
+                    </button>
                     
                     <p style={styles.pollInfo}>
                       Selecione uma ou mais posições
@@ -1291,6 +1279,10 @@ const MainPage = () => {
                 ) : (
                   /* Back of card - Results */
                   <div>
+                    <h3 style={styles.pollTitle}>
+                      Resultados da Poll
+                    </h3>
+                    
                     <div style={styles.resultsList}>
                       {positions
                         .sort((a, b) => (pollResults[b.id] || 0) - (pollResults[a.id] || 0))
@@ -1316,54 +1308,49 @@ const MainPage = () => {
 
             {/* Mobile: Custom Polls Section movido para o main content */}
             {isMobile && customPolls.map((poll) => (
-              <div key={poll.id} style={styles.section}>
-                <div style={styles.sectionHeader}>
-                  <div style={styles.sectionHeaderLeft}>
-                    <h2 style={styles.sectionTitle}>
-                      {poll.title}
-                    </h2>
-                  </div>
-                  <div style={styles.sectionTitleUnderline}></div>
-                </div>
+              <div key={poll.id} style={customPollStyles.customPollCard}>
+                <h3 style={customPollStyles.customPollTitle}>
+                  {poll.title}
+                </h3>
                 
                 {poll.user_voted_option !== undefined ? (
                   /* Show results if user has voted */
                   <div>
-                    <div style={styles.resultsList}>
+                    <div style={customPollStyles.customPollResults}>
                       {poll.options.map((option, index) => (
-                        <div key={index} style={styles.resultItem}>
-                          <div style={styles.resultPosition}>
+                        <div key={index} style={customPollStyles.customPollResultItem}>
+                          <div style={customPollStyles.customPollResultText}>
                             <span>{option}</span>
                             {poll.user_voted_option === index && " ✓"}
                           </div>
-                          <span style={styles.resultPercentage}>
+                          <span style={customPollStyles.customPollResultPercentage}>
                             {calculateCustomPollPercentage(poll.votes[index] || 0, poll.total_votes)}%
                           </span>
                         </div>
                       ))}
                     </div>
-                    <p style={styles.pollInfo}>
+                    <p style={customPollStyles.customPollInfo}>
                       Total de votos: {poll.total_votes}
                     </p>
                   </div>
                 ) : (
                   /* Show voting options if user hasn't voted */
                   <div>
-                    <div style={styles.positionsList}>
+                    <div style={customPollStyles.customPollOptions}>
                       {poll.options.map((option, index) => (
                         <div
                           key={index}
-                          style={styles.positionOption}
+                          style={customPollStyles.customPollOption}
                           onClick={() => handleCustomPollVote(poll.id, index)}
                           className="hover-position"
                         >
-                          <span style={styles.positionName}>
+                          <span style={customPollStyles.customPollOptionText}>
                             {option}
                           </span>
                         </div>
                       ))}
                     </div>
-                    <p style={styles.pollInfo}>
+                    <p style={customPollStyles.customPollInfo}>
                       Clique numa opção para votar
                     </p>
                   </div>
@@ -1381,7 +1368,7 @@ const MainPage = () => {
                 <div style={styles.gameBadge}>Novo!</div>
               </div>
               <p style={styles.gameDescription}>
-                Adivinha o jogador ou treinador do CS Marítimo! 
+                Adivinha o jogador do CS Marítimo diáriamente! 
                 Um jogo inspirado no Wordle.
               </p>
               <div style={styles.gameFeatures}>
