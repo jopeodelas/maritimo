@@ -7,6 +7,7 @@ import './styles/fonts.css';
 import './styles/optimizedStyles.css';
 import './styles/accessibility.css';
 import LayoutStabilizer from './components/LayoutStabilizer';
+import NetworkStatusIndicator from './components/NetworkStatusIndicator';
 
 // PERFORMANCE: Immediately loaded components (critical pages)
 import MainPage from './pages/MainPage';
@@ -81,6 +82,7 @@ function App() {
       <AuthProvider>
         <Router>
           <LayoutStabilizer>
+            <NetworkStatusIndicator />
             <div className="App">
               <Suspense fallback={<PageLoader />}>
                 <Routes>
