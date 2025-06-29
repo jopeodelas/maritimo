@@ -4,10 +4,18 @@ import { useAuth } from '../contexts/AuthContext';
 import api from '../services/api';
 import { GA_CONFIG } from '../config/analytics';
 
-// Gerar ID único para sessão
+// Gerar ID único para sessão com maior entropia
 const generateSessionId = (): string => {
-  return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+  const timestamp = Date.now();
+  const randomPart = Math.random().toString(36).substr(2, 12);
+  const performanceNow = performance.now().toString().replace('.', '');
+  const userAgent = navigator.userAgent.length.toString();
+  const screenRes = `${window.screen.width}${window.screen.height}`;
+  
+  return `${timestamp}-${randomPart}-${performanceNow}-${userAgent}${screenRes}`.substr(0, 50);
 };
+
+
 
 // Obter informações do dispositivo
 const getDeviceInfo = () => {
@@ -49,16 +57,6 @@ export const useAnalytics = () => {
   const pageLoadTimeRef = useRef<number>(Date.now());
   const eventsCountRef = useRef<number>(0);
 
-  // Debug Google Analytics status
-  useEffect(() => {
-    const isEnabled = isGAEnabled();
-    console.log('🔍 useAnalytics GA4 Status:', {
-      isEnabled,
-      measurementId: GA_CONFIG.measurementId,
-      windowGtag: typeof window !== 'undefined' ? 'gtag' in window : 'server'
-    });
-  }, []);
-
   // Obter ou criar session ID
   const getSessionId = useCallback(() => {
     if (!sessionIdRef.current) {
@@ -66,6 +64,29 @@ export const useAnalytics = () => {
     }
     return sessionIdRef.current;
   }, []);
+
+  // Debug Google Analytics status
+  useEffect(() => {
+    const isEnabled = isGAEnabled();
+    const clientId = GA_CONFIG.getClientId();
+    const sessionId = getSessionId();
+    
+    console.log('🔍 useAnalytics GA4 Status:', {
+      isEnabled,
+      measurementId: GA_CONFIG.measurementId,
+      clientId: clientId,
+      sessionId: sessionId,
+      userId: user?.id,
+      windowGtag: typeof window !== 'undefined' ? 'gtag' in window : 'server',
+      userAgent: navigator.userAgent.substr(0, 50),
+      screenSize: `${window.screen.width}x${window.screen.height}`
+    });
+    
+    // Enviar evento de debug para verificar se está a funcionar
+    if (isEnabled) {
+      console.log('📊 Sending debug info to GA4...');
+    }
+  }, [user, getSessionId]);
 
   // Enviar evento para PostgreSQL
   const sendToPostgreSQL = useCallback(async (eventData: any) => {
@@ -141,7 +162,8 @@ export const useAnalytics = () => {
       ReactGA.send({
         hitType: 'pageview',
         page: window.location.pathname + window.location.search,
-        title: document.title
+        title: document.title,
+        client_id: GA_CONFIG.getClientId()
       });
     }
     
@@ -172,6 +194,18 @@ export const useAnalytics = () => {
         label: eventData?.label || undefined,
         value: eventData?.value || undefined
       });
+      
+      // Também enviar como gtag para garantir client_id único
+      if (typeof window !== 'undefined' && 'gtag' in window) {
+        (window as any).gtag('event', eventName, {
+          event_category: eventCategory || 'user_interaction',
+          event_label: eventData?.label || undefined,
+          value: eventData?.value || undefined,
+          client_id: GA_CONFIG.getClientId(),
+          user_id: user?.id ? `user_${user.id}` : undefined,
+          custom_parameter_1: 'maritimo_fans'
+        });
+      }
     }
     
     // Enviar para PostgreSQL
