@@ -35,6 +35,8 @@ jobs:
           npm ci
           
       - name: Build
+        env:
+          VITE_GA4_MEASUREMENT_ID: G-Z1R6FYDM5J
         run: |
           cd client
           npm run build
