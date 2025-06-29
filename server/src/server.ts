@@ -27,6 +27,9 @@ import maritodleSchedulerService from './services/maritodle-scheduler.service';
 
 const app = express();
 
+// Configurar trust proxy para receber IPs reais através de CDN/proxy
+app.set('trust proxy', true);
+
 // Configurar timeouts e keepalive
 app.use((req, res, next) => {
   // Set timeout para requests
@@ -221,15 +224,49 @@ app.get('/test-auth', (req, res) => {
   });
 });
 
-// Debug: Log all requests com informações CORS
+// Middleware para capturar IP real do utilizador
+app.use((req, res, next) => {
+  // Capturar IP real considerando proxies e CDNs
+  const forwarded = req.headers['x-forwarded-for'];
+  const realIp = req.headers['x-real-ip'];
+  const cfConnectingIp = req.headers['cf-connecting-ip']; // CloudFlare
+  const trueClientIp = req.headers['true-client-ip']; // Outros CDNs
+  
+  // Hierarquia de confiança para IPs
+  let clientIp = req.ip;
+  
+  if (cfConnectingIp) {
+    clientIp = Array.isArray(cfConnectingIp) ? cfConnectingIp[0] : cfConnectingIp;
+  } else if (trueClientIp) {
+    clientIp = Array.isArray(trueClientIp) ? trueClientIp[0] : trueClientIp;
+  } else if (realIp) {
+    clientIp = Array.isArray(realIp) ? realIp[0] : realIp;
+  } else if (forwarded) {
+    // X-Forwarded-For pode ter múltiplos IPs, o primeiro é o real
+    const ips = Array.isArray(forwarded) ? forwarded[0] : forwarded;
+    clientIp = ips.split(',')[0].trim();
+  }
+  
+  // Adicionar IP real ao request
+  (req as any).realIp = clientIp;
+  
+  next();
+});
+
+// Debug: Log all requests com informações de IP detalhadas
 app.use((req, res, next) => {
   const origin = req.headers.origin;
   const userAgent = req.headers['user-agent']?.substring(0, 50) || 'unknown';
+  const realIp = (req as any).realIp;
   
   console.log(`📡 ${new Date().toISOString()} - ${req.method} ${req.path}`, {
     origin: origin || 'no-origin',
     userAgent,
-    ip: req.ip || req.connection.remoteAddress
+    expressIp: req.ip,
+    realIp: realIp,
+    xForwardedFor: req.headers['x-forwarded-for'],
+    xRealIp: req.headers['x-real-ip'],
+    cfConnectingIp: req.headers['cf-connecting-ip']
   });
   
   // Log problemas CORS potenciais

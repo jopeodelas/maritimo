@@ -43,8 +43,15 @@ export const trackEvent = async (req: Request, res: Response): Promise<void> => 
     } = req.body;
 
     const userAgent = req.headers['user-agent'] || '';
-    const ipAddress = req.ip || req.connection.remoteAddress || '';
+    const ipAddress = (req as any).realIp || req.ip || req.connection.remoteAddress || '';
     const userId = (req as any).user?.id;
+    
+    console.log('📊 Analytics Event IP Info:', {
+      realIp: (req as any).realIp,
+      expressIp: req.ip,
+      finalIp: ipAddress,
+      eventName
+    });
 
     const analyticsData = {
       eventName,
@@ -80,8 +87,15 @@ export const trackSession = async (req: Request, res: Response): Promise<void> =
   try {
     const { sessionId } = req.body;
     const userAgent = req.headers['user-agent'] || '';
-    const ipAddress = req.ip || req.connection.remoteAddress || '';
+    const ipAddress = (req as any).realIp || req.ip || req.connection.remoteAddress || '';
     const userId = (req as any).user?.id;
+    
+    console.log('📊 Analytics Session IP Info:', {
+      realIp: (req as any).realIp,
+      expressIp: req.ip,
+      finalIp: ipAddress,
+      sessionId
+    });
 
     const sessionData = {
       sessionId,

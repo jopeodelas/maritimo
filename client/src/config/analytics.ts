@@ -56,11 +56,12 @@ export const GA_CONFIG = {
     gtagOptions: {
       debug_mode: import.meta.env.DEV,
       send_page_view: false,
-      anonymize_ip: true, // GDPR compliance
+      anonymize_ip: false, // Desativado para permitir geolocalização precisa
       client_id: getClientId(), // ID único para cada utilizador
       cookie_expires: 60 * 60 * 24 * 30, // 30 days para melhor tracking
-      allow_google_signals: true, // Para demographics
+      allow_google_signals: true, // Para demographics e geolocalização
       allow_ad_personalization_signals: true, // Para dados demográficos
+      transport_type: 'beacon', // Melhor entrega de dados
       custom_map: {
         custom_parameter: 'maritimo_fans'
       }

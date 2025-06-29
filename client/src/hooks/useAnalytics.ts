@@ -227,24 +227,29 @@ export const useAnalytics = () => {
         value: eventData?.value || undefined
       });
       
-      // Tentar também enviar como gtag direto para garantir client_id único
-      try {
-        if (typeof window !== 'undefined' && 'gtag' in window) {
-          (window as any).gtag('event', eventName, {
-            event_category: eventCategory || 'user_interaction',
-            event_label: eventData?.label || undefined,
-            value: eventData?.value || undefined,
-            client_id: GA_CONFIG.getClientId(),
-            user_id: user?.id ? `user_${user.id}` : undefined,
-            custom_parameter_1: 'maritimo_fans'
-          });
-          console.log('📊 GA4 gtag event sent successfully');
-        } else {
-          console.log('📊 GA4 gtag not available, using ReactGA only');
+              // Tentar também enviar como gtag direto para garantir client_id único e geolocalização
+        try {
+          if (typeof window !== 'undefined' && 'gtag' in window) {
+            (window as any).gtag('event', eventName, {
+              event_category: eventCategory || 'user_interaction',
+              event_label: eventData?.label || undefined,
+              value: eventData?.value || undefined,
+              client_id: GA_CONFIG.getClientId(),
+              user_id: user?.id ? `user_${user.id}` : undefined,
+              custom_parameter_1: 'maritimo_fans',
+              transport_type: 'beacon',
+              // Enviar informações de localização se disponíveis
+              ...(navigator.geolocation && {
+                send_to: GA_CONFIG.measurementId
+              })
+            });
+            console.log('📊 GA4 gtag event sent successfully');
+          } else {
+            console.log('📊 GA4 gtag not available, using ReactGA only');
+          }
+        } catch (error) {
+          console.warn('📊 GA4 gtag error (using ReactGA only):', error);
         }
-      } catch (error) {
-        console.warn('📊 GA4 gtag error (using ReactGA only):', error);
-      }
     } else {
       console.log('📊 GA4 disabled - not sending event:', eventName);
     }
