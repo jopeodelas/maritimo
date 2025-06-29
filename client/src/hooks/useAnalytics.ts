@@ -2,6 +2,7 @@ import { useEffect, useRef, useCallback } from 'react';
 import ReactGA from 'react-ga4';
 import { useAuth } from '../contexts/AuthContext';
 import api from '../services/api';
+import { GA_CONFIG } from '../config/analytics';
 
 // Gerar ID único para sessão
 const generateSessionId = (): string => {
@@ -39,11 +40,7 @@ const getPagePerformance = () => {
 
 // Verificar se Google Analytics está ativo
 const isGAEnabled = () => {
-  const measurementId = import.meta.env.VITE_GA4_MEASUREMENT_ID;
-  return import.meta.env.PROD && 
-         measurementId && 
-         measurementId !== 'G-XXXXXXXXXX' && 
-         typeof window !== 'undefined';
+  return GA_CONFIG.isEnabled() && typeof window !== 'undefined' && 'gtag' in window;
 };
 
 export const useAnalytics = () => {
@@ -54,13 +51,11 @@ export const useAnalytics = () => {
 
   // Debug Google Analytics status
   useEffect(() => {
-    const measurementId = import.meta.env.VITE_GA4_MEASUREMENT_ID;
     const isEnabled = isGAEnabled();
-    console.log('🔍 GA4 Debug Info:', {
-      isProd: import.meta.env.PROD,
-      measurementId,
+    console.log('🔍 useAnalytics GA4 Status:', {
       isEnabled,
-      windowGtag: 'gtag' in window
+      measurementId: GA_CONFIG.measurementId,
+      windowGtag: typeof window !== 'undefined' ? 'gtag' in window : 'server'
     });
   }, []);
 
