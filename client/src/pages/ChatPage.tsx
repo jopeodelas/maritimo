@@ -1018,11 +1018,7 @@ const ChatPage = () => {
       {/* New Chat Interface */}
       <div style={styles.chatOverlay} onClick={closeDiscussion}></div>
       
-      <div 
-        style={styles.chatContainer} 
-        onClick={(e) => e.stopPropagation()}
-        className={isMobile ? "mobile-chat-drawer" : ""}
-      >
+      <div style={styles.chatContainer} onClick={(e) => e.stopPropagation()}>
         {/* Sidebar */}
         <div 
           style={styles.sidebar}
@@ -1103,10 +1099,7 @@ const ChatPage = () => {
         >
           {selectedDiscussion ? (
             <>
-              <div 
-                style={styles.chatHeader}
-                className={isMobile ? "mobile-chat-header" : ""}
-              >
+              <div style={styles.chatHeader}>
                 <div style={styles.chatHeaderContent}>
                   <h1 style={styles.chatHeaderTitle}>{selectedDiscussion.title}</h1>
                   <div style={styles.chatHeaderMeta}>

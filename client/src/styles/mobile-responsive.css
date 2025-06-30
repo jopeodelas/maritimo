@@ -1137,19 +1137,18 @@
   }
 }
 
-/* MOBILE CHAT/DISCUSSIONS PAGE - Apenas melhorias de tamanho dos controles */
+/* MOBILE CHAT/DISCUSSIONS PAGE - APENAS ajustes básicos de tamanho */
 @media screen and (max-width: 768px) {
-  /* PRIMEIRA PARTE: Ajustar proporções dos controles */
+  /* PRIMEIRA PARTE: Apenas melhorar tamanhos dos controles */
   
-  /* Input de pesquisa - mais comprido */
+  /* Input de pesquisa - maior */
   .mobile-chat-search-input {
     font-size: 1rem !important;
     padding: 0.875rem 1rem !important;
     min-height: 48px !important;
-    flex: 2 !important; /* Mais espaço para pesquisa */
   }
 
-  /* Select de filtro - menos comprido */
+  /* Select de filtro - adequado */
   .mobile-chat-sort-select {
     font-size: 1rem !important;
     padding: 0.875rem 1rem !important;
@@ -1157,61 +1156,33 @@
     padding-right: 2.5rem !important;
     background-size: 16px !important;
     background-position: right 0.75rem center !important;
-    flex: 1 !important; /* Menos espaço para filtro */
-    min-width: 120px !important;
   }
 
-  /* Botão Nova Discussão - à direita do filtro, mesmo tamanho */
+  /* Botão Nova Discussão - mesmo tamanho */
   .mobile-chat-new-discussion-btn {
     font-size: 1rem !important;
-    padding: 0.875rem 1rem !important;
+    padding: 0.875rem 1.25rem !important;
     min-height: 48px !important;
     font-weight: 600 !important;
-    flex: none !important;
-    white-space: nowrap !important;
   }
 
-  /* SEGUNDA PARTE: Remover sidebar no mobile e corrigir ícones */
+  /* SEGUNDA PARTE: Chat - esconder sidebar no mobile */
   
-  /* Container do chat - remover sidebar no mobile */
-  .mobile-chat-drawer {
-    position: fixed !important;
-    top: 0 !important;
-    left: 0 !important;
-    right: 0 !important;
-    bottom: 0 !important;
-    background: #1e293b !important;
-    z-index: 1000 !important;
-    display: flex !important;
-    flex-direction: column !important;
-  }
-
-  /* Esconder sidebar no mobile */
+  /* Esconder sidebar completamente no mobile */
   .mobile-chat-sidebar {
     display: none !important;
   }
 
-  /* Chat area ocupa tela toda no mobile */
+  /* Chat area ocupa tela toda */
   .mobile-chat-area {
     flex: 1 !important;
     width: 100% !important;
   }
 
-  /* Header do chat - ícones maiores */
-  .mobile-chat-header {
-    padding: 1rem !important;
-    background: rgba(30, 40, 50, 0.95) !important;
-    border-bottom: 2px solid rgba(76, 175, 80, 0.4) !important;
-  }
-
-  /* Ícones de ação maiores e visíveis */
+  /* Ícones maiores no header do chat */
   .mobile-chat-action-button {
     width: 48px !important;
     height: 48px !important;
-    border-radius: 12px !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
     font-size: 18px !important;
   }
 }
@@ -1247,23 +1218,17 @@
   }
 }
 
-/* CORREÇÕES GERAIS PARA TODAS AS TELAS - ícones dos botões de ação */
-
-/* Corrigir visibilidade dos ícones nos botões de ação */
+/* CORREÇÕES GERAIS - ícones dos botões */
 .action-button {
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
-  position: relative !important;
 }
 
 .action-button svg {
   width: 18px !important;
   height: 18px !important;
-  display: block !important;
-  opacity: 1 !important;
   fill: currentColor !important;
-  stroke: currentColor !important;
 }
 
 /* Melhorar visibilidade no desktop */
