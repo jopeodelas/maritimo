@@ -945,8 +945,14 @@ const ChatPage = () => {
           <p style={styles.heroSubtitle}>Partilhe as suas opiniões sobre o CS Marítimo</p>
         </div>
 
-        <div style={styles.controls}>
-          <div style={styles.leftControls}>
+        <div 
+          style={styles.controls}
+          className={isMobile ? "mobile-chat-controls-container" : ""}
+        >
+          <div 
+            style={styles.leftControls}
+            className={isMobile ? "mobile-chat-left-controls" : ""}
+          >
             <input
               type="text"
               placeholder="Pesquisar discussões..."
@@ -1099,13 +1105,27 @@ const ChatPage = () => {
         >
           {selectedDiscussion ? (
             <>
-              <div style={styles.chatHeader}>
+              <div 
+                style={styles.chatHeader}
+                className={isMobile ? "mobile-chat-header" : ""}
+              >
                 <div style={styles.chatHeaderContent}>
-                  <h1 style={styles.chatHeaderTitle}>{selectedDiscussion.title}</h1>
-                  <div style={styles.chatHeaderMeta}>
+                  <h1 
+                    style={styles.chatHeaderTitle}
+                    className={isMobile ? "mobile-chat-header-title" : ""}
+                  >
+                    {selectedDiscussion.title}
+                  </h1>
+                  <div 
+                    style={styles.chatHeaderMeta}
+                    className={isMobile ? "mobile-chat-header-meta" : ""}
+                  >
                     Por {selectedDiscussion.author_username} • {formatDate(selectedDiscussion.created_at)}
                   </div>
-                  <div style={styles.chatHeaderDescription}>
+                  <div 
+                    style={styles.chatHeaderDescription}
+                    className={isMobile ? "mobile-chat-header-description" : ""}
+                  >
                     {selectedDiscussion.description}
                   </div>
                 </div>
@@ -1132,7 +1152,10 @@ const ChatPage = () => {
                 </div>
               </div>
 
-              <div style={styles.messagesArea}>
+              <div 
+                style={styles.messagesArea}
+                className={isMobile ? "mobile-chat-messages" : ""}
+              >
                 {comments.length === 0 ? (
                   <div style={styles.emptyState}>
                     <div style={styles.emptyStateIcon}>💬</div>

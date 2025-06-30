@@ -252,12 +252,7 @@ const MaritodlePage = () => {
     return () => clearInterval(interval);
   }, [logoAnimationActive, flyingLogos.length]);
 
-  // Buscar pistas automaticamente quando atingir o número de tentativas
-  useEffect(() => {
-    if ((tentativas.length >= 6 && !clue1) || (tentativas.length >= 9 && !clue2)) {
-      buscarPistas();
-    }
-  }, [tentativas.length, clue1, clue2]);
+
 
   // Scroll automático para utilizadores que já acertaram
   useEffect(() => {
@@ -448,21 +443,7 @@ const MaritodlePage = () => {
     inputRef.current?.focus();
   };
 
-  const buscarPistas = async () => {
-    try {
-      const response = await api.get('/maritodle-daily/clues');
-      const data = response.data;
-      
-      if (data.clue1) {
-        setClue1(data.clue1);
-      }
-      if (data.clue2) {
-        setClue2(data.clue2);
-      }
-    } catch (error) {
-      console.error('Erro ao buscar pistas:', error);
-    }
-  };
+
 
   const startEpicCelebration = () => {
     setLogoAnimationActive(true);
@@ -1365,26 +1346,21 @@ const MaritodlePage = () => {
         </div>
         )}
 
-        {/* Clues Section - Mostrar baseado em tentativas ou dados do servidor */}
-        {(clue1 || clue2 || tentativas.length >= 6) && (
+        {/* Clues Section - Mostrar apenas pistas que o servidor enviou */}
+        {(clue1 || clue2) && (
           <div style={styles.cluesSection}>
             <h3 style={styles.legendTitle}>🔍 Pistas</h3>
-            {(clue1 || tentativas.length >= 6) && (
+            {clue1 && (
               <div style={styles.clueCard}>
                 <div style={styles.clueTitle}>💡 Pista 1 (após 6 tentativas)</div>
                 {clue1Revealed ? (
-                  <div style={styles.clueText}>{clue1 || "🔄 A carregar pista do servidor..."}</div>
+                  <div style={styles.clueText}>{clue1}</div>
                 ) : (
                   <div style={styles.hiddenClueContainer}>
                     <div style={styles.hiddenClueText}>A primeira pista está disponível!</div>
                     <button 
                       style={styles.revealButton}
-                      onClick={async () => {
-                        if (!clue1) {
-                          await buscarPistas();
-                        }
-                        setClue1Revealed(true);
-                      }}
+                      onClick={() => setClue1Revealed(true)}
                       onMouseEnter={(e) => {
                         e.currentTarget.style.backgroundColor = '#45A049';
                         e.currentTarget.style.transform = 'translateY(-2px)';
@@ -1402,22 +1378,17 @@ const MaritodlePage = () => {
                 )}
               </div>
             )}
-            {(clue2 || tentativas.length >= 9) && (
+            {clue2 && (
               <div style={styles.clueCard}>
                 <div style={styles.clueTitle}>🎯 Pista 2 (após 9 tentativas)</div>
                 {clue2Revealed ? (
-                  <div style={styles.clueText}>{clue2 || "🔄 A carregar pista do servidor..."}</div>
+                  <div style={styles.clueText}>{clue2}</div>
                 ) : (
                   <div style={styles.hiddenClueContainer}>
                     <div style={styles.hiddenClueText}>A segunda pista está disponível!</div>
                     <button 
                       style={styles.revealButton}
-                      onClick={async () => {
-                        if (!clue2) {
-                          await buscarPistas();
-                        }
-                        setClue2Revealed(true);
-                      }}
+                      onClick={() => setClue2Revealed(true)}
                       onMouseEnter={(e) => {
                         e.currentTarget.style.backgroundColor = '#45A049';
                         e.currentTarget.style.transform = 'translateY(-2px)';
