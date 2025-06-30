@@ -536,31 +536,54 @@
     font-size: 1.5rem !important;
   }
   
-  /* Problema 3: Avaliação - Ratings em 2 colunas */
+  /* Problema 3: Avaliação - Ratings individuais com estados ativos*/
   .mobile-maritodle-ratings-container {
     display: grid !important;
-    grid-template-columns: 1fr 1fr !important;
-    gap: 0.5rem !important;
+    grid-template-columns: repeat(5, 1fr) !important;
+    gap: 0.4rem !important;
     margin: 1rem 0 !important;
+    justify-content: center !important;
+    width: 100% !important;
   }
   
   .mobile-maritodle-rating-item {
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
-    background: rgba(76, 175, 80, 0.2) !important;
-    border: 1px solid rgba(76, 175, 80, 0.4) !important;
-    border-radius: 8px !important;
-    padding: 0.5rem !important;
+    background: rgba(255, 255, 255, 0.1) !important;
+    border: 2px solid rgba(255, 255, 255, 0.3) !important;
+    border-radius: 50% !important;
+    width: 2.5rem !important;
+    height: 2.5rem !important;
     font-size: 0.9rem !important;
-    font-weight: 600 !important;
+    font-weight: 700 !important;
     color: white !important;
+    transition: all 0.3s ease !important;
+    cursor: pointer !important;
+  }
+  
+  /* Estado ativo - maior especificidade */
+  button.mobile-maritodle-rating-item.active,
+  .mobile-maritodle-rating-item.active {
+    background: rgba(255, 215, 0, 0.9) !important;
+    border: 2px solid #FFD700 !important;
+    color: #000 !important;
+    transform: scale(1.1) !important;
+    box-shadow: 0 0 15px rgba(255, 215, 0, 0.5) !important;
+  }
+  
+  /* Estado neutro (6) - maior especificidade */
+  button.mobile-maritodle-rating-item.average,
+  .mobile-maritodle-rating-item.average {
+    border: 2px solid rgba(255, 215, 0, 0.5) !important;
+    background: rgba(255, 215, 0, 0.1) !important;
   }
   
   .mobile-maritodle-star-container {
     display: flex !important;
     justify-content: center !important;
-    margin-top: 1rem !important;
+    margin-top: 0.5rem !important;
+    width: 100% !important;
   }
   
   /* Problema 4: Plantel - Espaçamento jogadores */
