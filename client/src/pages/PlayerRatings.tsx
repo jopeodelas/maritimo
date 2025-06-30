@@ -987,7 +987,14 @@ const PlayerRatings = () => {
 
                 <div style={styles.ratingsSection}>
                   <div 
-                    style={styles.ratingButtons}
+                    style={isMobile ? {
+                      display: 'grid',
+                      gridTemplateColumns: 'repeat(2, 1fr)',
+                      gridTemplateRows: 'repeat(5, 1fr)',
+                      gap: '0.4rem',
+                      gridAutoFlow: 'column',
+                      width: 'auto'
+                    } : styles.ratingButtons}
                     className={isMobile ? "mobile-maritodle-ratings-container" : ""}
                   >
                     {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((rating) => {
@@ -1000,7 +1007,23 @@ const PlayerRatings = () => {
                       return (
                         <button
                           key={rating}
-                          style={{
+                          style={isMobile ? {
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            background: isActive ? 'rgba(255, 215, 0, 0.9)' : (isAverage ? 'rgba(255, 215, 0, 0.1)' : 'rgba(255, 255, 255, 0.1)'),
+                            border: isActive ? '2px solid #FFD700' : (isAverage ? '2px solid rgba(255, 215, 0, 0.5)' : '2px solid rgba(255, 255, 255, 0.3)'),
+                            borderRadius: '50%',
+                            width: '2.5rem',
+                            height: '2.5rem',
+                            fontSize: '0.9rem',
+                            fontWeight: '700',
+                            color: isActive ? '#000' : 'white',
+                            cursor: 'pointer',
+                            transition: 'all 0.3s ease',
+                            transform: isActive ? 'scale(1.1)' : 'scale(1)',
+                            boxShadow: isActive ? '0 0 15px rgba(255, 215, 0, 0.5)' : 'none'
+                          } : {
                             ...styles.ratingButton,
                             ...(isAverage ? styles.ratingButtonAverage : {}),
                             ...(isActive ? styles.ratingButtonActive : {})
