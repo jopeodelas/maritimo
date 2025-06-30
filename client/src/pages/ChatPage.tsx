@@ -1024,7 +1024,11 @@ const ChatPage = () => {
       {/* New Chat Interface */}
       <div style={styles.chatOverlay} onClick={closeDiscussion}></div>
       
-      <div style={styles.chatContainer} onClick={(e) => e.stopPropagation()}>
+      <div 
+        style={styles.chatContainer} 
+        onClick={(e) => e.stopPropagation()}
+        className={isMobile ? "mobile-chat-drawer" : ""}
+      >
         {/* Sidebar */}
         <div 
           style={styles.sidebar}

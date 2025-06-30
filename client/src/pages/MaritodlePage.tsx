@@ -1346,61 +1346,83 @@ const MaritodlePage = () => {
         </div>
         )}
 
-        {/* Clues Section - Mostrar apenas pistas que o servidor enviou */}
-        {(clue1 || clue2) && (
+        {/* Clues Section - Mostrar quando há pistas OU quando atingiu tentativas necessárias */}
+        {(clue1 || clue2 || tentativas.length >= 6) && (
           <div style={styles.cluesSection}>
             <h3 style={styles.legendTitle}>🔍 Pistas</h3>
-            {clue1 && (
+            {(clue1 || tentativas.length >= 6) && (
               <div style={styles.clueCard}>
                 <div style={styles.clueTitle}>💡 Pista 1 (após 6 tentativas)</div>
                 {clue1Revealed ? (
-                  <div style={styles.clueText}>{clue1}</div>
+                  <div style={styles.clueText}>{clue1 || "🔄 Pista será revelada automaticamente após o próximo palpite"}</div>
                 ) : (
                   <div style={styles.hiddenClueContainer}>
                     <div style={styles.hiddenClueText}>A primeira pista está disponível!</div>
                     <button 
-                      style={styles.revealButton}
-                      onClick={() => setClue1Revealed(true)}
+                      style={{
+                        ...styles.revealButton,
+                        ...(clue1 ? {} : {
+                          opacity: 0.6,
+                          cursor: 'not-allowed'
+                        })
+                      }}
+                      onClick={() => clue1 && setClue1Revealed(true)}
+                      disabled={!clue1}
                       onMouseEnter={(e) => {
-                        e.currentTarget.style.backgroundColor = '#45A049';
-                        e.currentTarget.style.transform = 'translateY(-2px)';
-                        e.currentTarget.style.boxShadow = '0 0.4rem 0.8rem rgba(76, 175, 80, 0.4)';
+                        if (clue1) {
+                          e.currentTarget.style.backgroundColor = '#45A049';
+                          e.currentTarget.style.transform = 'translateY(-2px)';
+                          e.currentTarget.style.boxShadow = '0 0.4rem 0.8rem rgba(76, 175, 80, 0.4)';
+                        }
                       }}
                       onMouseLeave={(e) => {
-                        e.currentTarget.style.backgroundColor = '#4CAF50';
-                        e.currentTarget.style.transform = 'translateY(0)';
-                        e.currentTarget.style.boxShadow = '0 0.2rem 0.4rem rgba(76, 175, 80, 0.3)';
+                        if (clue1) {
+                          e.currentTarget.style.backgroundColor = '#4CAF50';
+                          e.currentTarget.style.transform = 'translateY(0)';
+                          e.currentTarget.style.boxShadow = '0 0.2rem 0.4rem rgba(76, 175, 80, 0.3)';
+                        }
                       }}
                     >
-                      🔍 Revelar Pista
+                      🔍 {clue1 ? 'Revelar Pista' : 'Aguardar próximo palpite'}
                     </button>
                   </div>
                 )}
               </div>
             )}
-            {clue2 && (
+            {(clue2 || tentativas.length >= 9) && (
               <div style={styles.clueCard}>
                 <div style={styles.clueTitle}>🎯 Pista 2 (após 9 tentativas)</div>
                 {clue2Revealed ? (
-                  <div style={styles.clueText}>{clue2}</div>
+                  <div style={styles.clueText}>{clue2 || "🔄 Pista será revelada automaticamente após o próximo palpite"}</div>
                 ) : (
                   <div style={styles.hiddenClueContainer}>
                     <div style={styles.hiddenClueText}>A segunda pista está disponível!</div>
                     <button 
-                      style={styles.revealButton}
-                      onClick={() => setClue2Revealed(true)}
+                      style={{
+                        ...styles.revealButton,
+                        ...(clue2 ? {} : {
+                          opacity: 0.6,
+                          cursor: 'not-allowed'
+                        })
+                      }}
+                      onClick={() => clue2 && setClue2Revealed(true)}
+                      disabled={!clue2}
                       onMouseEnter={(e) => {
-                        e.currentTarget.style.backgroundColor = '#45A049';
-                        e.currentTarget.style.transform = 'translateY(-2px)';
-                        e.currentTarget.style.boxShadow = '0 0.4rem 0.8rem rgba(76, 175, 80, 0.4)';
+                        if (clue2) {
+                          e.currentTarget.style.backgroundColor = '#45A049';
+                          e.currentTarget.style.transform = 'translateY(-2px)';
+                          e.currentTarget.style.boxShadow = '0 0.4rem 0.8rem rgba(76, 175, 80, 0.4)';
+                        }
                       }}
                       onMouseLeave={(e) => {
-                        e.currentTarget.style.backgroundColor = '#4CAF50';
-                        e.currentTarget.style.transform = 'translateY(0)';
-                        e.currentTarget.style.boxShadow = '0 0.2rem 0.4rem rgba(76, 175, 80, 0.3)';
+                        if (clue2) {
+                          e.currentTarget.style.backgroundColor = '#4CAF50';
+                          e.currentTarget.style.transform = 'translateY(0)';
+                          e.currentTarget.style.boxShadow = '0 0.2rem 0.4rem rgba(76, 175, 80, 0.3)';
+                        }
                       }}
                     >
-                      🔍 Revelar Pista
+                      🔍 {clue2 ? 'Revelar Pista' : 'Aguardar próximo palpite'}
                     </button>
                   </div>
                 )}
