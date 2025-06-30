@@ -594,11 +594,11 @@
     display: flex !important;
     flex-direction: column !important;
     align-items: center !important;
-    justify-content: space-between !important;
+    justify-content: flex-end !important;
     background: rgba(30, 40, 50, 0.95) !important;
     border: 2px solid rgba(76, 175, 80, 0.4) !important;
     border-radius: 16px !important;
-    padding: 1rem !important;
+    padding: 0 !important;
     transition: all 0.3s ease !important;
     min-height: 200px !important;
     max-height: none !important;
@@ -607,18 +607,23 @@
     backdrop-filter: blur(10px) !important;
     width: 100% !important;
     box-sizing: border-box !important;
+    position: relative !important;
+    overflow: hidden !important;
   }
   
   .mobile-squad-player-image {
-    width: 70px !important;
-    height: 70px !important;
-    border-radius: 6px !important;
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    border-radius: 16px !important;
     object-fit: cover !important;
     object-position: center !important;
-    margin-bottom: 0.75rem !important;
-    border: 2px solid rgba(76, 175, 80, 0.6) !important;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+    border: none !important;
+    box-shadow: none !important;
     flex-shrink: 0 !important;
+    z-index: 1 !important;
   }
   
   .mobile-squad-player-name {
@@ -626,26 +631,34 @@
     font-weight: 700 !important;
     color: #FFFFFF !important;
     text-align: center !important;
-    margin: 0.5rem 0 0.25rem 0 !important;
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8) !important;
+    margin: 0 !important;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.9) !important;
     line-height: 1.2 !important;
     word-break: break-word !important;
     hyphens: auto !important;
+    position: relative !important;
+    z-index: 2 !important;
+    background: rgba(0, 0, 0, 0.7) !important;
+    padding: 0.5rem !important;
+    border-radius: 8px 8px 0 0 !important;
+    backdrop-filter: blur(5px) !important;
   }
   
   .mobile-squad-player-position {
     font-size: 0.85rem !important;
     font-weight: 600 !important;
-    color: #B0BEC5 !important;
+    color: #FFD700 !important;
     text-align: center !important;
     margin: 0 !important;
-    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8) !important;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.9) !important;
     text-transform: uppercase !important;
     letter-spacing: 0.05em !important;
-    padding: 0.25rem 0.5rem !important;
-    background: rgba(76, 175, 80, 0.2) !important;
-    border-radius: 8px !important;
-    margin-top: 0.25rem !important;
+    padding: 0.5rem !important;
+    background: rgba(76, 175, 80, 0.9) !important;
+    border-radius: 0 0 8px 8px !important;
+    position: relative !important;
+    z-index: 2 !important;
+    backdrop-filter: blur(5px) !important;
   }
   
   /* Problema 6: História - Text Readability */
@@ -935,9 +948,10 @@
   /* Grid layout para cartões de jogadores */
   .mobile-player-card-grid {
     display: grid !important;
-    grid-template-columns: 150px 1fr !important;
+    grid-template-columns: 160px 1fr !important;
     gap: 1rem !important;
-    align-items: start !important;
+    align-items: stretch !important;
+    min-height: 120px !important;
   }
 
   /* Coluna da esquerda - informações do jogador */
@@ -945,8 +959,11 @@
     display: flex !important;
     flex-direction: column !important;
     align-items: center !important;
+    justify-content: center !important;
     width: 100% !important;
-    max-width: 150px !important;
+    max-width: 160px !important;
+    height: 100% !important;
+    padding: 0.5rem !important;
   }
 
   /* Nome do jogador - quebra de linha */
@@ -1010,5 +1027,357 @@
   .mobile-maritodle-rating-item.average:not(.active) {
     border: 2px solid rgba(255, 215, 0, 0.5) !important;
     background: rgba(255, 215, 0, 0.1) !important;
+  }
+}
+
+/* MOBILE HISTORY PAGE - Melhorias de legibilidade */
+@media screen and (max-width: 768px) {
+  /* Botões de filtro de categoria - maiores e mais legíveis */
+  .mobile-history-filter-button {
+    font-size: 1rem !important;
+    padding: 0.75rem 1.25rem !important;
+    border-radius: 25px !important;
+    min-height: 44px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-weight: 700 !important;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8) !important;
+    margin: 0.25rem !important;
+    min-width: 80px !important;
+  }
+
+  /* Container dos filtros - melhor layout */
+  .mobile-history-filter-container {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    justify-content: center !important;
+    gap: 0.5rem !important;
+    margin-bottom: 2rem !important;
+    padding: 0 1rem !important;
+  }
+
+  /* Modal - layout vertical e texto maior */
+  .mobile-history-modal {
+    padding: 0 !important;
+    align-items: flex-start !important;
+    justify-content: flex-start !important;
+    padding-top: 10vh !important;
+  }
+
+  .mobile-history-modal-content {
+    width: 95% !important;
+    max-width: none !important;
+    max-height: 85vh !important;
+    margin: 0 auto !important;
+    border-radius: 12px !important;
+    padding: 1.5rem !important;
+    display: flex !important;
+    flex-direction: column !important;
+  }
+
+  .mobile-history-modal-header {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: flex-start !important;
+    margin-bottom: 1rem !important;
+    flex-shrink: 0 !important;
+  }
+
+  .mobile-history-modal-title {
+    font-size: 1.3rem !important;
+    font-weight: 700 !important;
+    color: #FFFFFF !important;
+    margin: 0 !important;
+    line-height: 1.3 !important;
+    flex: 1 !important;
+    margin-right: 1rem !important;
+  }
+
+  .mobile-history-modal-year {
+    font-size: 1.1rem !important;
+    color: #FFBB4C !important;
+    font-weight: 600 !important;
+    margin-top: 0.25rem !important;
+  }
+
+  .mobile-history-modal-close {
+    font-size: 1.5rem !important;
+    width: 44px !important;
+    height: 44px !important;
+    border-radius: 50% !important;
+    background: rgba(255, 255, 255, 0.1) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    color: white !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    flex-shrink: 0 !important;
+  }
+
+  .mobile-history-modal-description {
+    font-size: 1rem !important;
+    color: #E0E0E0 !important;
+    line-height: 1.6 !important;
+    margin-bottom: 1rem !important;
+    flex: 1 !important;
+    overflow-y: auto !important;
+    text-align: justify !important;
+  }
+
+  .mobile-history-modal-category {
+    font-size: 0.9rem !important;
+    padding: 0.5rem 1rem !important;
+    border-radius: 20px !important;
+    font-weight: 600 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
+    align-self: flex-start !important;
+    flex-shrink: 0 !important;
+  }
+}
+
+/* MOBILE CHAT/DISCUSSIONS PAGE - Melhorias de legibilidade e layout */
+@media screen and (max-width: 768px) {
+  /* PARTE 1: Lista de discussões - controles maiores e melhor alinhamento */
+  
+  /* Container dos controles da lista principal */
+  .mobile-chat-controls {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 1rem !important;
+    margin-bottom: 1.5rem !important;
+    padding: 0 1rem !important;
+  }
+
+  /* Linha superior - pesquisa e filtro */
+  .mobile-chat-controls-top {
+    display: flex !important;
+    gap: 0.75rem !important;
+    width: 100% !important;
+  }
+
+  /* Input de pesquisa - maior e mais legível */
+  .mobile-chat-search-input {
+    flex: 1 !important;
+    font-size: 1rem !important;
+    padding: 0.875rem 1rem !important;
+    border-radius: 12px !important;
+    border: 2px solid rgba(255, 187, 76, 0.4) !important;
+    background: rgba(255, 255, 255, 0.1) !important;
+    color: #FFFFFF !important;
+    min-height: 48px !important;
+    box-sizing: border-box !important;
+  }
+
+  /* Select de filtro - maior e mais legível */
+  .mobile-chat-sort-select {
+    font-size: 1rem !important;
+    padding: 0.875rem 1rem !important;
+    border-radius: 12px !important;
+    border: 2px solid rgba(255, 187, 76, 0.4) !important;
+    background: rgba(255, 255, 255, 0.1) !important;
+    color: #FFFFFF !important;
+    min-height: 48px !important;
+    min-width: 140px !important;
+    padding-right: 2.5rem !important;
+    background-size: 16px !important;
+    background-position: right 0.75rem center !important;
+  }
+
+  /* Botão Nova Discussão - mesmo tamanho dos outros controles */
+  .mobile-chat-new-discussion-btn {
+    width: 100% !important;
+    font-size: 1rem !important;
+    padding: 0.875rem 1rem !important;
+    border-radius: 12px !important;
+    background: #009759 !important;
+    color: white !important;
+    border: none !important;
+    min-height: 48px !important;
+    font-weight: 600 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 0.5rem !important;
+    text-transform: none !important;
+    letter-spacing: normal !important;
+  }
+
+  /* PARTE 2: Drawer da discussão individual - melhor layout mobile */
+  
+  /* Container principal do drawer - tela cheia no mobile */
+  .mobile-chat-drawer {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    background: rgba(15, 20, 25, 0.98) !important;
+    z-index: 9999 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    backdrop-filter: blur(10px) !important;
+  }
+
+  /* Header da discussão individual - padding adequado */
+  .mobile-chat-header {
+    padding: 1rem !important;
+    background: rgba(30, 40, 50, 0.95) !important;
+    border-bottom: 2px solid rgba(76, 175, 80, 0.4) !important;
+    display: flex !important;
+    align-items: flex-start !important;
+    justify-content: space-between !important;
+    gap: 1rem !important;
+    flex-shrink: 0 !important;
+  }
+
+  /* Conteúdo do header - informações da discussão */
+  .mobile-chat-header-content {
+    flex: 1 !important;
+    min-width: 0 !important;
+  }
+
+  /* Título da discussão */
+  .mobile-chat-header-title {
+    font-size: 1.2rem !important;
+    font-weight: 700 !important;
+    color: #FFFFFF !important;
+    margin: 0 0 0.5rem 0 !important;
+    line-height: 1.3 !important;
+    word-wrap: break-word !important;
+  }
+
+  /* Meta info (autor, data) */
+  .mobile-chat-header-meta {
+    font-size: 0.9rem !important;
+    color: #FFBB4C !important;
+    margin-bottom: 0.5rem !important;
+    line-height: 1.3 !important;
+  }
+
+  /* Descrição da discussão */
+  .mobile-chat-header-description {
+    font-size: 0.9rem !important;
+    color: #B0BEC5 !important;
+    line-height: 1.4 !important;
+    margin: 0 !important;
+  }
+
+  /* Ações do header (botões) */
+  .mobile-chat-header-actions {
+    display: flex !important;
+    gap: 0.5rem !important;
+    flex-shrink: 0 !important;
+    align-items: flex-start !important;
+  }
+
+  /* Botões de ação (deletar, fechar) */
+  .mobile-chat-action-button {
+    width: 44px !important;
+    height: 44px !important;
+    border-radius: 12px !important;
+    border: none !important;
+    cursor: pointer !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    transition: all 0.2s ease !important;
+    flex-shrink: 0 !important;
+  }
+
+  /* Área de mensagens - scroll adequado */
+  .mobile-chat-messages {
+    flex: 1 !important;
+    overflow-y: auto !important;
+    padding: 1rem !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 1rem !important;
+    min-height: 0 !important;
+  }
+
+  /* Mensagens individuais */
+  .mobile-chat-message {
+    background: rgba(30, 40, 50, 0.9) !important;
+    border: 1px solid rgba(76, 175, 80, 0.3) !important;
+    border-radius: 12px !important;
+    padding: 0.75rem !important;
+    word-wrap: break-word !important;
+  }
+
+  /* Cabeçalho da mensagem (autor, hora) */
+  .mobile-chat-message-header {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    margin-bottom: 0.5rem !important;
+    gap: 0.5rem !important;
+  }
+
+  /* Autor da mensagem */
+  .mobile-chat-message-author {
+    font-size: 0.9rem !important;
+    font-weight: 700 !important;
+    color: #4CAF50 !important;
+    flex-shrink: 0 !important;
+  }
+
+  /* Hora da mensagem */
+  .mobile-chat-message-time {
+    font-size: 0.75rem !important;
+    color: #78909C !important;
+    flex-shrink: 0 !important;
+  }
+
+  /* Conteúdo da mensagem */
+  .mobile-chat-message-content {
+    font-size: 0.9rem !important;
+    color: white !important;
+    line-height: 1.4 !important;
+    margin: 0 !important;
+    word-wrap: break-word !important;
+    overflow-wrap: break-word !important;
+  }
+
+  /* Área de input - parte inferior */
+  .mobile-chat-input-container {
+    padding: 1rem !important;
+    background: rgba(30, 40, 50, 0.95) !important;
+    border-top: 2px solid rgba(76, 175, 80, 0.4) !important;
+    display: flex !important;
+    gap: 0.75rem !important;
+    align-items: center !important;
+    flex-shrink: 0 !important;
+  }
+
+  /* Input de mensagem */
+  .mobile-chat-input {
+    flex: 1 !important;
+    background: rgba(15, 20, 25, 0.8) !important;
+    border: 1px solid rgba(76, 175, 80, 0.3) !important;
+    border-radius: 25px !important;
+    padding: 0.75rem 1rem !important;
+    color: white !important;
+    font-size: 0.9rem !important;
+    outline: none !important;
+    min-height: 44px !important;
+    box-sizing: border-box !important;
+  }
+
+  /* Botão enviar */
+  .mobile-chat-send-button {
+    background: linear-gradient(135deg, #4CAF50 0%, #45A049 100%) !important;
+    color: white !important;
+    border: none !important;
+    border-radius: 50% !important;
+    width: 44px !important;
+    height: 44px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    cursor: pointer !important;
+    font-size: 1.2rem !important;
+    flex-shrink: 0 !important;
   }
 } 

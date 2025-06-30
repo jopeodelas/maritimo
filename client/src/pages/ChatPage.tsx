@@ -945,19 +945,27 @@ const ChatPage = () => {
           <p style={styles.heroSubtitle}>Partilhe as suas opiniões sobre o CS Marítimo</p>
         </div>
 
-        <div style={styles.controls}>
-          <div style={styles.leftControls}>
+        <div 
+          style={styles.controls}
+          className={isMobile ? "mobile-chat-controls" : ""}
+        >
+          <div 
+            style={styles.leftControls}
+            className={isMobile ? "mobile-chat-controls-top" : ""}
+          >
             <input
               type="text"
               placeholder="Pesquisar discussões..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               style={styles.searchInput}
+              className={isMobile ? "mobile-chat-search-input" : ""}
             />
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value as 'newest' | 'oldest' | 'popular')}
               style={styles.sortSelect}
+              className={isMobile ? "mobile-chat-sort-select" : ""}
             >
               <option value="newest">Mais Recentes</option>
               <option value="oldest">Mais Antigas</option>
@@ -967,7 +975,7 @@ const ChatPage = () => {
           <button
             onClick={() => setShowCreateForm(true)}
             style={styles.createButton}
-            className="hover-button"
+            className={isMobile ? "mobile-chat-new-discussion-btn hover-button" : "hover-button"}
           >
             Nova Discussão
           </button>
@@ -1030,7 +1038,11 @@ const ChatPage = () => {
       {/* New Chat Interface */}
       <div style={styles.chatOverlay} onClick={closeDiscussion}></div>
       
-      <div style={styles.chatContainer} onClick={(e) => e.stopPropagation()}>
+      <div 
+        style={styles.chatContainer} 
+        onClick={(e) => e.stopPropagation()}
+        className={isMobile ? "mobile-chat-drawer" : ""}
+      >
         {/* Sidebar */}
         <div style={styles.sidebar}>
           <div style={styles.sidebarHeader}>
@@ -1105,23 +1117,43 @@ const ChatPage = () => {
         <div style={styles.chatArea}>
           {selectedDiscussion ? (
             <>
-              <div style={styles.chatHeader}>
-                <div style={styles.chatHeaderContent}>
-                  <h1 style={styles.chatHeaderTitle}>{selectedDiscussion.title}</h1>
-                  <div style={styles.chatHeaderMeta}>
+              <div 
+                style={styles.chatHeader}
+                className={isMobile ? "mobile-chat-header" : ""}
+              >
+                <div 
+                  style={styles.chatHeaderContent}
+                  className={isMobile ? "mobile-chat-header-content" : ""}
+                >
+                  <h1 
+                    style={styles.chatHeaderTitle}
+                    className={isMobile ? "mobile-chat-header-title" : ""}
+                  >
+                    {selectedDiscussion.title}
+                  </h1>
+                  <div 
+                    style={styles.chatHeaderMeta}
+                    className={isMobile ? "mobile-chat-header-meta" : ""}
+                  >
                     Por {selectedDiscussion.author_username} • {formatDate(selectedDiscussion.created_at)}
                   </div>
-                  <div style={styles.chatHeaderDescription}>
+                  <div 
+                    style={styles.chatHeaderDescription}
+                    className={isMobile ? "mobile-chat-header-description" : ""}
+                  >
                     {selectedDiscussion.description}
                   </div>
                 </div>
                 
-                <div style={styles.chatHeaderActions}>
+                <div 
+                  style={styles.chatHeaderActions}
+                  className={isMobile ? "mobile-chat-header-actions" : ""}
+                >
                   {user && selectedDiscussion.author_id === Number(user.id) && (
                     <button
                       style={{ ...styles.actionButton, ...styles.deleteButton }}
                       onClick={() => handleDeleteDiscussion(selectedDiscussion.id)}
-                      className="action-button delete-btn"
+                      className={isMobile ? "mobile-chat-action-button action-button delete-btn" : "action-button delete-btn"}
                       title="Apagar discussão"
                     >
                       <DeleteIcon />
@@ -1130,7 +1162,7 @@ const ChatPage = () => {
                   <button
                     style={{ ...styles.actionButton, ...styles.closeButton }}
                     onClick={closeDiscussion}
-                    className="action-button close-btn"
+                    className={isMobile ? "mobile-chat-action-button action-button close-btn" : "action-button close-btn"}
                     title="Fechar"
                   >
                     <CloseIcon />
@@ -1138,7 +1170,10 @@ const ChatPage = () => {
                 </div>
               </div>
 
-              <div style={styles.messagesArea}>
+              <div 
+                style={styles.messagesArea}
+                className={isMobile ? "mobile-chat-messages" : ""}
+              >
                 {comments.length === 0 ? (
                   <div style={styles.emptyState}>
                     <div style={styles.emptyStateIcon}>💬</div>
@@ -1153,12 +1188,31 @@ const ChatPage = () => {
                         <div 
                           key={comment.id} 
                           style={isCurrentUser ? styles.messageUser : styles.messageOther}
+                          className={isMobile ? "mobile-chat-message" : ""}
                         >
-                          <div style={styles.messageHeader}>
-                            <span style={isCurrentUser ? styles.messageAuthorUser : styles.messageAuthor}>{comment.author_username}</span>
-                            <span style={styles.messageTime}>{formatChatTime(comment.created_at)}</span>
+                          <div 
+                            style={styles.messageHeader}
+                            className={isMobile ? "mobile-chat-message-header" : ""}
+                          >
+                            <span 
+                              style={isCurrentUser ? styles.messageAuthorUser : styles.messageAuthor}
+                              className={isMobile ? "mobile-chat-message-author" : ""}
+                            >
+                              {comment.author_username}
+                            </span>
+                            <span 
+                              style={styles.messageTime}
+                              className={isMobile ? "mobile-chat-message-time" : ""}
+                            >
+                              {formatChatTime(comment.created_at)}
+                            </span>
                           </div>
-                          <div style={styles.messageContent}>{comment.content}</div>
+                          <div 
+                            style={styles.messageContent}
+                            className={isMobile ? "mobile-chat-message-content" : ""}
+                          >
+                            {comment.content}
+                          </div>
                         </div>
                       );
                     })}
@@ -1167,7 +1221,10 @@ const ChatPage = () => {
                 )}
               </div>
 
-              <div style={styles.chatInputArea}>
+              <div 
+                style={styles.chatInputArea}
+                className={isMobile ? "mobile-chat-input-container" : ""}
+              >
                 <div style={styles.chatInputContainer}>
                   <input
                     ref={chatInputRef}
@@ -1177,12 +1234,13 @@ const ChatPage = () => {
                     onChange={(e) => setNewComment(e.target.value)}
                     onKeyPress={handleKeyPress}
                     style={styles.chatInput}
+                    className={isMobile ? "mobile-chat-input" : ""}
                     disabled={submitting}
                   />
                   <button
                     onClick={() => handleSendMessage()}
                     style={styles.sendButton}
-                    className="send-btn"
+                    className={isMobile ? "mobile-chat-send-button send-btn" : "send-btn"}
                     disabled={submitting || !newComment.trim()}
                   >
                     {submitting ? (

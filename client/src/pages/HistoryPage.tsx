@@ -641,7 +641,10 @@ const HistoryPage = () => {
             </p>
           </div>
 
-          <div style={styles.filterContainer}>
+          <div 
+            style={styles.filterContainer}
+            className={isMobile ? "mobile-history-filter-container" : ""}
+          >
             {categories.map(category => (
               <button
                 key={category.id}
@@ -650,6 +653,7 @@ const HistoryPage = () => {
                   ...(selectedCategory === category.id ? styles.filterButtonActive : {}),
                   backgroundColor: selectedCategory === category.id ? category.color : undefined,
                 }}
+                className={isMobile ? "mobile-history-filter-button" : ""}
                 onClick={() => setSelectedCategory(category.id)}
               >
                 {category.name}
@@ -716,23 +720,54 @@ const HistoryPage = () => {
         </div>
 
         {isModalOpen && selectedEvent && (
-          <div style={styles.modal} onClick={closeModal}>
-            <div style={styles.modalContent} onClick={(e) => e.stopPropagation()}>
-              <div style={styles.modalHeader}>
+          <div 
+            style={styles.modal} 
+            onClick={closeModal}
+            className={isMobile ? "mobile-history-modal" : ""}
+          >
+            <div 
+              style={styles.modalContent} 
+              onClick={(e) => e.stopPropagation()}
+              className={isMobile ? "mobile-history-modal-content" : ""}
+            >
+              <div 
+                style={styles.modalHeader}
+                className={isMobile ? "mobile-history-modal-header" : ""}
+              >
                 <div>
-                  <h2 style={styles.modalTitle}>{selectedEvent.title}</h2>
-                  <div style={styles.modalYear}>{selectedEvent.year}</div>
+                  <h2 
+                    style={styles.modalTitle}
+                    className={isMobile ? "mobile-history-modal-title" : ""}
+                  >
+                    {selectedEvent.title}
+                  </h2>
+                  <div 
+                    style={styles.modalYear}
+                    className={isMobile ? "mobile-history-modal-year" : ""}
+                  >
+                    {selectedEvent.year}
+                  </div>
                 </div>
-                <button style={styles.closeButton} onClick={closeModal}>
+                <button 
+                  style={styles.closeButton} 
+                  onClick={closeModal}
+                  className={isMobile ? "mobile-history-modal-close" : ""}
+                >
                   ×
                 </button>
               </div>
-              <p style={styles.modalDescription}>{selectedEvent.description}</p>
+              <p 
+                style={styles.modalDescription}
+                className={isMobile ? "mobile-history-modal-description" : ""}
+              >
+                {selectedEvent.description}
+              </p>
               <span
                 style={{
                   ...styles.eventCategory,
                   backgroundColor: getCategoryColor(selectedEvent.category),
                 }}
+                className={isMobile ? "mobile-history-modal-category" : ""}
               >
                 {categories.find(c => c.id === selectedEvent.category)?.name}
               </span>

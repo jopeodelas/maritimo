@@ -507,7 +507,9 @@ const PlayerRatings = () => {
       flex: "none",
       minWidth: isMobile ? "auto" : "200px",
       width: isMobile ? "100%" : "auto",
+      height: isMobile ? "100%" : "auto",
       textAlign: isMobile ? "center" : "left",
+      justifyContent: isMobile ? "center" : "flex-start",
     },
     playerImage: {
       width: "clamp(4rem, 8vw, 6rem)",
@@ -648,13 +650,15 @@ const PlayerRatings = () => {
     averageRating: {
       position: "absolute",
       top: "0.5rem",
-      right: "0.5rem",
+      left: isMobile ? "0.5rem" : "auto",
+      right: isMobile ? "auto" : "0.5rem",
       background: "rgba(0, 0, 0, 0.8)",
       color: "#FFD700",
       padding: "0.3rem 0.8rem",
       borderRadius: "0.5rem",
       fontSize: "0.8rem",
       fontWeight: "600",
+      zIndex: 10,
     },
     resultsSection: {
       background: "rgba(30, 40, 50, 0.95)",
