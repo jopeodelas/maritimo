@@ -486,7 +486,8 @@ const PlayerRatings = () => {
       padding: "clamp(1rem, 2vh, 1.5rem)",
       marginBottom: "clamp(1rem, 2vh, 1.5rem)",
       display: "flex",
-      alignItems: "center",
+      alignItems: isMobile ? "flex-start" : "center",
+      justifyContent: isMobile ? "space-between" : "flex-start",
       gap: "clamp(1rem, 2vw, 1.5rem)",
       transition: "all 0.3s ease",
       cursor: "pointer",
@@ -504,6 +505,8 @@ const PlayerRatings = () => {
       gap: isMobile ? "0.5rem" : "clamp(1rem, 2vw, 1.5rem)",
       flex: "none",
       minWidth: isMobile ? "auto" : "200px",
+      maxWidth: isMobile ? "160px" : "none",
+      textAlign: isMobile ? "center" : "left",
     },
     playerImage: {
       width: "clamp(4rem, 8vw, 6rem)",
@@ -526,6 +529,7 @@ const PlayerRatings = () => {
       margin: "0",
       textShadow: "0 2px 4px rgba(0, 0, 0, 0.5)",
       textAlign: isMobile ? "center" : "left",
+      lineHeight: "1.2",
     },
     playerPosition: {
       fontSize: "clamp(0.9rem, 2vw, 1.1rem)",
@@ -542,8 +546,10 @@ const PlayerRatings = () => {
       alignItems: "center",
       gap: "clamp(0.5rem, 1vw, 1rem)",
       flexWrap: "wrap",
-      flex: "1",
-      justifyContent: "flex-end",
+      flex: isMobile ? "none" : "1",
+      justifyContent: isMobile ? "flex-end" : "flex-end",
+      minWidth: isMobile ? "140px" : "auto",
+      alignSelf: isMobile ? "flex-start" : "center",
     },
     ratingButtons: {
       display: "flex",
@@ -935,7 +941,7 @@ const PlayerRatings = () => {
             return (
               <div 
                 key={player.id} 
-                style={styles.playerCard} // Remover cor diferente para GR
+                style={styles.playerCard}
                 onClick={() => handlePlayerClick(player.id)}
                 className="hover-card"
               >
@@ -982,6 +988,52 @@ const PlayerRatings = () => {
                   <div style={styles.playerDetails}>
                     <div style={styles.playerName}>{player.name}</div>
                     <div style={styles.playerPosition}>{player.position}</div>
+                    
+                    {/* Estrela no mobile fica na coluna esquerda */}
+                    {isMobile && (
+                      <div style={{ marginTop: '0.75rem', display: 'flex', justifyContent: 'center' }}>
+                        <button
+                          style={{
+                            width: "48px",
+                            height: "48px",
+                            borderRadius: "50%",
+                            border: "2px solid rgba(255, 215, 0, 0.5)",
+                            background: isManOfMatch ? "#FFD700" : "rgba(0, 0, 0, 0.3)",
+                            cursor: "pointer",
+                            transition: "all 0.3s ease",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            transform: isManOfMatch ? "scale(1.05)" : "scale(1)",
+                            boxShadow: isManOfMatch ? "0 0 15px rgba(255, 215, 0, 0.8)" : "none",
+                          }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleManOfMatchSelect(player.id, 'regular');
+                          }}
+                          disabled={hasVoted}
+                          title="Homem do Jogo"
+                          className="hover-button"
+                        >
+                          <span 
+                            style={{
+                              fontSize: "28px",
+                              color: isManOfMatch ? "#000000" : "#FFD700",
+                              textShadow: isManOfMatch 
+                                ? "none" 
+                                : "1px 1px 2px rgba(0, 0, 0, 0.8)",
+                              lineHeight: "1",
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              fontWeight: "normal"
+                            }}
+                          >
+                            ★
+                          </span>
+                        </button>
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -1040,46 +1092,46 @@ const PlayerRatings = () => {
                       );
                     })}
                   </div>
-                  
-                  {/* REMOVER COMPLETAMENTE - não mostrar número à direita */}
                 </div>
 
-                <div 
-                  style={styles.manOfMatchSection}
-                  className={isMobile ? "mobile-maritodle-star-container" : ""}
-                >
-                  <button
-                    style={{
-                      ...styles.manOfMatchButton,
-                      ...(isManOfMatch ? styles.manOfMatchButtonActive : {})
-                    }}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleManOfMatchSelect(player.id, 'regular');
-                    }}
-                    disabled={hasVoted}
-                    title="Homem do Jogo"
-                    className="hover-button"
+                {/* Estrela no desktop fica na posição original */}
+                {!isMobile && (
+                  <div 
+                    style={styles.manOfMatchSection}
                   >
-                    {/* Estrela usando CSS */}
-                    <span 
+                    <button
                       style={{
-                        fontSize: "36px",
-                        color: isManOfMatch ? "#000000" : "#FFD700",
-                        textShadow: isManOfMatch 
-                          ? "none" 
-                          : "1px 1px 2px rgba(0, 0, 0, 0.8)",
-                        lineHeight: "1",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        fontWeight: "normal"
+                        ...styles.manOfMatchButton,
+                        ...(isManOfMatch ? styles.manOfMatchButtonActive : {})
                       }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleManOfMatchSelect(player.id, 'regular');
+                      }}
+                      disabled={hasVoted}
+                      title="Homem do Jogo"
+                      className="hover-button"
                     >
-                      ★
-                    </span>
-                  </button>
-                </div>
+                      {/* Estrela usando CSS */}
+                      <span 
+                        style={{
+                          fontSize: "36px",
+                          color: isManOfMatch ? "#000000" : "#FFD700",
+                          textShadow: isManOfMatch 
+                            ? "none" 
+                            : "1px 1px 2px rgba(0, 0, 0, 0.8)",
+                          lineHeight: "1",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          fontWeight: "normal"
+                        }}
+                      >
+                        ★
+                      </span>
+                    </button>
+                  </div>
+                )}
               </div>
             );
           })}

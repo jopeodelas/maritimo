@@ -589,46 +589,52 @@
     width: 100% !important;
   }
   
-  /* Problema 4: Plantel - Espaçamento jogadores */
+  /* Problema 4: Plantel - Layout melhorado para mobile */
   .mobile-squad-player-card {
     display: flex !important;
     flex-direction: column !important;
     align-items: center !important;
-    justify-content: center !important;
+    justify-content: space-between !important;
     background: rgba(30, 40, 50, 0.95) !important;
     border: 2px solid rgba(76, 175, 80, 0.4) !important;
     border-radius: 16px !important;
-    padding: 1.2rem !important;
+    padding: 1rem !important;
     transition: all 0.3s ease !important;
-    min-height: 220px !important;
-    max-height: 280px !important;
+    min-height: 200px !important;
+    max-height: none !important;
+    height: auto !important;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4) !important;
     backdrop-filter: blur(10px) !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
   }
   
   .mobile-squad-player-image {
-    width: 100px !important;
-    height: 100px !important;
+    width: 80px !important;
+    height: 80px !important;
     border-radius: 50% !important;
     object-fit: cover !important;
     object-position: top center !important;
     margin-bottom: 0.75rem !important;
     border: 3px solid rgba(76, 175, 80, 0.6) !important;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+    flex-shrink: 0 !important;
   }
   
   .mobile-squad-player-name {
-    font-size: 1.1rem !important;
+    font-size: 1rem !important;
     font-weight: 700 !important;
     color: #FFFFFF !important;
     text-align: center !important;
     margin: 0.5rem 0 0.25rem 0 !important;
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8) !important;
     line-height: 1.2 !important;
+    word-break: break-word !important;
+    hyphens: auto !important;
   }
   
   .mobile-squad-player-position {
-    font-size: 0.9rem !important;
+    font-size: 0.85rem !important;
     font-weight: 600 !important;
     color: #B0BEC5 !important;
     text-align: center !important;
@@ -636,6 +642,10 @@
     text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8) !important;
     text-transform: uppercase !important;
     letter-spacing: 0.05em !important;
+    padding: 0.25rem 0.5rem !important;
+    background: rgba(76, 175, 80, 0.2) !important;
+    border-radius: 8px !important;
+    margin-top: 0.25rem !important;
   }
   
   /* Problema 6: História - Text Readability */
@@ -831,6 +841,17 @@
   
   .mobile-squad-player-name {
     font-size: 0.9rem !important;
+    line-height: 1.1 !important;
+  }
+  
+  .mobile-squad-player-position {
+    font-size: 0.75rem !important;
+    padding: 0.2rem 0.4rem !important;
+  }
+  
+  .mobile-squad-player-card {
+    padding: 0.8rem !important;
+    min-height: 180px !important;
   }
   
   /* Homepage ajustes para telas pequenas */

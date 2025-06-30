@@ -60,6 +60,7 @@ const Squad = () => {
       `,
       fontFamily: '"Roboto", "Inter", -apple-system, BlinkMacSystemFont, sans-serif',
       position: "relative",
+      paddingBottom: isMobile ? "2rem" : "0", // Mobile: padding inferior
     },
     backgroundPattern: {
       position: "absolute",
@@ -136,7 +137,7 @@ const Squad = () => {
       boxShadow: "0 clamp(0.3rem, 1vh, 0.8rem) clamp(1.5rem, 3vh, 2rem) rgba(0, 0, 0, 0.4)",
       position: "relative",
       overflow: "hidden",
-      height: "85vh",
+      height: isMobile ? "auto" : "85vh",
       display: 'flex',
       flexDirection: 'column',
     },
@@ -202,12 +203,13 @@ const Squad = () => {
       gridAutoRows: "1fr",
       gap: isMobile ? "1rem" : "2%",
       padding: isMobile ? "1rem" : "2%",
-      height: "70vh",
+      height: isMobile ? "auto" : "70vh",
       opacity: 1,
       transform: "translateX(0)",
       transition: "all 0.3s ease",
-      alignContent: 'stretch',
+      alignContent: isMobile ? "start" : "stretch",
       justifyContent: 'center',
+      marginBottom: isMobile ? "2rem" : "0",
     },
     playersGridAnimating: {
       opacity: 0.7,
@@ -397,6 +399,12 @@ const Squad = () => {
 
   // Calcular altura da imagem baseada no número de jogadores
   const getImagePadding = (playerCount: number): string => {
+    if (isMobile) {
+      // Mobile: sempre padding adequado para mostrar bem as imagens
+      return "100%";
+    }
+    
+    // Desktop: lógica original
     if (playerCount <= 3) return "100%"; // Aproveita mais espaço para 3 jogadores - não deixa vazio
     if (playerCount <= 6) return "80%"; // Meio termo para 6 jogadores
     if (playerCount <= 8) return "80%"; // Já está perfeito para 8 jogadores
