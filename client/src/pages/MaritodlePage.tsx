@@ -41,8 +41,8 @@ const MaritodlePage = () => {
   const [error, setError] = useState('');
   const [filteredNomes, setFilteredNomes] = useState<string[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
-  const [clue1] = useState('');
-  const [clue2] = useState('');
+  const [clue1, setClue1] = useState('');
+  const [clue2, setClue2] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [modalType, _setModalType] = useState<'vitoria' | 'derrota'>('vitoria');
   const [showCongrats, setShowCongrats] = useState(false);
@@ -338,6 +338,16 @@ const MaritodlePage = () => {
           setShowResult(true);
         }
       }
+
+      // Carregar pistas se disponíveis
+      if (state.gameData) {
+        if (state.gameData.mostrar_clue1 && state.gameData.clue1) {
+          setClue1(state.gameData.clue1);
+        }
+        if (state.gameData.mostrar_clue2 && state.gameData.clue2) {
+          setClue2(state.gameData.clue2);
+        }
+      }
     } catch (error) {
       console.error('Erro ao carregar estado do jogo:', error);
     }
@@ -404,6 +414,14 @@ const MaritodlePage = () => {
         setTimeout(() => {
           carregarEstadoJogo();
         }, 1000);
+      }
+
+      // Verificar se novas pistas ficaram disponíveis
+      if (result.mostrar_clue1 && result.clue1) {
+        setClue1(result.clue1);
+      }
+      if (result.mostrar_clue2 && result.clue2) {
+        setClue2(result.clue2);
       }
 
       setInputValue('');
@@ -1450,30 +1468,51 @@ const MaritodlePage = () => {
         {/* Legend */}
         <div style={styles.legend}>
           <h3 style={styles.legendTitle}>Legenda</h3>
-          <div style={styles.legendGrid}>
-            <div style={styles.legendItem}>
+          <div 
+            style={styles.legendGrid}
+            className={isMobile ? "mobile-maritodle-legend-grid" : ""}
+          >
+            <div 
+              style={styles.legendItem}
+              className={isMobile ? "mobile-maritodle-legend-item" : ""}
+            >
               {renderLegendIndicator('square', '#4CAF50')}
-              <span>Correto</span>
+              <span className={isMobile ? "mobile-maritodle-legend-text" : ""}>Correto</span>
             </div>
-            <div style={styles.legendItem}>
+            <div 
+              style={styles.legendItem}
+              className={isMobile ? "mobile-maritodle-legend-item" : ""}
+            >
               {renderLegendIndicator('square', '#FFD700')}
-              <span>Parcial (alguma informação coincide)</span>
+              <span className={isMobile ? "mobile-maritodle-legend-text" : ""}>Parcial (alguma informação coincide)</span>
             </div>
-            <div style={styles.legendItem}>
+            <div 
+              style={styles.legendItem}
+              className={isMobile ? "mobile-maritodle-legend-item" : ""}
+            >
               {renderLegendIndicator('square', '#F44336')}
-              <span>Incorreto</span>
+              <span className={isMobile ? "mobile-maritodle-legend-text" : ""}>Incorreto</span>
             </div>
-            <div style={styles.legendItem}>
+            <div 
+              style={styles.legendItem}
+              className={isMobile ? "mobile-maritodle-legend-item" : ""}
+            >
               {renderLegendIndicator('arrow', '#F44336', 'up')}
-              <span>Valor secreto é MAIOR/DEPOIS</span>
+              <span className={isMobile ? "mobile-maritodle-legend-text" : ""}>Valor secreto é MAIOR/DEPOIS</span>
             </div>
-            <div style={styles.legendItem}>
+            <div 
+              style={styles.legendItem}
+              className={isMobile ? "mobile-maritodle-legend-item" : ""}
+            >
               {renderLegendIndicator('arrow', '#F44336', 'down')}
-              <span>Valor secreto é MENOR/ANTES</span>
+              <span className={isMobile ? "mobile-maritodle-legend-text" : ""}>Valor secreto é MENOR/ANTES</span>
             </div>
-            <div style={styles.legendItem}>
+            <div 
+              style={styles.legendItem}
+              className={isMobile ? "mobile-maritodle-legend-item" : ""}
+            >
               {renderLegendIndicator('x', '#4CAF50')}
-              <span>X Verde: Sem contribuições (correto) | X Vermelho: Contribuições não coincidem</span>
+              <span className={isMobile ? "mobile-maritodle-legend-text" : ""}>X Verde: Sem contribuições (correto) | X Vermelho: Contribuições não coincidem</span>
             </div>
           </div>
         </div>

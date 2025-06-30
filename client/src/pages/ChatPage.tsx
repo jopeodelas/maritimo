@@ -793,7 +793,7 @@ const ChatPage = () => {
       display: 'flex',
       justifyContent: 'center',
       alignItems: 'center',
-      zIndex: 1001,
+      zIndex: 10001,
       padding: '20px',
     },
 
@@ -945,14 +945,8 @@ const ChatPage = () => {
           <p style={styles.heroSubtitle}>Partilhe as suas opiniões sobre o CS Marítimo</p>
         </div>
 
-        <div 
-          style={styles.controls}
-          className={isMobile ? "mobile-chat-controls" : ""}
-        >
-          <div 
-            style={styles.leftControls}
-            className={isMobile ? "mobile-chat-controls-top" : ""}
-          >
+        <div style={styles.controls}>
+          <div style={styles.leftControls}>
             <input
               type="text"
               placeholder="Pesquisar discussões..."
@@ -987,45 +981,31 @@ const ChatPage = () => {
             A carregar discussões...
           </div>
         ) : (
-          <div 
-            style={styles.discussionsList}
-            className={isMobile ? "mobile-chat-discussions-list" : ""}
-          >
+          <div style={styles.discussionsList}>
             {filteredDiscussions.map((discussion) => (
               <div
                 key={discussion.id}
                 style={styles.discussionCard}
-                className={isMobile ? "mobile-chat-discussion-item hover-card" : "hover-card"}
+                className="hover-card"
                 onClick={() => openDiscussion(discussion)}
               >
                 <div style={styles.discussionHeader}>
                   <div>
-                    <h3 
-                      style={styles.discussionTitle}
-                      className={isMobile ? "mobile-chat-discussion-title" : ""}
-                    >
+                    <h3 style={styles.discussionTitle}>
                       {discussion.title}
                     </h3>
-                    <div 
-                      style={styles.discussionMeta}
-                      className={isMobile ? "mobile-chat-discussion-meta" : ""}
-                    >
+                    <div style={styles.discussionMeta}>
                       Por {discussion.author_username} • {formatDate(discussion.created_at)}
                     </div>
                   </div>
                 </div>
-                <p 
-                  style={styles.discussionDescription}
-                  className={isMobile ? "mobile-chat-discussion-description" : ""}
+                <p style={styles.discussionDescription}
                 >
                   {discussion.description.length > 200 
                     ? `${discussion.description.substring(0, 200)}...` 
                     : discussion.description}
                 </p>
-                <div 
-                  style={styles.discussionStats}
-                  className={isMobile ? "mobile-chat-discussion-meta" : ""}
-                >
+                <div style={styles.discussionStats}>
                   <span>{discussion.comment_count} comentários</span>
                   <span>Última atividade: {formatDate(discussion.last_activity)}</span>
                 </div>
@@ -1038,11 +1018,7 @@ const ChatPage = () => {
       {/* New Chat Interface */}
       <div style={styles.chatOverlay} onClick={closeDiscussion}></div>
       
-      <div 
-        style={styles.chatContainer} 
-        onClick={(e) => e.stopPropagation()}
-        className={isMobile ? "mobile-chat-drawer" : ""}
-      >
+      <div style={styles.chatContainer} onClick={(e) => e.stopPropagation()}>
         {/* Sidebar */}
         <div style={styles.sidebar}>
           <div style={styles.sidebarHeader}>
@@ -1117,43 +1093,23 @@ const ChatPage = () => {
         <div style={styles.chatArea}>
           {selectedDiscussion ? (
             <>
-              <div 
-                style={styles.chatHeader}
-                className={isMobile ? "mobile-chat-header" : ""}
-              >
-                <div 
-                  style={styles.chatHeaderContent}
-                  className={isMobile ? "mobile-chat-header-content" : ""}
-                >
-                  <h1 
-                    style={styles.chatHeaderTitle}
-                    className={isMobile ? "mobile-chat-header-title" : ""}
-                  >
-                    {selectedDiscussion.title}
-                  </h1>
-                  <div 
-                    style={styles.chatHeaderMeta}
-                    className={isMobile ? "mobile-chat-header-meta" : ""}
-                  >
+              <div style={styles.chatHeader}>
+                <div style={styles.chatHeaderContent}>
+                  <h1 style={styles.chatHeaderTitle}>{selectedDiscussion.title}</h1>
+                  <div style={styles.chatHeaderMeta}>
                     Por {selectedDiscussion.author_username} • {formatDate(selectedDiscussion.created_at)}
                   </div>
-                  <div 
-                    style={styles.chatHeaderDescription}
-                    className={isMobile ? "mobile-chat-header-description" : ""}
-                  >
+                  <div style={styles.chatHeaderDescription}>
                     {selectedDiscussion.description}
                   </div>
                 </div>
                 
-                <div 
-                  style={styles.chatHeaderActions}
-                  className={isMobile ? "mobile-chat-header-actions" : ""}
-                >
+                <div style={styles.chatHeaderActions}>
                   {user && selectedDiscussion.author_id === Number(user.id) && (
                     <button
                       style={{ ...styles.actionButton, ...styles.deleteButton }}
                       onClick={() => handleDeleteDiscussion(selectedDiscussion.id)}
-                      className={isMobile ? "mobile-chat-action-button action-button delete-btn" : "action-button delete-btn"}
+                      className="action-button delete-btn"
                       title="Apagar discussão"
                     >
                       <DeleteIcon />
@@ -1162,7 +1118,7 @@ const ChatPage = () => {
                   <button
                     style={{ ...styles.actionButton, ...styles.closeButton }}
                     onClick={closeDiscussion}
-                    className={isMobile ? "mobile-chat-action-button action-button close-btn" : "action-button close-btn"}
+                    className="action-button close-btn"
                     title="Fechar"
                   >
                     <CloseIcon />
@@ -1170,10 +1126,7 @@ const ChatPage = () => {
                 </div>
               </div>
 
-              <div 
-                style={styles.messagesArea}
-                className={isMobile ? "mobile-chat-messages" : ""}
-              >
+              <div style={styles.messagesArea}>
                 {comments.length === 0 ? (
                   <div style={styles.emptyState}>
                     <div style={styles.emptyStateIcon}>💬</div>
@@ -1188,31 +1141,12 @@ const ChatPage = () => {
                         <div 
                           key={comment.id} 
                           style={isCurrentUser ? styles.messageUser : styles.messageOther}
-                          className={isMobile ? "mobile-chat-message" : ""}
                         >
-                          <div 
-                            style={styles.messageHeader}
-                            className={isMobile ? "mobile-chat-message-header" : ""}
-                          >
-                            <span 
-                              style={isCurrentUser ? styles.messageAuthorUser : styles.messageAuthor}
-                              className={isMobile ? "mobile-chat-message-author" : ""}
-                            >
-                              {comment.author_username}
-                            </span>
-                            <span 
-                              style={styles.messageTime}
-                              className={isMobile ? "mobile-chat-message-time" : ""}
-                            >
-                              {formatChatTime(comment.created_at)}
-                            </span>
+                          <div style={styles.messageHeader}>
+                            <span style={isCurrentUser ? styles.messageAuthorUser : styles.messageAuthor}>{comment.author_username}</span>
+                            <span style={styles.messageTime}>{formatChatTime(comment.created_at)}</span>
                           </div>
-                          <div 
-                            style={styles.messageContent}
-                            className={isMobile ? "mobile-chat-message-content" : ""}
-                          >
-                            {comment.content}
-                          </div>
+                          <div style={styles.messageContent}>{comment.content}</div>
                         </div>
                       );
                     })}
@@ -1221,10 +1155,7 @@ const ChatPage = () => {
                 )}
               </div>
 
-              <div 
-                style={styles.chatInputArea}
-                className={isMobile ? "mobile-chat-input-container" : ""}
-              >
+              <div style={styles.chatInputArea}>
                 <div style={styles.chatInputContainer}>
                   <input
                     ref={chatInputRef}
@@ -1234,13 +1165,12 @@ const ChatPage = () => {
                     onChange={(e) => setNewComment(e.target.value)}
                     onKeyPress={handleKeyPress}
                     style={styles.chatInput}
-                    className={isMobile ? "mobile-chat-input" : ""}
                     disabled={submitting}
                   />
                   <button
                     onClick={() => handleSendMessage()}
                     style={styles.sendButton}
-                    className={isMobile ? "mobile-chat-send-button send-btn" : "send-btn"}
+                    className="send-btn"
                     disabled={submitting || !newComment.trim()}
                   >
                     {submitting ? (
