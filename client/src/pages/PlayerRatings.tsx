@@ -486,8 +486,7 @@ const PlayerRatings = () => {
       padding: "clamp(1rem, 2vh, 1.5rem)",
       marginBottom: "clamp(1rem, 2vh, 1.5rem)",
       display: "flex",
-      alignItems: isMobile ? "flex-start" : "center",
-      flexDirection: isMobile ? "column" : "row",
+      alignItems: "center",
       gap: "clamp(1rem, 2vw, 1.5rem)",
       transition: "all 0.3s ease",
       cursor: "pointer",
@@ -500,20 +499,18 @@ const PlayerRatings = () => {
     },
     playerInfo: {
       display: "flex",
-      alignItems: isMobile ? "center" : "center",
+      alignItems: "center",
       flexDirection: isMobile ? "column" : "row",
-      gap: isMobile ? "0.75rem" : "clamp(1rem, 2vw, 1.5rem)",
-      flex: isMobile ? "none" : "1",
-      width: isMobile ? "100%" : "auto",
-      textAlign: isMobile ? "center" : "left",
+      gap: isMobile ? "0.5rem" : "clamp(1rem, 2vw, 1.5rem)",
+      flex: "none",
+      minWidth: isMobile ? "auto" : "200px",
     },
     playerImage: {
-      width: isMobile ? "clamp(5rem, 12vw, 7rem)" : "clamp(4rem, 8vw, 6rem)",
-      height: isMobile ? "clamp(5rem, 12vw, 7rem)" : "clamp(4rem, 8vw, 6rem)",
+      width: "clamp(4rem, 8vw, 6rem)",
+      height: "clamp(4rem, 8vw, 6rem)",
       borderRadius: "50%",
       border: "3px solid rgba(255, 255, 255, 0.3)",
       objectFit: "cover",
-      marginBottom: isMobile ? "0.5rem" : "0",
     },
     playerDetails: {
       flex: "1",
@@ -523,7 +520,7 @@ const PlayerRatings = () => {
       gap: "0.25rem",
     },
     playerName: {
-      fontSize: isMobile ? "clamp(1.1rem, 4vw, 1.4rem)" : "clamp(1.2rem, 3vw, 1.8rem)",
+      fontSize: "clamp(1.2rem, 3vw, 1.8rem)",
       fontWeight: "900",
       color: "white",
       margin: "0",
@@ -531,7 +528,7 @@ const PlayerRatings = () => {
       textAlign: isMobile ? "center" : "left",
     },
     playerPosition: {
-      fontSize: isMobile ? "clamp(0.8rem, 2.5vw, 1rem)" : "clamp(0.9rem, 2vw, 1.1rem)",
+      fontSize: "clamp(0.9rem, 2vw, 1.1rem)",
       color: "rgba(255, 255, 255, 0.8)",
       fontWeight: "700",
       background: "rgba(0, 0, 0, 0.3)",
@@ -545,15 +542,13 @@ const PlayerRatings = () => {
       alignItems: "center",
       gap: "clamp(0.5rem, 1vw, 1rem)",
       flexWrap: "wrap",
-      width: isMobile ? "100%" : "auto",
-      justifyContent: isMobile ? "center" : "flex-start",
-      marginTop: isMobile ? "1rem" : "0",
+      flex: "1",
+      justifyContent: "flex-end",
     },
     ratingButtons: {
       display: "flex",
       gap: "clamp(0.3rem, 0.8vw, 0.5rem)",
       flexWrap: "wrap",
-      justifyContent: isMobile ? "center" : "flex-start",
     },
     ratingButton: {
       width: "clamp(2.5rem, 5vw, 3.5rem)",
@@ -592,9 +587,8 @@ const PlayerRatings = () => {
     manOfMatchSection: {
       display: "flex",
       alignItems: "center",
-      justifyContent: isMobile ? "center" : "flex-start",
-      width: isMobile ? "100%" : "auto",
-      marginTop: isMobile ? "0.5rem" : "0",
+      justifyContent: "center",
+      marginLeft: isMobile ? "0" : "1rem",
     },
     manOfMatchButton: {
       width: "56px",
@@ -996,88 +990,32 @@ const PlayerRatings = () => {
                     style={styles.ratingButtons}
                     className={isMobile ? "mobile-maritodle-ratings-container" : ""}
                   >
-                    {isMobile ? (
-                      // Mobile: Dois grupos de 5 ratings
-                      <>
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '0.4rem', marginBottom: '0.5rem' }}>
-                          {[1, 2, 3, 4, 5].map((rating) => {
-                            const isActive = playerRating?.rating === rating;
-                            const isAverage = rating === 6;
-                            const mobileClassName = `mobile-maritodle-rating-item hover-button${isActive ? ' active' : ''}${isAverage && !isActive ? ' average' : ''}`;
-                            
-                            return (
-                              <button
-                                key={rating}
-                                style={{
-                                  ...styles.ratingButton,
-                                  ...(isAverage ? styles.ratingButtonAverage : {}),
-                                  ...(isActive ? styles.ratingButtonActive : {})
-                                }}
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleRatingChange(player.id, rating);
-                                }}
-                                disabled={hasVoted}
-                                className={mobileClassName}
-                              >
-                                {rating}
-                              </button>
-                            );
-                          })}
-                        </div>
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '0.4rem' }}>
-                          {[6, 7, 8, 9, 10].map((rating) => {
-                            const isActive = playerRating?.rating === rating;
-                            const isAverage = rating === 6;
-                            const mobileClassName = `mobile-maritodle-rating-item hover-button${isActive ? ' active' : ''}${isAverage && !isActive ? ' average' : ''}`;
-                            
-                            return (
-                              <button
-                                key={rating}
-                                style={{
-                                  ...styles.ratingButton,
-                                  ...(isAverage ? styles.ratingButtonAverage : {}),
-                                  ...(isActive ? styles.ratingButtonActive : {})
-                                }}
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleRatingChange(player.id, rating);
-                                }}
-                                disabled={hasVoted}
-                                className={mobileClassName}
-                              >
-                                {rating}
-                              </button>
-                            );
-                          })}
-                        </div>
-                      </>
-                    ) : (
-                      // Desktop: Layout original
-                      [1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((rating) => {
-                        const isActive = playerRating?.rating === rating;
-                        const isAverage = rating === 6;
-                        
-                        return (
-                          <button
-                            key={rating}
-                            style={{
-                              ...styles.ratingButton,
-                              ...(isAverage ? styles.ratingButtonAverage : {}),
-                              ...(isActive ? styles.ratingButtonActive : {})
-                            }}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleRatingChange(player.id, rating);
-                            }}
-                            disabled={hasVoted}
-                            className="hover-button"
-                          >
-                            {rating}
-                          </button>
-                        );
-                      })
-                    )}
+                    {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((rating) => {
+                      const isActive = playerRating?.rating === rating;
+                      const isAverage = rating === 6;
+                      const className = isMobile 
+                        ? `mobile-maritodle-rating-item hover-button${isActive ? ' active' : ''}${isAverage && !isActive ? ' average' : ''}`
+                        : "hover-button";
+                      
+                      return (
+                        <button
+                          key={rating}
+                          style={{
+                            ...styles.ratingButton,
+                            ...(isAverage ? styles.ratingButtonAverage : {}),
+                            ...(isActive ? styles.ratingButtonActive : {})
+                          }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleRatingChange(player.id, rating);
+                          }}
+                          disabled={hasVoted}
+                          className={className}
+                        >
+                          {rating}
+                        </button>
+                      );
+                    })}
                   </div>
                   
                   {/* REMOVER COMPLETAMENTE - não mostrar número à direita */}
