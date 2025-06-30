@@ -1018,9 +1018,16 @@ const ChatPage = () => {
       {/* New Chat Interface */}
       <div style={styles.chatOverlay} onClick={closeDiscussion}></div>
       
-      <div style={styles.chatContainer} onClick={(e) => e.stopPropagation()}>
+      <div 
+        style={styles.chatContainer} 
+        onClick={(e) => e.stopPropagation()}
+        className={isMobile ? "mobile-chat-drawer" : ""}
+      >
         {/* Sidebar */}
-        <div style={styles.sidebar}>
+        <div 
+          style={styles.sidebar}
+          className={isMobile ? "mobile-chat-sidebar" : ""}
+        >
           <div style={styles.sidebarHeader}>
             <h2 style={styles.sidebarTitle}>Discussões</h2>
             <p style={styles.sidebarSubtitle}>Conversas da comunidade</p>
@@ -1090,10 +1097,16 @@ const ChatPage = () => {
         </div>
 
         {/* Chat Area */}
-        <div style={styles.chatArea}>
+        <div 
+          style={styles.chatArea}
+          className={isMobile ? "mobile-chat-area" : ""}
+        >
           {selectedDiscussion ? (
             <>
-              <div style={styles.chatHeader}>
+              <div 
+                style={styles.chatHeader}
+                className={isMobile ? "mobile-chat-header" : ""}
+              >
                 <div style={styles.chatHeaderContent}>
                   <h1 style={styles.chatHeaderTitle}>{selectedDiscussion.title}</h1>
                   <div style={styles.chatHeaderMeta}>
@@ -1109,7 +1122,7 @@ const ChatPage = () => {
                     <button
                       style={{ ...styles.actionButton, ...styles.deleteButton }}
                       onClick={() => handleDeleteDiscussion(selectedDiscussion.id)}
-                      className="action-button delete-btn"
+                      className={`action-button delete-btn ${isMobile ? "mobile-chat-action-button" : ""}`}
                       title="Apagar discussão"
                     >
                       <DeleteIcon />
@@ -1118,7 +1131,7 @@ const ChatPage = () => {
                   <button
                     style={{ ...styles.actionButton, ...styles.closeButton }}
                     onClick={closeDiscussion}
-                    className="action-button close-btn"
+                    className={`action-button close-btn ${isMobile ? "mobile-chat-action-button" : ""}`}
                     title="Fechar"
                   >
                     <CloseIcon />

@@ -1342,15 +1342,15 @@ const MaritodlePage = () => {
         </div>
         )}
 
-        {/* Clues Section - Movido para cima */}
-        {(clue1 || clue2) && (
+        {/* Clues Section - Mostrar baseado em tentativas ou dados do servidor */}
+        {(clue1 || clue2 || tentativas.length >= 6) && (
           <div style={styles.cluesSection}>
             <h3 style={styles.legendTitle}>🔍 Pistas</h3>
-            {clue1 && (
+            {(clue1 || tentativas.length >= 6) && (
               <div style={styles.clueCard}>
                 <div style={styles.clueTitle}>💡 Pista 1 (após 6 tentativas)</div>
                 {clue1Revealed ? (
-                  <div style={styles.clueText}>{clue1}</div>
+                  <div style={styles.clueText}>{clue1 || "A primeira pista ainda não foi carregada pelo servidor."}</div>
                 ) : (
                   <div style={styles.hiddenClueContainer}>
                     <div style={styles.hiddenClueText}>A primeira pista está disponível!</div>
@@ -1374,11 +1374,11 @@ const MaritodlePage = () => {
                 )}
               </div>
             )}
-            {clue2 && (
+            {(clue2 || tentativas.length >= 9) && (
               <div style={styles.clueCard}>
                 <div style={styles.clueTitle}>🎯 Pista 2 (após 9 tentativas)</div>
                 {clue2Revealed ? (
-                  <div style={styles.clueText}>{clue2}</div>
+                  <div style={styles.clueText}>{clue2 || "A segunda pista ainda não foi carregada pelo servidor."}</div>
                 ) : (
                   <div style={styles.hiddenClueContainer}>
                     <div style={styles.hiddenClueText}>A segunda pista está disponível!</div>
