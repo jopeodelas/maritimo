@@ -610,13 +610,13 @@
   }
   
   .mobile-squad-player-image {
-    width: 80px !important;
-    height: 80px !important;
-    border-radius: 50% !important;
+    width: 70px !important;
+    height: 70px !important;
+    border-radius: 6px !important;
     object-fit: cover !important;
-    object-position: top center !important;
+    object-position: center !important;
     margin-bottom: 0.75rem !important;
-    border: 3px solid rgba(76, 175, 80, 0.6) !important;
+    border: 2px solid rgba(76, 175, 80, 0.6) !important;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
     flex-shrink: 0 !important;
   }
@@ -837,6 +837,7 @@
   .mobile-squad-player-image {
     width: 70px !important;
     height: 70px !important;
+    border-radius: 6px !important;
   }
   
   .mobile-squad-player-name {
@@ -926,5 +927,88 @@
   
   .mobile-auth-link a {
     font-size: 1.1rem !important;
+  }
+}
+
+/* MOBILE PLAYER RATINGS - Layout Grid Improvements */
+@media screen and (max-width: 768px) {
+  /* Grid layout para cartões de jogadores */
+  .mobile-player-card-grid {
+    display: grid !important;
+    grid-template-columns: 150px 1fr !important;
+    gap: 1rem !important;
+    align-items: start !important;
+  }
+
+  /* Coluna da esquerda - informações do jogador */
+  .mobile-player-info-column {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    width: 100% !important;
+    max-width: 150px !important;
+  }
+
+  /* Nome do jogador - quebra de linha */
+  .mobile-player-name {
+    word-break: break-word !important;
+    hyphens: auto !important;
+    text-align: center !important;
+    line-height: 1.2 !important;
+    max-width: 100% !important;
+    overflow-wrap: break-word !important;
+  }
+
+  /* Coluna da direita - ratings */
+  .mobile-ratings-column {
+    display: flex !important;
+    justify-content: center !important;
+    align-items: start !important;
+    width: 100% !important;
+    padding-top: 0.5rem !important;
+  }
+
+  /* Container dos ratings em grid */
+  .mobile-maritodle-ratings-container {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    grid-template-rows: repeat(5, 1fr) !important;
+    gap: 0.4rem !important;
+    grid-auto-flow: column !important;
+    width: auto !important;
+    max-width: 140px !important;
+  }
+
+  /* Botões de rating individuais */
+  .mobile-maritodle-rating-item {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 2.5rem !important;
+    height: 2.5rem !important;
+    border-radius: 50% !important;
+    border: 2px solid rgba(255, 255, 255, 0.3) !important;
+    background: rgba(255, 255, 255, 0.1) !important;
+    color: white !important;
+    font-size: 0.9rem !important;
+    font-weight: 700 !important;
+    cursor: pointer !important;
+    transition: all 0.3s ease !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  /* Estados ativos e médios dos ratings */
+  .mobile-maritodle-rating-item.active {
+    background: rgba(255, 215, 0, 0.9) !important;
+    border: 2px solid #FFD700 !important;
+    color: #000 !important;
+    transform: scale(1.1) !important;
+    box-shadow: 0 0 15px rgba(255, 215, 0, 0.5) !important;
+  }
+
+  .mobile-maritodle-rating-item.average:not(.active) {
+    border: 2px solid rgba(255, 215, 0, 0.5) !important;
+    background: rgba(255, 215, 0, 0.1) !important;
   }
 } 

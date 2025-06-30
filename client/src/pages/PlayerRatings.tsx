@@ -485,10 +485,11 @@ const PlayerRatings = () => {
       borderRadius: "clamp(0.8rem, 2vw, 1.2rem)",
       padding: "clamp(1rem, 2vh, 1.5rem)",
       marginBottom: "clamp(1rem, 2vh, 1.5rem)",
-      display: "flex",
-      alignItems: isMobile ? "flex-start" : "center",
-      justifyContent: isMobile ? "space-between" : "flex-start",
+      display: isMobile ? "grid" : "flex",
+      gridTemplateColumns: isMobile ? "150px 1fr" : undefined,
       gap: "clamp(1rem, 2vw, 1.5rem)",
+      alignItems: isMobile ? "start" : "center",
+      justifyContent: isMobile ? "stretch" : "flex-start",
       transition: "all 0.3s ease",
       cursor: "pointer",
       position: "relative",
@@ -505,7 +506,7 @@ const PlayerRatings = () => {
       gap: isMobile ? "0.5rem" : "clamp(1rem, 2vw, 1.5rem)",
       flex: "none",
       minWidth: isMobile ? "auto" : "200px",
-      maxWidth: isMobile ? "160px" : "none",
+      width: isMobile ? "100%" : "auto",
       textAlign: isMobile ? "center" : "left",
     },
     playerImage: {
@@ -530,6 +531,9 @@ const PlayerRatings = () => {
       textShadow: "0 2px 4px rgba(0, 0, 0, 0.5)",
       textAlign: isMobile ? "center" : "left",
       lineHeight: "1.2",
+      wordBreak: isMobile ? "break-word" : "normal",
+      hyphens: isMobile ? "auto" : "none",
+      maxWidth: "100%",
     },
     playerPosition: {
       fontSize: "clamp(0.9rem, 2vw, 1.1rem)",
@@ -547,9 +551,10 @@ const PlayerRatings = () => {
       gap: "clamp(0.5rem, 1vw, 1rem)",
       flexWrap: "wrap",
       flex: isMobile ? "none" : "1",
-      justifyContent: isMobile ? "flex-end" : "flex-end",
-      minWidth: isMobile ? "140px" : "auto",
-      alignSelf: isMobile ? "flex-start" : "center",
+      justifyContent: isMobile ? "center" : "flex-end",
+      width: isMobile ? "100%" : "auto",
+      alignSelf: isMobile ? "start" : "center",
+      gridColumn: isMobile ? "2" : undefined,
     },
     ratingButtons: {
       display: "flex",
@@ -943,7 +948,7 @@ const PlayerRatings = () => {
                 key={player.id} 
                 style={styles.playerCard}
                 onClick={() => handlePlayerClick(player.id)}
-                className="hover-card"
+                className={isMobile ? "hover-card mobile-player-card-grid" : "hover-card"}
               >
                 {playerRating?.showAverage && playerRating.averageRating && (
                   <div style={styles.averageRating}>
@@ -970,7 +975,10 @@ const PlayerRatings = () => {
                   </div>
                 )}
 
-                <div style={styles.playerInfo}>
+                <div 
+                  style={styles.playerInfo}
+                  className={isMobile ? "mobile-player-info-column" : ""}
+                >
                   <PlayerImage
                     imageUrl={player.image_url}
                     playerName={player.name}
@@ -986,7 +994,12 @@ const PlayerRatings = () => {
                     showFallbackText={true}
                   />
                   <div style={styles.playerDetails}>
-                    <div style={styles.playerName}>{player.name}</div>
+                    <div 
+                      style={styles.playerName}
+                      className={isMobile ? "mobile-player-name" : ""}
+                    >
+                      {player.name}
+                    </div>
                     <div style={styles.playerPosition}>{player.position}</div>
                     
                     {/* Estrela no mobile fica na coluna esquerda */}
@@ -1037,7 +1050,10 @@ const PlayerRatings = () => {
                   </div>
                 </div>
 
-                <div style={styles.ratingsSection}>
+                <div 
+                  style={styles.ratingsSection}
+                  className={isMobile ? "mobile-ratings-column" : ""}
+                >
                   <div 
                     style={isMobile ? {
                       display: 'grid',
