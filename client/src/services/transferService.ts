@@ -18,8 +18,10 @@ export interface TransferRumor {
 }
 
 export interface TransferStats {
-  activeRumors: number;
   totalRumors: number;
+  recentRumors: number;
+  averageReliability: string;
+  lastUpdate: string;
 }
 
 class TransferService {
