@@ -725,6 +725,7 @@ const MainPage = () => {
             ))}
           </div>
         </div>
+        </div>
       </div>
     </PageLayout>
   );
