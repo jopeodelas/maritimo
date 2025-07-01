@@ -1,5 +1,6 @@
 // Gerar Client ID único para cada utilizador
 const getClientId = (): string => {
+
   const storageKey = 'ga4_client_id';
   let clientId = localStorage.getItem(storageKey);
   
@@ -70,7 +71,7 @@ export const GA_CONFIG = {
 };
 
 // Debug info
-console.log('📊 GA4 CONFIG LOADED:', {
+console.log('📊 GA4 CONFIG LOADEDD:', {
   measurementId: GA_CONFIG.measurementId,
   isEnabled: GA_CONFIG.isEnabled(),
   environment: import.meta.env.MODE,
