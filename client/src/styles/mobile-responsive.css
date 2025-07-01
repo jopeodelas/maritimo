@@ -141,8 +141,7 @@
   }
   
   /* SOLUÇÃO MODERNA PARA VIEWPORT MOBILE */
-  .mobile-homepage-container,
-  .mobile-auth-container {
+  .mobile-homepage-container {
     /* Fallback primeiro */
     min-height: 100vh !important;
     
@@ -168,16 +167,14 @@
   
   /* Browsers modernos com unidades dinâmicas */
   @supports (height: 100dvh) {
-    .mobile-homepage-container,
-    .mobile-auth-container {
+    .mobile-homepage-container {
       min-height: 100dvh !important;
     }
   }
   
   /* Fallback JS para browsers antigos (definido via JS) */
   @supports not (height: 100dvh) {
-    .mobile-homepage-container,
-    .mobile-auth-container {
+    .mobile-homepage-container {
       min-height: calc(var(--vh, 1vh) * 100) !important;
     }
   }
@@ -242,248 +239,10 @@
   }
   
   /* ===== HOMEPAGE MOBILE ===== */
-  .mobile-homepage-container {
-    flex-direction: column !important;
-    padding: 0 1rem !important;
-    gap: 0 !important;
-  }
-  
-  .mobile-homepage-title {
-    font-size: 2.4rem !important;
-    color: #FFBB4C !important;
-    text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.7) !important;
-    z-index: 10 !important;
-    text-align: center !important;
-    width: 100% !important;
-    margin: 0 0 1.5rem 0 !important;
-    font-weight: 800 !important;
-    position: relative !important;
-    top: auto !important;
-    left: auto !important;
-    transform: none !important;
-    flex-shrink: 0 !important;
-  }
-  
-  .mobile-homepage-logo-container {
-    width: 55vw !important;
-    height: 55vw !important;
-    max-width: 250px !important;
-    max-height: 250px !important;
-    background-color: white !important;
-    border-radius: 16px !important;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3) !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    margin: 0 0 1.5rem 0 !important;
-    flex-shrink: 0 !important;
-  }
-  
-  .mobile-homepage-button {
-    width: 200px !important;
-    height: 60px !important;
-    font-size: 1.4rem !important;
-    font-weight: 700 !important;
-    color: white !important;
-    background-color: #FFB74D !important;
-    border: none !important;
-    border-radius: 12px !important;
-    box-shadow: 0 6px 20px rgba(255, 183, 77, 0.4) !important;
-    cursor: pointer !important;
-    transition: all 0.3s ease !important;
-    margin: 0 !important;
-    flex-shrink: 0 !important;
-  }
-  
-  .mobile-homepage-hover-me {
-    display: none !important;
-  }
-  
-  .mobile-homepage-triangles {
-    display: none !important;
-  }
+  /* Homepage styles moved to AllpagesStyles.css */
   
   /* ===== LOGIN/REGISTER MOBILE ===== */
-  .mobile-auth-container {
-    padding: 1rem !important;
-  }
-  
-  .mobile-auth-form-container {
-    width: 100% !important;
-    max-width: 380px !important;
-    height: auto !important;
-    max-height: 90vh !important;
-    background-color: white !important;
-    border-radius: 20px !important;
-    padding: 1.5rem 1.2rem !important;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3) !important;
-    overflow-y: auto !important;
-    box-sizing: border-box !important;
-    display: flex !important;
-    flex-direction: column !important;
-    margin: auto !important;
-  }
-  
-  .mobile-auth-logo {
-    width: 70px !important;
-    height: auto !important;
-    margin: 0 auto 1rem !important;
-    display: block !important;
-    flex-shrink: 0 !important;
-  }
-  
-  .mobile-auth-title {
-    font-size: 1.6rem !important;
-    color: #009759 !important;
-    margin-bottom: 1.2rem !important;
-    text-align: center !important;
-    font-weight: 700 !important;
-    line-height: 1.2 !important;
-    flex-shrink: 0 !important;
-  }
-  
-  .mobile-auth-form {
-    display: flex !important;
-    flex-direction: column !important;
-    gap: 1rem !important;
-    flex: 1 !important;
-  }
-  
-  .mobile-auth-input-group {
-    display: flex !important;
-    flex-direction: column !important;
-    gap: 0.4rem !important;
-  }
-  
-  .mobile-auth-label {
-    font-size: 1.1rem !important;
-    font-weight: 700 !important;
-    color: #333 !important;
-  }
-  
-  .mobile-auth-input {
-    padding: 0.9rem !important;
-    border-radius: 10px !important;
-    border: 2px solid #ddd !important;
-    font-size: 1.1rem !important;
-    background-color: #f8f9fa !important;
-    transition: all 0.3s ease !important;
-    outline: none !important;
-    min-height: 50px !important;
-    box-sizing: border-box !important;
-  }
-  
-  .mobile-auth-input:focus {
-    border-color: #009759 !important;
-    background-color: white !important;
-    box-shadow: 0 0 0 3px rgba(0, 151, 89, 0.1) !important;
-  }
-  
-  .mobile-auth-button {
-    padding: 1rem !important;
-    background-color: #FFB74D !important;
-    color: white !important;
-    border: none !important;
-    border-radius: 12px !important;
-    font-size: 1.2rem !important;
-    font-weight: 700 !important;
-    cursor: pointer !important;
-    margin-top: 0.8rem !important;
-    box-shadow: 0 6px 20px rgba(255, 183, 77, 0.4) !important;
-    transition: all 0.3s ease !important;
-    min-height: 50px !important;
-    flex-shrink: 0 !important;
-  }
-  
-  .mobile-auth-google-button {
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    padding: 1rem !important;
-    background-color: white !important;
-    color: #333 !important;
-    border: 2px solid #ddd !important;
-    border-radius: 12px !important;
-    font-size: 1.1rem !important;
-    font-weight: 700 !important;
-    cursor: pointer !important;
-    margin: 0.8rem 0 !important;
-    transition: all 0.3s ease !important;
-    gap: 0.8rem !important;
-    min-height: 50px !important;
-    flex-shrink: 0 !important;
-  }
-  
-  /* Aumentar ícone do Google especificamente */
-  .mobile-auth-google-button img {
-    width: 24px !important;
-    height: 24px !important;
-    flex-shrink: 0 !important;
-  }
-  
-  .mobile-auth-google-button:hover {
-    background-color: #f8f9fa !important;
-    border-color: #009759 !important;
-  }
-  
-  .mobile-auth-divider {
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    margin: 1rem 0 !important;
-    font-size: 1.1rem !important;
-    font-weight: 600 !important;
-    color: #666 !important;
-    flex-shrink: 0 !important;
-    position: relative !important;
-    text-align: center !important;
-  }
-  
-  .mobile-auth-divider::before,
-  .mobile-auth-divider::after {
-    content: '' !important;
-    position: absolute !important;
-    top: 50% !important;
-    width: 35% !important;
-    height: 1px !important;
-    background-color: #ddd !important;
-    transform: translateY(-50%) !important;
-  }
-  
-  .mobile-auth-divider::before {
-    left: 0 !important;
-  }
-  
-  .mobile-auth-divider::after {
-    right: 0 !important;
-  }
-  
-  .mobile-auth-link {
-    text-align: center !important;
-    margin-top: 1rem !important;
-    font-size: 1.2rem !important;
-    color: #666 !important;
-    flex-shrink: 0 !important;
-  }
-  
-  .mobile-auth-link a {
-    color: #009759 !important;
-    text-decoration: none !important;
-    font-weight: 700 !important;
-    font-size: 1.2rem !important;
-  }
-  
-  .mobile-auth-error {
-    background-color: #ffe6e6 !important;
-    color: #d33 !important;
-    padding: 1rem !important;
-    border-radius: 8px !important;
-    margin-bottom: 1rem !important;
-    font-size: 1.1rem !important;
-    text-align: center !important;
-    font-weight: 600 !important;
-    flex-shrink: 0 !important;
-  }
+  /* Login/Auth styles moved to AllpagesStyles.css */
   
   /* Problema 2: Votação - Text Visibility para TODA A PÁGINA */
   .mobile-voting-player-name {
@@ -869,78 +628,10 @@
   }
   
   /* Homepage ajustes para telas pequenas */
-  .mobile-homepage-title {
-    font-size: 2rem !important;
-  }
-  
-  .mobile-homepage-logo-container {
-    width: 75vw !important;
-    height: 75vw !important;
-    max-width: 260px !important;
-    max-height: 260px !important;
-  }
-  
-  .mobile-homepage-button {
-    width: 190px !important;
-    height: 55px !important;
-    font-size: 1.3rem !important;
-  }
+  /* Homepage styles moved to AllpagesStyles.css */
   
   /* Auth forms para telas pequenas */
-  .mobile-auth-form-container {
-    padding: 1rem 0.8rem !important;
-    max-height: 85vh !important;
-    max-width: 350px !important;
-  }
-  
-  .mobile-auth-title {
-    font-size: 1.4rem !important;
-    margin-bottom: 1rem !important;
-  }
-  
-  .mobile-auth-logo {
-    width: 60px !important;
-    margin-bottom: 0.8rem !important;
-  }
-  
-  .mobile-auth-form {
-    gap: 0.8rem !important;
-  }
-  
-  .mobile-auth-input-group {
-    gap: 0.3rem !important;
-  }
-  
-  .mobile-auth-label {
-    font-size: 1rem !important;
-  }
-  
-  .mobile-auth-input {
-    padding: 0.8rem !important;
-    font-size: 1rem !important;
-    min-height: 45px !important;
-  }
-  
-  .mobile-auth-button,
-  .mobile-auth-google-button {
-    padding: 0.9rem !important;
-    font-size: 1.1rem !important;
-    min-height: 45px !important;
-  }
-  
-  .mobile-auth-divider {
-    margin: 0.8rem 0 !important;
-    font-size: 1rem !important;
-  }
-  
-  .mobile-auth-link {
-    font-size: 1.1rem !important;
-    margin-top: 0.8rem !important;
-  }
-  
-  .mobile-auth-link a {
-    font-size: 1.1rem !important;
-  }
+  /* Login/Auth styles moved to AllpagesStyles.css */
 }
 
 /* MOBILE PLAYER RATINGS - Layout Grid Improvements */

@@ -2,8 +2,8 @@
 import { useNavigate } from 'react-router-dom';
 import OptimizedImage from '../components/OptimizedImage';
 import maritimoCrest from '../assets/maritimo-crest.png';
-import { createStyles } from '../styles/styleUtils';
 import useIsMobile from '../hooks/useIsMobile';
+import '../styles/AllpagesStyles.css';
 
 const HomePage = () => {
   const navigate = useNavigate();
@@ -13,167 +13,44 @@ const HomePage = () => {
     navigate('/login');
   };
   
-  const styles = createStyles({
-    homeContainer: {
-      display: 'flex',
-      height: '100vh',
-      alignItems: 'center',
-      justifyContent: 'center',
-      position: 'relative',
-      overflow: 'hidden',
-    },
-    // Solid background colors
-    solidBackground: {
-      position: 'absolute',
-      width: '100%',
-      height: '100%',
-      background: 'linear-gradient(to right, #009759 50%, #FE0000 50%)',
-      zIndex: 1,
-    },
-
-    solidBackground2: {
-        position: 'absolute',
-        width: '75%',
-        height: '100%',
-        background: 'linear-gradient(to right, #009759 50%, #FE0000 50%)',
-        zIndex: 5,
-      },
-
-    // Fan image overlay
-    fansBackground: {
-      position: 'absolute',
-      left: 0,
-      top: 0,
-      width: '100%',
-      height: '100%',
-      backgroundImage: 'url(/images/adeptosmaritimo.png)',
-      backgroundSize: 'cover',
-      backgroundPosition: 'center',
-      opacity: 0.5,
-      mixBlendMode: 'multiply',
-      zIndex: 2,
-    },
-    // Main content
-    content: {
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      justifyContent: 'center',
-      position: 'relative',
-      zIndex: 10,
-    },
-    title: {
-      fontFamily: '"Shockwave", cursive',
-      fontSize: '4vw',
-      color: '#FFBB4C',
-      textAlign: 'center',
-      position: 'absolute',
-      top: '0.9vh',
-      width: '100%',
-      fontWeight: 'normal',
-      textShadow: '-0.3vw 0.4vh 0.2vh rgba(0, 0, 0, 0.25)',
-      zIndex: 10,
-    },
-    logoContainer: {
-      width: '30vw',
-      height: '30vw',
-      backgroundColor: 'white',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      borderRadius: '0.5vw',
-      boxShadow: '-0.4vw 1.1vh 0.5vh rgba(0, 0, 0, 0.25)',
-      zIndex: 10,
-    },
-    clubLogo: {
-      width: '90%',
-      height: 'auto',
-    },
-    enterButton: {
-      width: '15vw',
-      padding: '2vh 0',
-      fontSize: '1.5vw',
-      fontWeight: 'bold',
-      color: 'white',
-      backgroundColor: '#FFB74D',
-      border: 'none',
-      borderRadius: '0.5vw',
-      cursor: 'pointer',
-      transition: 'background-color 0.3s',
-      marginTop: '3vh',
-      boxShadow: '-0.3vw 0.7vh 0.2vh rgba(0, 0, 0, 0.25)',
-      zIndex: 10,
-    },
-    hoverMe: {
-      position: 'absolute',
-      left: '19%',
-      bottom: '20%',
-      fontFamily: '"Shockwave", cursive',
-      color: '#FFBB4C',
-      fontSize: '2vw',
-      fontWeight: 'normal',
-      textShadow: '-0.3vw 0.3vh 0.3vh rgba(0, 0, 0, 0.25)',
-      zIndex: 10,
-    },
-    // Triangle container
-    trianglesContainer: {
-      position: 'absolute',
-      left: '9.5%',
-      top: '20%',
-      display: 'flex',
-      flexDirection: 'column',
-      gap: '5vh',
-      zIndex: 5,
-    },
-    triangle: {
-      width: 0,
-      height: 0,
-      borderLeft: '3vw solid transparent',
-      borderRight: '3vw solid transparent',
-      borderBottom: '5vh solid #FFBB4C',
-      filter: 'drop-shadow(-0.2vw 0.2vh 0.2vh rgba(0, 0, 0, 0.25))',
-    },
-  });
-  
   return (
-    <div style={styles.homeContainer} className={isMobile ? "mobile-homepage-container" : ""}>
+    <div className={`homepage-container ${isMobile ? "mobile-homepage-container" : ""}`}>
       {/* Solid background colors */}
-      <div style={styles.solidBackground}></div>
-      <div style={styles.solidBackground2}></div>
+      <div className="homepage-solid-background"></div>
+      <div className="homepage-solid-background-2"></div>
 
       {/* Fans background */}
-      <div style={styles.fansBackground}></div>
+      <div className="homepage-fans-background"></div>
       
       {/* Golden triangles */}
-      <div style={styles.trianglesContainer} className={isMobile ? "mobile-homepage-triangles" : ""}>
-        <div style={styles.triangle}></div>
-        <div style={styles.triangle}></div>
-        <div style={styles.triangle}></div>
+      <div className={`homepage-triangles-container ${isMobile ? "mobile-homepage-triangles" : ""}`}>
+        <div className="homepage-triangle"></div>
+        <div className="homepage-triangle"></div>
+        <div className="homepage-triangle"></div>
       </div>
       
-      <h1 style={styles.title} className={isMobile ? "mobile-homepage-title" : ""}>
+      <h1 className={`homepage-title ${isMobile ? "mobile-homepage-title" : ""}`}>
         made by fans for fans
       </h1>
       
-      <div style={styles.hoverMe} className={isMobile ? "mobile-homepage-hover-me" : ""}>
+      <div className={`homepage-hover-me ${isMobile ? "mobile-homepage-hover-me" : ""}`}>
         HOVER ME
       </div>
       
-      <div style={styles.content}>
-        <div style={styles.logoContainer} className={isMobile ? "mobile-homepage-logo-container" : ""}>
+      <div className="homepage-content">
+        <div className={`homepage-logo-container ${isMobile ? "mobile-homepage-logo-container" : ""}`}>
           <OptimizedImage 
             src={maritimoCrest} 
             alt="CS Marítimo" 
-            style={styles.clubLogo}
+            className="homepage-club-logo"
             loading="eager"
             width="300"
             height="273"
           />
         </div>
         <button 
-          style={styles.enterButton} 
+          className={`homepage-enter-button ${isMobile ? "mobile-homepage-button" : ""}`}
           onClick={handleEnter}
-          className={isMobile ? "mobile-homepage-button hover-button" : "hover-button"}
         >
           ENTRAR
         </button>

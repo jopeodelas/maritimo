@@ -3,7 +3,7 @@ import { lazy, Suspense } from 'react';
 import ProtectedRoute from './components/ProtectedRoute';
 import ProtectedAdminRoute from './components/ProtectedAdminRoute';
 import { AuthProvider } from './contexts/AuthContext';
-import './styles/fonts.css';
+
 import './styles/optimizedStyles.css';
 import './styles/accessibility.css';
 import LayoutStabilizer from './components/LayoutStabilizer';
