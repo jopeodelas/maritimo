@@ -407,7 +407,9 @@ const Squad = () => {
     return 5;
   };
 
-  const optimalColumns = getOptimalColumns(currentPosition.players.length);
+  // Segurança: verificar se currentPosition existe antes de usar
+  const playerCount = currentPosition?.players?.length || 0;
+  const optimalColumns = getOptimalColumns(playerCount);
 
   // Calcular altura da imagem baseada no número de jogadores
   const getImagePadding = (playerCount: number): string => {
@@ -423,7 +425,7 @@ const Squad = () => {
     return "50%"; // Bem compacto para muitos jogadores
   };
 
-  const imagePadding = getImagePadding(currentPosition.players.length);
+  const imagePadding = getImagePadding(playerCount);
 
   const navigatePosition = (direction: 'next' | 'prev') => {
     if (isAnimating) return;
@@ -524,6 +526,23 @@ const Squad = () => {
     );
   }
 
+  // Verificação de segurança: se não há posição atual, mostrar loading
+  if (!currentPosition) {
+    return (
+      <PageLayout>
+        <div style={styles.container}>
+          <div style={styles.backgroundPattern} className="background-pattern"></div>
+          <div style={styles.content}>
+            <div style={styles.loading}>
+              <div style={styles.loadingSpinner} className="loading-spinner"></div>
+              <p style={styles.loadingText}>A carregar plantel...</p>
+            </div>
+          </div>
+        </div>
+      </PageLayout>
+    );
+  }
+
   return (
     <PageLayout>
       <div style={styles.container}>
@@ -604,7 +623,7 @@ const Squad = () => {
             <div 
               style={{
                 ...styles.playersGrid,
-                '--grid-columns': getOptimalColumns(currentPosition.players.length),
+                '--grid-columns': optimalColumns,
                 ...(isAnimating ? styles.playersGridAnimating : {})
               } as React.CSSProperties}
             >
