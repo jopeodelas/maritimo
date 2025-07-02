@@ -219,6 +219,7 @@ const ChatPage = () => {
   };
 
   const styles = createStyles({
+    // CONTAINER PRINCIPAL
     container: {
       minHeight: "100vh",
       background: `
@@ -232,6 +233,7 @@ const ChatPage = () => {
       overflow: "hidden",
       color: '#FFFFFF',
     },
+    
     backgroundPattern: {
       position: "absolute",
       top: 0,
@@ -245,37 +247,32 @@ const ChatPage = () => {
       backgroundSize: "clamp(3rem, 8vw, 6rem) clamp(3rem, 8vw, 6rem)",
       animation: "optimized-float 20s ease-in-out infinite",
     },
-    // Layout original quando não há gaveta
-    content: {
-      maxWidth: "min(98vw, 110rem)",
+
+    // PÁGINA INICIAL (lista de discussões)
+    discussionsPage: {
+      maxWidth: "1200px",
       margin: "0 auto",
-      padding: isMobile 
-        ? "70px 1rem 1rem" // Mobile: padding top para header + spacing
-        : "2vh 2vw", // Desktop: usar mesmo padrão das outras páginas
+      padding: isMobile ? "80px 1rem 2rem" : "100px 2rem 2rem", // CORRETO: espaço suficiente para header
       position: "relative",
       zIndex: 2,
       display: isDrawerOpen ? 'none' : 'block',
     },
-    header: {
-      textAlign: 'center',
-      marginBottom: '3vh',
-    },
+
+    // Hero Section
     heroSection: {
       background: "rgba(30, 40, 50, 0.95)",
       border: "2px solid rgba(76, 175, 80, 0.4)",
-      borderRadius: "clamp(1rem, 2.5vw, 1.5rem)",
-      padding: "clamp(2rem, 4vh, 3rem) clamp(1.5rem, 3vw, 2.5rem)",
-      marginBottom: "clamp(1.5rem, 3vh, 2.5rem)",
+      borderRadius: "1rem",
+      padding: isMobile ? "1.5rem" : "2.5rem",
+      marginBottom: isMobile ? "1rem" : "2rem",
       color: "white",
       textAlign: "center",
-      boxShadow: `
-        0 clamp(0.5rem, 1.5vh, 1rem) clamp(2rem, 4vh, 3rem) rgba(0, 0, 0, 0.4),
-        inset 0 1px 0 rgba(76, 175, 80, 0.3)
-      `,
+      boxShadow: "0 8px 32px rgba(0, 0, 0, 0.4)",
       backdropFilter: "blur(10px)",
       position: "relative",
       overflow: "hidden",
     },
+
     heroAccent: {
       position: "absolute",
       top: 0,
@@ -283,245 +280,234 @@ const ChatPage = () => {
       right: 0,
       height: "4px",
       background: "linear-gradient(90deg, #4CAF50 0%, #FFD700 50%, #F44336 100%)",
-      borderRadius: "clamp(1rem, 2.5vw, 1.5rem) clamp(1rem, 2.5vw, 1.5rem) 0 0",
+      borderRadius: "1rem 1rem 0 0",
     },
+
     heroTitle: {
-      fontSize: "clamp(2rem, 5vw, 3.5rem)",
+      fontSize: isMobile ? "2rem" : "3rem",
       fontWeight: "800",
-      margin: "0 0 clamp(0.5rem, 1.5vh, 1rem) 0",
+      margin: "0 0 0.5rem 0",
       background: "linear-gradient(135deg, #FFD700 0%, #FFA000 100%)",
       WebkitBackgroundClip: "text",
       WebkitTextFillColor: "transparent",
       backgroundClip: "text",
-      textShadow: "0 0.125rem 0.25rem rgba(255, 215, 0, 0.3)",
       letterSpacing: "-0.02em",
-      position: "relative",
     },
+
     heroSubtitle: {
-      fontSize: "clamp(1rem, 2.5vw, 1.25rem)",
+      fontSize: isMobile ? "1rem" : "1.2rem",
       margin: 0,
       fontWeight: "500",
       color: "#B0BEC5",
-      textShadow: "0 0.125rem 0.25rem rgba(0, 0, 0, 0.2)",
-    },
-    title: {
-      fontSize: '3.5vw',
-      fontWeight: '700',
-      color: '#FFFFFF',
-      marginBottom: '1vh',
-      textShadow: '0.2vh 0.2vh 0.5vh rgba(0, 0, 0, 0.5)',
-    },
-    subtitle: {
-      fontSize: '1.3vw',
-      color: '#FFBB4C',
-      fontWeight: '400',
-    },
-    controls: {
-      display: 'flex',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-      marginBottom: '2vh',
-      flexWrap: 'wrap',
-      gap: '2vh',
-      padding: '1vh 0',
-    },
-    leftControls: {
-      display: 'flex',
-      gap: '1.5vw',
-      alignItems: 'center',
-      flex: '1 1 auto',
-      minWidth: '300px',
-    },
-    searchInput: {
-      padding: '1vh 1.5vw',
-      borderRadius: '0.8vw',
-      border: '2px solid rgba(255, 187, 76, 0.3)',
-      backgroundColor: 'rgba(255, 255, 255, 0.1)',
-      color: '#FFFFFF',
-      fontSize: '1vw',
-      width: '20vw',
-      transition: 'all 0.3s ease',
-    },
-    sortSelect: {
-      padding: '1vh 1.5vw',
-      borderRadius: '0.8vw',
-      border: '2px solid rgba(255, 187, 76, 0.3)',
-      backgroundColor: 'rgba(255, 255, 255, 0.1)',
-      color: '#FFFFFF',
-      fontSize: '1vw',
-      cursor: 'pointer',
-      transition: 'all 0.3s ease',
-      appearance: 'none',
-      backgroundImage: `url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23FFFFFF' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e")`,
-      backgroundRepeat: 'no-repeat',
-      backgroundPosition: 'right 1vw center',
-      backgroundSize: '1.2vw',
-      paddingRight: '3vw',
-      minWidth: '12vw',
-    },
-    createButton: {
-      backgroundColor: '#009759',
-      color: 'white',
-      border: 'none',
-      padding: '1.2vh 2vw',
-      borderRadius: '0.8vw',
-      fontSize: '1.1vw',
-      fontWeight: '600',
-      cursor: 'pointer',
-      transition: 'all 0.3s ease',
-      boxShadow: '0 0.3vh 1vh rgba(0, 151, 89, 0.3)',
-    },
-    discussionsList: {
-      display: 'grid',
-      gap: '1.5vh',
-    },
-    discussionCard: {
-      backgroundColor: 'rgba(255, 255, 255, 0.1)',
-      borderRadius: '1vw',
-      padding: '2vh 2vw',
-      border: '2px solid rgba(255, 187, 76, 0.2)',
-      cursor: 'pointer',
-      transition: 'all 0.3s ease',
-      backdropFilter: 'blur(10px)',
-    },
-    discussionHeader: {
-      display: 'flex',
-      justifyContent: 'space-between',
-      alignItems: 'flex-start',
-      marginBottom: '1vh',
-    },
-    discussionTitle: {
-      fontSize: '1.5vw',
-      fontWeight: '600',
-      color: '#FFFFFF',
-      marginBottom: '0.5vh',
-    },
-    discussionMeta: {
-      fontSize: '0.9vw',
-      color: '#FFBB4C',
-      textAlign: 'right',
-    },
-    discussionDescription: {
-      fontSize: '1rem !important',
-    },
-    discussionStats: {
-      display: 'flex',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-      fontSize: '0.9vw',
-      color: '#B0B0B0',
     },
 
-    // NEW REDESIGNED CHAT INTERFACE
+    // Controles
+    controls: {
+      display: "flex",
+      flexDirection: isMobile ? "column" : "row",
+      justifyContent: "space-between",
+      alignItems: isMobile ? "stretch" : "center",
+      gap: isMobile ? "1rem" : "1.5rem",
+      marginBottom: isMobile ? "1rem" : "2rem",
+      padding: "1rem 0",
+    },
+
+    leftControls: {
+      display: "flex",
+      flexDirection: isMobile ? "column" : "row",
+      gap: isMobile ? "1rem" : "1.5rem",
+      flex: "1 1 auto",
+    },
+
+    searchInput: {
+      padding: "0.75rem 1rem",
+      borderRadius: "0.5rem",
+      border: "1px solid rgba(76, 175, 80, 0.3)",
+      backgroundColor: "rgba(255, 255, 255, 0.1)",
+      color: "#FFFFFF",
+      fontSize: "1rem",
+      width: "100%",
+      outline: "none",
+      transition: "all 0.3s ease",
+    },
+
+    sortSelect: {
+      padding: "0.75rem 1rem",
+      borderRadius: "0.5rem",
+      border: "1px solid rgba(76, 175, 80, 0.3)",
+      backgroundColor: "rgba(255, 255, 255, 0.1)",
+      color: "#FFFFFF",
+      fontSize: "1rem",
+      cursor: "pointer",
+      outline: "none",
+      width: isMobile ? "100%" : "auto",
+    },
+
+    createButton: {
+      backgroundColor: "#009759",
+      color: "white",
+      border: "none",
+      padding: "0.75rem 1.5rem",
+      borderRadius: "0.5rem",
+      fontSize: "1rem",
+      fontWeight: "600",
+      cursor: "pointer",
+      transition: "all 0.3s ease",
+      width: isMobile ? "100%" : "auto",
+    },
+
+    // Lista de discussões
+    discussionsList: {
+      display: "grid",
+      gap: "1rem",
+    },
+
+    discussionCard: {
+      backgroundColor: "rgba(255, 255, 255, 0.1)",
+      borderRadius: "0.75rem",
+      padding: "1.5rem",
+      border: "1px solid rgba(76, 175, 80, 0.2)",
+      cursor: "pointer",
+      transition: "all 0.3s ease",
+      backdropFilter: "blur(10px)",
+    },
+
+    discussionHeader: {
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "flex-start",
+      marginBottom: "0.75rem",
+    },
+
+    discussionTitle: {
+      fontSize: isMobile ? "1.1rem" : "1.3rem",
+      fontWeight: "600",
+      color: "#FFFFFF",
+      margin: 0,
+    },
+
+    discussionMeta: {
+      fontSize: "0.85rem",
+      color: "#FFBB4C",
+      marginBottom: "0.5rem",
+    },
+
+    discussionDescription: {
+      fontSize: "0.95rem",
+      color: "#E0E0E0",
+      marginBottom: "0.75rem",
+      lineHeight: "1.5",
+    },
+
+    discussionStats: {
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center",
+      fontSize: "0.8rem",
+      color: "#B0B0B0",
+    },
+
+    // INTERFACE DE CHAT (quando uma discussão está aberta)
     chatOverlay: {
       position: 'fixed',
-      top: isMobile ? '0px' : '70px',
+      top: 0,
       left: 0,
       right: 0,
       bottom: 0,
-      backgroundColor: 'rgba(0, 0, 0, 0.3)',
-      backdropFilter: 'blur(3px)',
-      zIndex: 500,
+      backgroundColor: 'rgba(0, 0, 0, 0.5)',
+      zIndex: 1000,
       display: isDrawerOpen ? 'block' : 'none',
     },
 
     chatContainer: {
       position: 'fixed',
-      top: isMobile ? '0px' : '70px',
-      left: '0',
-      right: '0',
-      bottom: '0',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
       width: '100vw',
-      height: isMobile ? '100vh' : 'calc(100vh - 70px)',
+      height: '100vh',
       backgroundColor: '#1e293b',
-      borderRadius: '0',
-      boxShadow: 'none',
-      border: 'none',
       display: isDrawerOpen ? 'flex' : 'none',
+      flexDirection: isMobile ? 'column' : 'row',
       overflow: 'hidden',
-      zIndex: 501,
+      zIndex: 1001,
     },
 
+    // SIDEBAR (lista de discussões no chat)
     sidebar: {
-      width: '400px',
+      width: isMobile ? '100%' : '350px',
+      height: isMobile ? '40%' : '100%',
       backgroundColor: '#0f172a',
-      borderRight: '1px solid rgba(255, 255, 255, 0.1)',
+      borderRight: isMobile ? 'none' : '1px solid rgba(255, 255, 255, 0.1)',
+      borderBottom: isMobile ? '1px solid rgba(255, 255, 255, 0.1)' : 'none',
       display: 'flex',
       flexDirection: 'column',
-      minWidth: '400px',
-      maxWidth: '400px',
+      flexShrink: 0,
     },
 
     sidebarHeader: {
-      padding: '24px',
+      padding: '1rem',
       borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
       backgroundColor: 'rgba(255, 255, 255, 0.02)',
     },
 
     sidebarTitle: {
-      fontSize: '18px',
+      fontSize: '1.1rem',
       fontWeight: '700',
       color: '#f8fafc',
-      marginBottom: '8px',
+      margin: '0 0 0.5rem 0',
     },
 
     sidebarSubtitle: {
-      fontSize: '13px',
+      fontSize: '0.8rem',
       color: '#94a3b8',
-      marginBottom: '20px',
+      margin: '0 0 1rem 0',
     },
 
     sidebarControls: {
       display: 'flex',
       flexDirection: 'column',
-      gap: '12px',
+      gap: '0.5rem',
     },
 
     sidebarSearch: {
       width: '100%',
-      padding: '12px 16px',
-      borderRadius: '12px',
+      padding: '0.6rem',
+      borderRadius: '0.5rem',
       border: '1px solid rgba(255, 255, 255, 0.1)',
       backgroundColor: 'rgba(255, 255, 255, 0.05)',
       color: '#f8fafc',
-      fontSize: '14px',
+      fontSize: '0.9rem',
       outline: 'none',
-      transition: 'all 0.2s ease',
     },
 
     sidebarSelect: {
       width: '100%',
-      padding: '12px 16px',
-      borderRadius: '12px',
+      padding: '0.6rem',
+      borderRadius: '0.5rem',
       border: '1px solid rgba(255, 255, 255, 0.1)',
       backgroundColor: 'rgba(255, 255, 255, 0.05)',
       color: '#f8fafc',
-      fontSize: '14px',
+      fontSize: '0.9rem',
       outline: 'none',
       cursor: 'pointer',
-      appearance: 'none',
-      backgroundImage: `url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23f8fafc' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e")`,
-      backgroundRepeat: 'no-repeat',
-      backgroundPosition: 'right 12px center',
-      backgroundSize: '16px',
-      paddingRight: '40px',
     },
 
     newDiscussionBtn: {
       width: '100%',
-      padding: '14px 20px',
-      borderRadius: '12px',
+      padding: '0.7rem',
+      borderRadius: '0.5rem',
       border: 'none',
       backgroundColor: '#3b82f6',
       color: 'white',
-      fontSize: '14px',
+      fontSize: '0.9rem',
       fontWeight: '600',
       cursor: 'pointer',
-      transition: 'all 0.2s ease',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      gap: '8px',
+      gap: '0.5rem',
     },
 
     discussionList: {
@@ -531,11 +517,10 @@ const ChatPage = () => {
     },
 
     discussionItem: {
-      padding: '16px 24px',
+      padding: '1rem',
       borderBottom: '1px solid rgba(255, 255, 255, 0.05)',
       cursor: 'pointer',
       transition: 'all 0.2s ease',
-      position: 'relative',
     },
 
     discussionItemActive: {
@@ -544,88 +529,88 @@ const ChatPage = () => {
     },
 
     discussionItemTitle: {
-      fontSize: '15px',
+      fontSize: '0.9rem',
       fontWeight: '600',
       color: '#f8fafc',
-      marginBottom: '6px',
-      lineHeight: '1.3',
+      marginBottom: '0.3rem',
       overflow: 'hidden',
       textOverflow: 'ellipsis',
       whiteSpace: 'nowrap',
     },
 
     discussionItemMeta: {
-      fontSize: '12px',
+      fontSize: '0.75rem',
       color: '#64748b',
-      marginBottom: '4px',
+      marginBottom: '0.2rem',
     },
 
     discussionItemStats: {
-      fontSize: '12px',
+      fontSize: '0.75rem',
       color: '#94a3b8',
     },
 
+    // ÁREA DE CHAT
     chatArea: {
       flex: 1,
+      height: isMobile ? '60%' : '100%',
       display: 'flex',
       flexDirection: 'column',
       backgroundColor: '#1e293b',
     },
 
     chatHeader: {
-      padding: '24px 32px',
+      padding: isMobile ? '1rem' : '1.5rem',
       borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
       backgroundColor: 'rgba(255, 255, 255, 0.02)',
       display: 'flex',
       justifyContent: 'space-between',
-      alignItems: 'center',
+      alignItems: 'flex-start',
+      flexShrink: 0,
     },
 
     chatHeaderContent: {
       flex: 1,
+      marginRight: '1rem',
     },
 
     chatHeaderTitle: {
-      fontSize: '20px',
+      fontSize: isMobile ? '1.1rem' : '1.3rem',
       fontWeight: '700',
       color: '#f8fafc',
-      marginBottom: '6px',
+      margin: '0 0 0.3rem 0',
       lineHeight: '1.3',
     },
 
     chatHeaderMeta: {
-      fontSize: '14px',
+      fontSize: '0.8rem',
       color: '#64748b',
-      marginBottom: '8px',
+      marginBottom: '0.5rem',
     },
 
     chatHeaderDescription: {
-      fontSize: '14px',
+      fontSize: '0.85rem',
       color: '#94a3b8',
       lineHeight: '1.4',
-      maxWidth: '600px',
     },
 
     chatHeaderActions: {
       display: 'flex',
-      gap: '12px',
-      alignItems: 'center',
+      gap: '0.5rem',
+      alignItems: 'flex-start',
       flexShrink: 0,
     },
 
     actionButton: {
-      width: '44px',
-      height: '44px',
-      borderRadius: '12px',
+      width: '40px',
+      height: '40px',
+      borderRadius: '0.5rem',
       border: 'none',
       cursor: 'pointer',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
       transition: 'all 0.2s ease',
-      fontSize: '18px',
-      boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
-      flexShrink: 0,
+      fontSize: '16px',
     },
 
     deleteButton: {
@@ -640,112 +625,92 @@ const ChatPage = () => {
       border: '1px solid rgba(156, 163, 175, 0.2)',
     },
 
+    // ÁREA DE MENSAGENS
     messagesArea: {
       flex: 1,
-      padding: '24px 32px',
+      padding: isMobile ? '1rem' : '1.5rem',
       overflow: 'auto',
       display: 'flex',
       flexDirection: 'column',
-      gap: '16px',
-      minHeight: 0, // Important: allows flex child to shrink
-      scrollBehavior: 'smooth',
+      gap: '1rem',
+      minHeight: 0,
     },
 
-    message: {
-      backgroundColor: 'rgba(255, 255, 255, 0.05)',
-      borderRadius: '16px',
-      padding: '16px 20px',
-      border: '1px solid rgba(255, 255, 255, 0.1)',
-      maxWidth: '80%',
-      flexShrink: 0, // Important: prevents messages from shrinking
-      minHeight: 'auto', // Important: allows natural height
-    },
-
-    // Message for other users (left side)
-    messageOther: {
-      backgroundColor: 'rgba(255, 255, 255, 0.05)',
-      borderRadius: '16px',
-      padding: '16px 20px',
-      border: '1px solid rgba(255, 255, 255, 0.1)',
-      maxWidth: '80%',
-      flexShrink: 0,
-      minHeight: 'auto',
-      alignSelf: 'flex-start',
-    },
-
-    // Message for current user (right side)
     messageUser: {
-      backgroundColor: 'rgba(59, 130, 246, 0.15)',
-      borderRadius: '16px',
-      padding: '16px 20px',
-      border: '1px solid rgba(59, 130, 246, 0.3)',
-      maxWidth: '80%',
-      flexShrink: 0,
-      minHeight: 'auto',
       alignSelf: 'flex-end',
+      backgroundColor: '#3b82f6',
+      color: 'white',
+      padding: '0.75rem 1rem',
+      borderRadius: '1rem 1rem 0.25rem 1rem',
+      maxWidth: '70%',
+      wordBreak: 'break-word',
+    },
+
+    messageOther: {
+      alignSelf: 'flex-start',
+      backgroundColor: 'rgba(255, 255, 255, 0.1)',
+      color: '#f8fafc',
+      padding: '0.75rem 1rem',
+      borderRadius: '1rem 1rem 1rem 0.25rem',
+      maxWidth: '70%',
+      wordBreak: 'break-word',
     },
 
     messageHeader: {
       display: 'flex',
       justifyContent: 'space-between',
       alignItems: 'center',
-      marginBottom: '8px',
+      marginBottom: '0.25rem',
+      fontSize: '0.75rem',
     },
 
     messageAuthor: {
-      fontSize: '14px',
       fontWeight: '600',
-      color: '#3b82f6',
+      color: '#94a3b8',
     },
 
     messageAuthorUser: {
-      fontSize: '14px',
       fontWeight: '600',
-      color: '#93c5fd',
+      color: 'rgba(255, 255, 255, 0.8)',
     },
 
     messageTime: {
-      fontSize: '12px',
-      color: '#64748b',
+      color: 'rgba(255, 255, 255, 0.6)',
     },
 
     messageContent: {
-      fontSize: '15px',
-      color: '#e2e8f0',
-      lineHeight: '1.5',
-      wordBreak: 'break-word',
+      fontSize: '0.9rem',
+      lineHeight: '1.4',
     },
 
+    // ÁREA DE INPUT
     chatInputArea: {
-      padding: '24px 32px',
+      padding: isMobile ? '1rem' : '1.5rem',
       borderTop: '1px solid rgba(255, 255, 255, 0.1)',
       backgroundColor: 'rgba(255, 255, 255, 0.02)',
+      flexShrink: 0,
     },
 
     chatInputContainer: {
       display: 'flex',
-      gap: '12px',
-      alignItems: 'flex-end',
+      gap: '0.75rem',
+      alignItems: 'center',
     },
 
     chatInput: {
       flex: 1,
-      padding: '14px 18px',
-      borderRadius: '20px',
+      padding: '0.75rem',
+      borderRadius: '1.5rem',
       border: '1px solid rgba(255, 255, 255, 0.1)',
       backgroundColor: 'rgba(255, 255, 255, 0.05)',
       color: '#f8fafc',
-      fontSize: '15px',
+      fontSize: '0.9rem',
       outline: 'none',
-      resize: 'none',
-      minHeight: '48px',
-      maxHeight: '120px',
-      transition: 'all 0.2s ease',
     },
 
     sendButton: {
-      width: '48px',
-      height: '48px',
+      width: '40px',
+      height: '40px',
       borderRadius: '50%',
       border: 'none',
       backgroundColor: '#3b82f6',
@@ -755,55 +720,67 @@ const ChatPage = () => {
       alignItems: 'center',
       justifyContent: 'center',
       transition: 'all 0.2s ease',
-      flexShrink: 0,
     },
 
+    // ESTADOS ESPECIAIS
     emptyState: {
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',
       justifyContent: 'center',
-      height: '100%',
-      color: '#64748b',
+      padding: '3rem 1rem',
       textAlign: 'center',
+      flex: 1,
     },
 
     emptyStateIcon: {
-      fontSize: '48px',
-      marginBottom: '16px',
-      opacity: 0.5,
+      fontSize: '3rem',
+      marginBottom: '1rem',
     },
 
     emptyStateText: {
-      fontSize: '16px',
-      marginBottom: '8px',
+      fontSize: '1.1rem',
+      fontWeight: '600',
+      color: '#f8fafc',
+      marginBottom: '0.5rem',
     },
 
     emptyStateSubtext: {
-      fontSize: '14px',
-      opacity: 0.7,
+      fontSize: '0.9rem',
+      color: '#94a3b8',
     },
 
+    loading: {
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: '2rem',
+      color: '#64748b',
+      fontSize: '0.9rem',
+    },
+
+    // MODAL
     modal: {
       position: 'fixed',
       top: 0,
       left: 0,
       right: 0,
       bottom: 0,
-      backgroundColor: 'rgba(0, 0, 0, 0.8)',
+      backgroundColor: 'rgba(0, 0, 0, 0.5)',
       display: 'flex',
-      justifyContent: 'center',
       alignItems: 'center',
-      zIndex: 10001,
-      padding: '20px',
+      justifyContent: 'center',
+      zIndex: 2000,
+      padding: '1rem',
     },
 
     modalContent: {
       backgroundColor: '#1e293b',
-      borderRadius: '16px',
-      padding: '32px',
-      maxWidth: '600px',
+      borderRadius: '1rem',
+      padding: '2rem',
       width: '100%',
+      maxWidth: '500px',
       maxHeight: '80vh',
       overflow: 'auto',
       border: '1px solid rgba(255, 255, 255, 0.1)',
@@ -813,122 +790,57 @@ const ChatPage = () => {
       display: 'flex',
       justifyContent: 'space-between',
       alignItems: 'center',
-      marginBottom: '24px',
-      paddingBottom: '16px',
+      marginBottom: '1.5rem',
+      paddingBottom: '1rem',
       borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
     },
 
     modalTitle: {
-      fontSize: '20px',
+      fontSize: '1.2rem',
       fontWeight: '700',
       color: '#f8fafc',
+      margin: 0,
     },
 
     form: {
       display: 'flex',
       flexDirection: 'column',
-      gap: '20px',
+      gap: '1rem',
     },
 
     input: {
-      padding: '14px 16px',
-      borderRadius: '12px',
+      padding: '0.75rem',
+      borderRadius: '0.5rem',
       border: '1px solid rgba(255, 255, 255, 0.1)',
       backgroundColor: 'rgba(255, 255, 255, 0.05)',
       color: '#f8fafc',
-      fontSize: '15px',
+      fontSize: '0.9rem',
       outline: 'none',
-      transition: 'all 0.2s ease',
     },
 
     textarea: {
-      padding: '14px 16px',
-      borderRadius: '12px',
+      padding: '0.75rem',
+      borderRadius: '0.5rem',
       border: '1px solid rgba(255, 255, 255, 0.1)',
       backgroundColor: 'rgba(255, 255, 255, 0.05)',
       color: '#f8fafc',
-      fontSize: '15px',
-      minHeight: '120px',
+      fontSize: '0.9rem',
+      minHeight: '100px',
       resize: 'vertical',
       fontFamily: 'inherit',
       outline: 'none',
-      transition: 'all 0.2s ease',
     },
 
     submitButton: {
       backgroundColor: '#3b82f6',
       color: 'white',
       border: 'none',
-      padding: '14px 24px',
-      borderRadius: '12px',
-      fontSize: '15px',
+      padding: '0.75rem 1.5rem',
+      borderRadius: '0.5rem',
+      fontSize: '0.9rem',
       fontWeight: '600',
       cursor: 'pointer',
-      transition: 'all 0.2s ease',
     },
-
-    loading: {
-      display: 'flex',
-      justifyContent: 'center',
-      alignItems: 'center',
-      padding: '40px',
-      color: '#64748b',
-      fontSize: '15px',
-    },
-
-    '@media (max-width: 768px)': {
-      content: {
-        padding: '70px 1rem 1rem !important', // Mobile: padding top para header + spacing
-      },
-      heroSection: {
-        marginBottom: '1rem !important',
-        padding: '1.5rem !important',
-      },
-      controls: {
-        flexDirection: 'column !important',
-        gap: '1rem !important',
-        marginBottom: '1rem !important',
-      },
-      leftControls: {
-        flexDirection: 'column !important',
-        gap: '1rem !important',
-        width: '100% !important',
-        minWidth: 'auto !important',
-      },
-      searchInput: {
-        width: '100% !important',
-        fontSize: '16px !important', // Evita zoom no iOS
-      },
-      sortSelect: {
-        width: '100% !important',
-        fontSize: '16px !important', // Evita zoom no iOS
-      },
-      createButton: {
-        width: '100% !important',
-        fontSize: '16px !important',
-      },
-      chatContainer: {
-        flexDirection: 'column !important',
-        top: '0px !important',
-        height: '100vh !important',
-      },
-      sidebar: {
-        height: '40vh !important',
-        minWidth: '100% !important',
-        maxWidth: '100% !important',
-        borderRight: 'none !important',
-        borderBottom: '1px solid rgba(255, 255, 255, 0.1) !important',
-      },
-      chatArea: {
-        height: '60vh !important',
-      },
-      discussionTitle: {
-        fontSize: '1.25rem !important',
-      },
-      discussionDescription: {
-        fontSize: '1rem !important',
-      },
-    } as any,
   });
 
   return (
@@ -938,7 +850,7 @@ const ChatPage = () => {
         
         {/* Original layout - only show when drawer is closed */}
         <div style={{
-          ...styles.content,
+          ...styles.discussionsPage,
         }}>
         {/* Hero Section */}
         <div style={styles.heroSection}>
@@ -1290,8 +1202,8 @@ const ChatPage = () => {
 
         .hover-card:hover {
           transform: translateY(-3px);
-          box-shadow: 0 10px 30px rgba(255, 187, 76, 0.4), 0 4px 15px rgba(255, 187, 76, 0.2);
-          border-color: rgba(255, 187, 76, 0.6);
+          box-shadow: 0 10px 30px rgba(76, 175, 80, 0.4);
+          border-color: rgba(76, 175, 80, 0.6);
           background: linear-gradient(135deg, rgba(255, 255, 255, 0.22) 0%, rgba(255, 255, 255, 0.12) 100%);
         }
 
@@ -1305,96 +1217,29 @@ const ChatPage = () => {
           background-color: rgba(255, 255, 255, 0.05);
         }
 
-        .new-discussion-btn:hover {
-          background-color: #2563eb;
-          transform: translateY(-1px);
-        }
-
         .action-button:hover {
-          transform: scale(1.1);
+          transform: scale(1.05);
         }
 
         .delete-btn:hover {
-          background-color: rgba(239, 68, 68, 0.25);
-          transform: scale(1.05);
-          box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+          background-color: rgba(239, 68, 68, 0.25) !important;
         }
 
         .close-btn:hover {
-          background-color: rgba(156, 163, 175, 0.25);
-          transform: scale(1.05);
-          box-shadow: 0 4px 12px rgba(156, 163, 175, 0.2);
+          background-color: rgba(156, 163, 175, 0.25) !important;
         }
 
         .send-btn:hover:not(:disabled) {
-          background-color: #2563eb;
-          transform: scale(1.05);
-        }
-
-        .send-btn:disabled {
-          opacity: 0.5;
-          cursor: not-allowed;
-        }
-
-        .submit-btn:hover:not(:disabled) {
-          background-color: #2563eb;
-        }
-
-        .submit-btn:disabled {
-          opacity: 0.5;
-          cursor: not-allowed;
+          background-color: #2563eb !important;
         }
 
         input:focus, textarea:focus, select:focus {
-          border-color: #3b82f6;
-          box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+          border-color: #3b82f6 !important;
+          box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1) !important;
         }
 
-        /* Custom scrollbar */
-        ::-webkit-scrollbar {
-          width: 6px;
-        }
-
-        ::-webkit-scrollbar-track {
-          background: rgba(255, 255, 255, 0.1);
-        }
-
-        ::-webkit-scrollbar-thumb {
-          background: rgba(255, 255, 255, 0.3);
-          border-radius: 3px;
-        }
-
-        ::-webkit-scrollbar-thumb:hover {
-          background: rgba(255, 255, 255, 0.5);
-        }
-
-        /* Placeholder styles */
         ::placeholder {
-          color: #64748b;
-        }
-
-        @media (max-width: 768px) {
-          .chatContainer {
-            flex-direction: column;
-            top: 0px !important;
-            height: 100vh !important;
-          }
-          
-          .sidebar {
-            height: 40vh;
-            min-width: 100%;
-            max-width: 100%;
-            border-right: none;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-          }
-          
-          .chatArea {
-            height: 60vh;
-          }
-          
-          input, select, button {
-            font-size: 16px !important; /* Evita zoom no iOS */
-          }
+          color: #64748b !important;
         }
       `}</style>
     </div>

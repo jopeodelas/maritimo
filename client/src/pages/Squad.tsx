@@ -200,6 +200,9 @@ const Squad = () => {
     },
     playersGrid: {
       display: "grid",
+      gridTemplateColumns: isMobile 
+        ? "repeat(auto-fit, minmax(140px, 1fr))" // Mobile: 2-3 colunas responsivas
+        : "repeat(var(--grid-columns, 3), 1fr)", // Desktop: será definido no JSX
       gridAutoRows: "1fr",
       gap: isMobile ? "1rem" : "2%",
       padding: isMobile ? "1rem" : "2%",
@@ -216,13 +219,19 @@ const Squad = () => {
       transform: "translateX(2%)",
     },
     playerCard: {
-      background: isMobile ? "transparent" : "rgba(40, 55, 70, 0.95)", // Mobile sem fundo, Desktop mantém
-      border: isMobile ? "none" : "2px solid rgba(76, 175, 80, 0.6)", // Mobile sem borda
+      background: isMobile 
+        ? "rgba(30, 40, 50, 0.8)" // Mobile: fundo semi-transparente 
+        : "rgba(40, 55, 70, 0.95)", // Desktop mantém
+      border: isMobile 
+        ? "1px solid rgba(76, 175, 80, 0.4)" // Mobile: borda mais sutil
+        : "2px solid rgba(76, 175, 80, 0.6)", // Desktop mantém
       borderRadius: "8px",
-      padding: isMobile ? "0" : "3%", // Mobile sem padding interno
+      padding: isMobile ? "0.75rem" : "3%", // Mobile: padding menor mas presente
       textAlign: "center",
       color: "white",
-      boxShadow: isMobile ? "none" : "0 4px 12px rgba(0, 0, 0, 0.4)", // Mobile sem sombra
+      boxShadow: isMobile 
+        ? "0 2px 8px rgba(0, 0, 0, 0.3)" // Mobile: sombra mais sutil
+        : "0 4px 12px rgba(0, 0, 0, 0.4)", // Desktop mantém
       transition: "all 0.2s ease",
       cursor: "pointer",
       position: "relative",
@@ -230,7 +239,8 @@ const Squad = () => {
       height: "100%",
       display: "flex",
       flexDirection: "column",
-      justifyContent: isMobile ? "flex-start" : "space-between", // Mobile alinha no topo
+      justifyContent: isMobile ? "center" : "space-between", // Mobile: centralizado
+      backdropFilter: "blur(5px)", // Adiciona blur para melhor visibilidade
     },
     playerCardGlow: {
       position: "absolute",
@@ -594,9 +604,9 @@ const Squad = () => {
             <div 
               style={{
                 ...styles.playersGrid,
-                gridTemplateColumns: `repeat(${optimalColumns}, 1fr)`,
+                '--grid-columns': getOptimalColumns(currentPosition.players.length),
                 ...(isAnimating ? styles.playersGridAnimating : {})
-              }}
+              } as React.CSSProperties}
             >
               {currentPosition.players.map((player) => renderPlayerCard(player))}
             </div>
