@@ -216,13 +216,13 @@ const Squad = () => {
       transform: "translateX(2%)",
     },
     playerCard: {
-      background: "rgba(40, 55, 70, 0.95)",
-      border: "2px solid rgba(76, 175, 80, 0.6)",
+      background: isMobile ? "transparent" : "rgba(40, 55, 70, 0.95)", // Mobile sem fundo, Desktop mantém
+      border: isMobile ? "none" : "2px solid rgba(76, 175, 80, 0.6)", // Mobile sem borda
       borderRadius: "8px",
-      padding: "3%",
+      padding: isMobile ? "0" : "3%", // Mobile sem padding interno
       textAlign: "center",
       color: "white",
-      boxShadow: "0 4px 12px rgba(0, 0, 0, 0.4)",
+      boxShadow: isMobile ? "none" : "0 4px 12px rgba(0, 0, 0, 0.4)", // Mobile sem sombra
       transition: "all 0.2s ease",
       cursor: "pointer",
       position: "relative",
@@ -230,7 +230,7 @@ const Squad = () => {
       height: "100%",
       display: "flex",
       flexDirection: "column",
-      justifyContent: "space-between",
+      justifyContent: isMobile ? "flex-start" : "space-between", // Mobile alinha no topo
     },
     playerCardGlow: {
       position: "absolute",
@@ -248,11 +248,11 @@ const Squad = () => {
       position: "relative",
       width: "100%",
       height: "0",
-      marginBottom: "3%",
+      marginBottom: isMobile ? "0.5rem" : "3%",
       borderRadius: "6px",
       overflow: "hidden",
-      border: "2px solid rgba(76, 175, 80, 0.6)",
-      background: "rgba(20, 30, 40, 0.8)",
+      border: isMobile ? "none" : "2px solid rgba(76, 175, 80, 0.6)",
+      background: isMobile ? "transparent" : "rgba(20, 30, 40, 0.8)",
     },
     playerImage: {
       position: "absolute",
@@ -261,17 +261,19 @@ const Squad = () => {
       width: "100%",
       height: "100%",
       objectFit: "cover",
-      objectPosition: isMobile ? "center center" : "center top",
+      objectPosition: "center top",
       transition: "transform 0.2s ease",
     },
     playerName: {
       fontSize: isMobile ? "clamp(0.9rem, 4vw, 1.1rem)" : "clamp(0.8rem, 1.5vh, 1.1rem)",
       fontWeight: "700",
-      margin: isMobile ? "0.75rem 0 0 0" : "0",
+      margin: isMobile ? "0.5rem 0 0 0" : "0",
       color: "#FFFFFF",
       lineHeight: "1.2",
       textAlign: "center",
-      padding: isMobile ? "0 0.5rem" : "0 2%",
+      padding: "0",
+      background: "transparent",
+      textShadow: isMobile ? "1px 1px 3px rgba(0, 0, 0, 0.8)" : "none",
     },
     playerPosition: {
       fontSize: "clamp(0.7rem, 1.2vh, 0.9rem)",
@@ -400,8 +402,8 @@ const Squad = () => {
   // Calcular altura da imagem baseada no número de jogadores
   const getImagePadding = (playerCount: number): string => {
     if (isMobile) {
-      // Mobile: sempre padding adequado para mostrar bem as imagens
-      return "100%";
+      // Mobile: proporção mais retangular para mostrar melhor os jogadores
+      return "120%";
     }
     
     // Desktop: lógica original

@@ -249,7 +249,9 @@ const ChatPage = () => {
     content: {
       maxWidth: "min(98vw, 110rem)",
       margin: "0 auto",
-      padding: "clamp(8rem, 10vh, 10rem) clamp(0.5rem, 1vw, 1.5rem) clamp(1rem, 2vh, 2rem)",
+      padding: isMobile 
+        ? "70px 1rem 1rem" // Mobile: padding top para header + spacing
+        : "2vh 2vw", // Desktop: usar mesmo padrão das outras páginas
       position: "relative",
       zIndex: 2,
       display: isDrawerOpen ? 'none' : 'block',
@@ -400,10 +402,7 @@ const ChatPage = () => {
       textAlign: 'right',
     },
     discussionDescription: {
-      fontSize: '1vw',
-      color: '#E0E0E0',
-      marginBottom: '1vh',
-      lineHeight: '1.5',
+      fontSize: '1rem !important',
     },
     discussionStats: {
       display: 'flex',
@@ -416,7 +415,7 @@ const ChatPage = () => {
     // NEW REDESIGNED CHAT INTERFACE
     chatOverlay: {
       position: 'fixed',
-      top: '70px',
+      top: isMobile ? '0px' : '70px',
       left: 0,
       right: 0,
       bottom: 0,
@@ -428,12 +427,12 @@ const ChatPage = () => {
 
     chatContainer: {
       position: 'fixed',
-      top: '70px',
+      top: isMobile ? '0px' : '70px',
       left: '0',
       right: '0',
       bottom: '0',
       width: '100vw',
-      height: 'calc(100vh - 70px)',
+      height: isMobile ? '100vh' : 'calc(100vh - 70px)',
       backgroundColor: '#1e293b',
       borderRadius: '0',
       boxShadow: 'none',
@@ -611,6 +610,7 @@ const ChatPage = () => {
       display: 'flex',
       gap: '12px',
       alignItems: 'center',
+      flexShrink: 0,
     },
 
     actionButton: {
@@ -625,6 +625,7 @@ const ChatPage = () => {
       transition: 'all 0.2s ease',
       fontSize: '18px',
       boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+      flexShrink: 0,
     },
 
     deleteButton: {
@@ -876,52 +877,56 @@ const ChatPage = () => {
     },
 
     '@media (max-width: 768px)': {
-      chatContainer: {
-        flexDirection: 'column',
-        top: '70px',
-        height: 'calc(100vh - 70px)',
+      content: {
+        padding: '70px 1rem 1rem !important', // Mobile: padding top para header + spacing
       },
-      sidebar: {
-        height: '40vh',
-        minWidth: '100%',
-        maxWidth: '100%',
-        borderRight: 'none',
-        borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
+      heroSection: {
+        marginBottom: '1rem !important',
+        padding: '1.5rem !important',
       },
-      chatArea: {
-        height: '60vh',
+      controls: {
+        flexDirection: 'column !important',
+        gap: '1rem !important',
+        marginBottom: '1rem !important',
       },
-      title: {
-        fontSize: '6vw',
-      },
-      subtitle: {
-        fontSize: '3vw',
+      leftControls: {
+        flexDirection: 'column !important',
+        gap: '1rem !important',
+        width: '100% !important',
+        minWidth: 'auto !important',
       },
       searchInput: {
-        width: '100%',
-        fontSize: '3vw',
+        width: '100% !important',
+        fontSize: '16px !important', // Evita zoom no iOS
       },
       sortSelect: {
-        fontSize: '3vw',
-        minWidth: '30vw',
-        backgroundSize: '3vw',
-        paddingRight: '8vw',
+        width: '100% !important',
+        fontSize: '16px !important', // Evita zoom no iOS
       },
       createButton: {
-        fontSize: '3vw',
-        padding: '2vh 4vw',
+        width: '100% !important',
+        fontSize: '16px !important',
+      },
+      chatContainer: {
+        flexDirection: 'column !important',
+        top: '0px !important',
+        height: '100vh !important',
+      },
+      sidebar: {
+        height: '40vh !important',
+        minWidth: '100% !important',
+        maxWidth: '100% !important',
+        borderRight: 'none !important',
+        borderBottom: '1px solid rgba(255, 255, 255, 0.1) !important',
+      },
+      chatArea: {
+        height: '60vh !important',
       },
       discussionTitle: {
-        fontSize: '4vw',
+        fontSize: '1.25rem !important',
       },
       discussionDescription: {
-        fontSize: '3vw',
-      },
-      discussionMeta: {
-        fontSize: '2.5vw',
-      },
-      discussionStats: {
-        fontSize: '2.5vw',
+        fontSize: '1rem !important',
       },
     } as any,
   });
@@ -934,9 +939,6 @@ const ChatPage = () => {
         {/* Original layout - only show when drawer is closed */}
         <div style={{
           ...styles.content,
-          padding: isMobile 
-            ? '70px 1rem 1rem' // Mobile: padding top para header + spacing
-            : undefined // Desktop original
         }}>
         {/* Hero Section */}
         <div style={styles.heroSection}>
@@ -945,27 +947,19 @@ const ChatPage = () => {
           <p style={styles.heroSubtitle}>Partilhe as suas opiniões sobre o CS Marítimo</p>
         </div>
 
-        <div 
-          style={styles.controls}
-          className={isMobile ? "mobile-chat-controls-container" : ""}
-        >
-          <div 
-            style={styles.leftControls}
-            className={isMobile ? "mobile-chat-left-controls" : ""}
-          >
+        <div style={styles.controls}>
+          <div style={styles.leftControls}>
             <input
               type="text"
               placeholder="Pesquisar discussões..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               style={styles.searchInput}
-              className={isMobile ? "mobile-chat-search-input" : ""}
             />
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value as 'newest' | 'oldest' | 'popular')}
               style={styles.sortSelect}
-              className={isMobile ? "mobile-chat-sort-select" : ""}
             >
               <option value="newest">Mais Recentes</option>
               <option value="oldest">Mais Antigas</option>
@@ -975,7 +969,7 @@ const ChatPage = () => {
           <button
             onClick={() => setShowCreateForm(true)}
             style={styles.createButton}
-            className={isMobile ? "mobile-chat-new-discussion-btn hover-button" : "hover-button"}
+            className="hover-button"
           >
             Nova Discussão
           </button>
@@ -1027,13 +1021,9 @@ const ChatPage = () => {
       <div 
         style={styles.chatContainer} 
         onClick={(e) => e.stopPropagation()}
-        className={isMobile ? "mobile-chat-drawer" : ""}
       >
         {/* Sidebar */}
-        <div 
-          style={styles.sidebar}
-          className={isMobile ? "mobile-chat-sidebar" : ""}
-        >
+        <div style={styles.sidebar}>
           <div style={styles.sidebarHeader}>
             <h2 style={styles.sidebarTitle}>Discussões</h2>
             <p style={styles.sidebarSubtitle}>Conversas da comunidade</p>
@@ -1105,30 +1095,25 @@ const ChatPage = () => {
         {/* Chat Area */}
         <div 
           style={styles.chatArea}
-          className={isMobile ? "mobile-chat-area" : ""}
         >
           {selectedDiscussion ? (
             <>
               <div 
                 style={styles.chatHeader}
-                className={isMobile ? "mobile-chat-header" : ""}
               >
                 <div style={styles.chatHeaderContent}>
                   <h1 
                     style={styles.chatHeaderTitle}
-                    className={isMobile ? "mobile-chat-header-title" : ""}
                   >
                     {selectedDiscussion.title}
                   </h1>
                   <div 
                     style={styles.chatHeaderMeta}
-                    className={isMobile ? "mobile-chat-header-meta" : ""}
                   >
                     Por {selectedDiscussion.author_username} • {formatDate(selectedDiscussion.created_at)}
                   </div>
                   <div 
                     style={styles.chatHeaderDescription}
-                    className={isMobile ? "mobile-chat-header-description" : ""}
                   >
                     {selectedDiscussion.description}
                   </div>
@@ -1139,7 +1124,7 @@ const ChatPage = () => {
                     <button
                       style={{ ...styles.actionButton, ...styles.deleteButton }}
                       onClick={() => handleDeleteDiscussion(selectedDiscussion.id)}
-                      className={`action-button delete-btn ${isMobile ? "mobile-chat-action-button" : ""}`}
+                      className={`action-button delete-btn`}
                       title="Apagar discussão"
                     >
                       <DeleteIcon />
@@ -1148,7 +1133,7 @@ const ChatPage = () => {
                   <button
                     style={{ ...styles.actionButton, ...styles.closeButton }}
                     onClick={closeDiscussion}
-                    className={`action-button close-btn ${isMobile ? "mobile-chat-action-button" : ""}`}
+                    className={`action-button close-btn`}
                     title="Fechar"
                   >
                     <CloseIcon />
@@ -1158,7 +1143,6 @@ const ChatPage = () => {
 
               <div 
                 style={styles.messagesArea}
-                className={isMobile ? "mobile-chat-messages" : ""}
               >
                 {comments.length === 0 ? (
                   <div style={styles.emptyState}>
@@ -1392,8 +1376,8 @@ const ChatPage = () => {
         @media (max-width: 768px) {
           .chatContainer {
             flex-direction: column;
-            top: 70px !important;
-            height: calc(100vh - 70px) !important;
+            top: 0px !important;
+            height: 100vh !important;
           }
           
           .sidebar {
@@ -1406,6 +1390,10 @@ const ChatPage = () => {
           
           .chatArea {
             height: 60vh;
+          }
+          
+          input, select, button {
+            font-size: 16px !important; /* Evita zoom no iOS */
           }
         }
       `}</style>
