@@ -261,13 +261,13 @@ const Squad = () => {
       width: "100%",
       height: "100%",
       objectFit: "cover",
-      objectPosition: "center top",
+      objectPosition: isMobile ? "center center" : "center top",
       transition: "transform 0.2s ease",
     },
     playerName: {
-      fontSize: "clamp(0.8rem, 1.5vh, 1.1rem)",
+      fontSize: isMobile ? "clamp(0.9rem, 4vw, 1.1rem)" : "clamp(0.8rem, 1.5vh, 1.1rem)",
       fontWeight: "700",
-      margin: isMobile ? "0.5rem 0 0 0" : "0",
+      margin: isMobile ? "0.75rem 0 0 0" : "0",
       color: "#FFFFFF",
       lineHeight: "1.2",
       textAlign: "center",
@@ -485,12 +485,14 @@ const Squad = () => {
       >
         {player.name}
       </h3>
-      <p 
-        style={styles.playerPosition}
-        className={isMobile ? "mobile-squad-player-position" : ""}
-      >
-        {player.position}
-      </p>
+      {!isMobile && (
+        <p 
+          style={styles.playerPosition}
+          className="desktop-player-position"
+        >
+          {player.position}
+        </p>
+      )}
     </div>
   );
 
