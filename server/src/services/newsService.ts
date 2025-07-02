@@ -48,6 +48,9 @@ class NewsService {
       const allNews = await realNewsService.fetchAllMaritimoNews();
       
       if (allNews.length > 0) {
+        // Remove any existing fallback news (source: "Sistema") when we get real news
+        this.news = this.news.filter(item => item.source !== "Sistema");
+        
         // Remove duplicates based on URL, title, and content similarity
         const existingUrls = new Set(this.news.map(item => item.url));
         const existingTitleSignatures = new Set(this.news.map(item => this.createTitleSignature(item.title)));
@@ -66,11 +69,14 @@ class NewsService {
         this.news = this.news.slice(0, 100);
         
         this.lastUpdate = new Date();
+        
+        console.log(`📰 NEWS SERVICE: Successfully updated with ${newNews.length} new articles, total: ${this.news.length}`);
       } else {
         // If we have no news at all, generate minimal fallback data
         if (this.news.length === 0) {
           this.news = this.generateFallbackNews();
           this.lastUpdate = new Date();
+          console.log('📰 NEWS SERVICE: No news found, using fallback');
         }
       }
     } catch (error) {
@@ -80,6 +86,7 @@ class NewsService {
       if (this.news.length === 0) {
         this.news = this.generateFallbackNews();
         this.lastUpdate = new Date();
+        console.log('📰 NEWS SERVICE: Error occurred, using fallback');
       }
     } finally {
       this.isUpdating = false;

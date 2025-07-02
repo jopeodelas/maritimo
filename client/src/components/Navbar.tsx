@@ -94,7 +94,7 @@ const Navbar = () => {
       color: 'white',
       textDecoration: 'none',
       fontSize: '1vw',
-      fontWeight: '800',
+      fontWeight: '600',
       padding: '0.8vh 1.2vw',
       borderRadius: '0.4vw',
       transition: 'all 0.3s ease',

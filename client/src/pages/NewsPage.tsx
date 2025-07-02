@@ -29,10 +29,31 @@ const NewsPage = () => {
     try {
       console.log('📰 FRONTEND: Fetching fresh news...');
       const newsData = await newsService.getNews();
-      setNews(newsData);
+      
+      // Filter out system fallback news from display
+      const realNews = newsData.filter(item => item.source !== "Sistema");
+      
+      // If we only have fallback news, try to refresh automatically
+      if (newsData.length > 0 && realNews.length === 0 && !forceRefresh) {
+        console.log('📰 FRONTEND: Only fallback news detected, auto-refreshing...');
+        setTimeout(async () => {
+          try {
+            const refreshedData = await newsService.refreshNews();
+            const refreshedRealNews = refreshedData.filter(item => item.source !== "Sistema");
+            setNews(refreshedRealNews);
+            setLastUpdate(new Date());
+            setCacheTime(Date.now());
+            console.log(`🔄 FRONTEND: Auto-refreshed ${refreshedRealNews.length} real news items`);
+          } catch (error) {
+            console.error("Error in auto-refresh:", error);
+          }
+        }, 2000); // Auto-refresh after 2 seconds
+      }
+      
+      setNews(realNews); // Only show real news, not fallback
       setLastUpdate(new Date());
       setCacheTime(now);
-      console.log(`📰 FRONTEND: Loaded ${newsData.length} news items`);
+      console.log(`📰 FRONTEND: Loaded ${realNews.length} real news items (${newsData.length} total from server)`);
     } catch (error) {
       console.error("Error fetching news:", error);
     } finally {
@@ -49,10 +70,14 @@ const NewsPage = () => {
     try {
       console.log('🔄 FRONTEND: Force refreshing news...');
       const newsData = await newsService.refreshNews();
-      setNews(newsData);
+      
+      // Filter out system fallback news from display
+      const realNews = newsData.filter(item => item.source !== "Sistema");
+      
+      setNews(realNews); // Only show real news, not fallback
       setLastUpdate(new Date());
       setCacheTime(Date.now());
-      console.log(`🔄 FRONTEND: Refreshed ${newsData.length} news items`);
+      console.log(`🔄 FRONTEND: Refreshed ${realNews.length} real news items (${newsData.length} total from server)`);
     } catch (error) {
       console.error("Error refreshing news:", error);
     } finally {

@@ -17,7 +17,10 @@ export const getNews = async (req: Request, res: Response) => {
     
     // PERFORMANCE: Check cache first
     if (newsCache.data.length > 0 && (now - newsCache.timestamp) < CACHE_DURATION) {
-      console.log(`📰 PERFORMANCE: Serving from cache (${newsCache.data.length} items)`);
+      // Filter out fallback news from cache before serving
+      const realNewsFromCache = newsCache.data.filter((item: any) => item.source !== "Sistema");
+      
+      console.log(`📰 PERFORMANCE: Serving from cache (${realNewsFromCache.length} real items, ${newsCache.data.length} total)`);
       
       // Set cache headers for CDN optimization
       res.setHeader('Cache-Control', 's-maxage=30, stale-while-revalidate=60');
@@ -25,8 +28,8 @@ export const getNews = async (req: Request, res: Response) => {
       
       res.json({
         success: true,
-        count: newsCache.data.length,
-        data: newsCache.data
+        count: realNewsFromCache.length,
+        data: realNewsFromCache
       });
       return;
     }
@@ -43,16 +46,19 @@ export const getNews = async (req: Request, res: Response) => {
       console.log(`📰 NEWS API: Fetched ${news.length} fresh news items`);
     }
     
+    // Filter out fallback news before caching and serving
+    const realNews = news.filter((item: any) => item.source !== "Sistema");
+    
     // Update cache
-    newsCache = { data: news, timestamp: now };
-    console.log(`📰 PERFORMANCE: Cache updated with ${news.length} items`);
+    newsCache = { data: realNews, timestamp: now };
+    console.log(`📰 PERFORMANCE: Cache updated with ${realNews.length} real items (${news.length} total from service)`);
     
     // Log first few items for debugging
-    if (news.length > 0) {
+    if (realNews.length > 0) {
       console.log('📰 NEWS API: First news item:', {
-        title: news[0].title,
-        source: news[0].source,
-        publishedAt: news[0].publishedAt
+        title: realNews[0].title,
+        source: realNews[0].source,
+        publishedAt: realNews[0].publishedAt
       });
     }
     
@@ -62,8 +68,8 @@ export const getNews = async (req: Request, res: Response) => {
     
     res.json({
       success: true,
-      count: news.length,
-      data: news
+      count: realNews.length,
+      data: realNews
     });
   } catch (error) {
     console.error('❌ NEWS API Error:', error);
@@ -85,14 +91,17 @@ export const refreshNews = async (req: Request, res: Response) => {
     const news = await newsService.refreshNews();
     console.log(`🔄 NEWS API: Refreshed ${news.length} news items`);
     
+    // Filter out fallback news before caching and serving
+    const realNews = news.filter((item: any) => item.source !== "Sistema");
+    
     // Update cache with fresh data
-    newsCache = { data: news, timestamp: Date.now() };
+    newsCache = { data: realNews, timestamp: Date.now() };
     
     res.json({
       success: true,
       message: 'News refreshed successfully',
-      count: news.length,
-      data: news
+      count: realNews.length,
+      data: realNews
     });
   } catch (error) {
     console.error('❌ NEWS REFRESH Error:', error);
