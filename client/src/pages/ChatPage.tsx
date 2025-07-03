@@ -862,13 +862,13 @@ const ChatPage = () => {
       
       {/* Layout original - primeira página (lista de discussões) */}
       {!isDrawerOpen && (
-        <PageLayout>
-          <div style={styles.container}>
-            <div style={styles.backgroundPattern}></div>
-            
-            <div style={{
-              ...styles.discussionsPage,
-            }}>
+    <PageLayout>
+      <div style={styles.container}>
+        <div style={styles.backgroundPattern}></div>
+        
+        <div style={{
+          ...styles.discussionsPage,
+        }}>
         {/* Hero Section */}
         <div style={styles.heroSection}>
           <div style={styles.heroAccent}></div>
@@ -943,9 +943,142 @@ const ChatPage = () => {
           </div>
         )}
       </div>
+      </div>
+      
+      <style>{`
+        @keyframes optimized-float {
+          0%, 100% { transform: translateY(0px) rotate(0deg); }
+          33% { transform: translateY(-10px) rotate(1deg); }
+          66% { transform: translateY(5px) rotate(-1deg); }
+        }
 
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
 
-        {/* Sidebar */}
+        .spinner {
+          width: 20px;
+          height: 20px;
+          border: 2px solid rgba(59, 130, 246, 0.3);
+          border-radius: 50%;
+          border-top-color: #3b82f6;
+          animation: spin 1s linear infinite;
+          margin-right: 8px;
+        }
+
+        .spinner.small {
+          width: 16px;
+          height: 16px;
+          border-width: 2px;
+          margin: 0;
+        }
+
+        .hover-card:hover {
+          transform: translateY(-3px);
+          box-shadow: 0 10px 30px rgba(76, 175, 80, 0.4);
+          border-color: rgba(76, 175, 80, 0.6);
+          background: linear-gradient(135deg, rgba(255, 255, 255, 0.22) 0%, rgba(255, 255, 255, 0.12) 100%);
+        }
+
+        .hover-button:hover {
+          background: linear-gradient(135deg, #00b366 0%, #00d474 100%);
+          transform: translateY(-2px);
+          box-shadow: 0 6px 20px rgba(0, 151, 89, 0.5);
+        }
+
+        .discussion-item:hover {
+          background-color: rgba(255, 255, 255, 0.05);
+        }
+
+        .action-button:hover {
+          transform: scale(1.05);
+        }
+
+        .delete-btn:hover {
+          background-color: rgba(239, 68, 68, 0.25) !important;
+        }
+
+        .close-btn:hover {
+          background-color: rgba(156, 163, 175, 0.25) !important;
+        }
+
+        .send-btn:hover:not(:disabled) {
+          background-color: #2563eb !important;
+        }
+
+        input:focus, textarea:focus, select:focus {
+          border-color: #3b82f6 !important;
+          box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1) !important;
+        }
+
+        ::placeholder {
+          color: #64748b !important;
+        }
+      `}</style>
+    </PageLayout>
+  )}
+
+      {/* Create Discussion Modal */}
+      {showCreateForm && (
+        <div style={styles.modal} onClick={() => setShowCreateForm(false)}>
+          <div style={styles.modalContent} onClick={(e) => e.stopPropagation()}>
+            <div style={styles.modalHeader}>
+              <h2 style={styles.modalTitle}>Nova Discussão</h2>
+              <button
+                style={{ ...styles.actionButton, ...styles.closeButton }}
+                onClick={() => setShowCreateForm(false)}
+                className="action-button"
+              >
+                <CloseIcon />
+              </button>
+            </div>
+            <form onSubmit={handleCreateDiscussion} style={styles.form}>
+              <input
+                type="text"
+                placeholder="Título da discussão"
+                value={newDiscussionTitle}
+                onChange={(e) => setNewDiscussionTitle(e.target.value)}
+                style={styles.input}
+                required
+                maxLength={200}
+              />
+              <textarea
+                placeholder="Descreva o que quer discutir..."
+                value={newDiscussionDescription}
+                onChange={(e) => setNewDiscussionDescription(e.target.value)}
+                style={styles.textarea}
+                required
+                maxLength={2000}
+              />
+              <button
+                type="submit"
+                style={styles.submitButton}
+                className="submit-btn"
+                disabled={submitting}
+              >
+                {submitting ? (
+                  <>
+                    <div className="spinner small"></div>
+                    A criar...
+                  </>
+                ) : 'Criar Discussão'}
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* New Chat Interface - segunda página */}
+      {isDrawerOpen && (
+        <>
+      <div style={styles.chatOverlay} onClick={closeDiscussion}></div>
+      
+      <div 
+        style={styles.chatContainer} 
+        onClick={(e) => e.stopPropagation()}
+      >
+            {/* Sidebar - oculta no mobile */}
         <div style={styles.sidebar}>
           <div style={styles.sidebarHeader}>
             <h2 style={styles.sidebarTitle}>Discussões</h2>
@@ -1131,328 +1264,6 @@ const ChatPage = () => {
           )}
         </div>
       </div>
-
-      {/* Create Discussion Modal */}
-      {showCreateForm && (
-        <div style={styles.modal} onClick={() => setShowCreateForm(false)}>
-          <div style={styles.modalContent} onClick={(e) => e.stopPropagation()}>
-            <div style={styles.modalHeader}>
-              <h2 style={styles.modalTitle}>Nova Discussão</h2>
-              <button
-                style={{ ...styles.actionButton, ...styles.closeButton }}
-                onClick={() => setShowCreateForm(false)}
-                className="action-button"
-              >
-                <CloseIcon />
-              </button>
-            </div>
-            <form onSubmit={handleCreateDiscussion} style={styles.form}>
-              <input
-                type="text"
-                placeholder="Título da discussão"
-                value={newDiscussionTitle}
-                onChange={(e) => setNewDiscussionTitle(e.target.value)}
-                style={styles.input}
-                required
-                maxLength={200}
-              />
-              <textarea
-                placeholder="Descreva o que quer discutir..."
-                value={newDiscussionDescription}
-                onChange={(e) => setNewDiscussionDescription(e.target.value)}
-                style={styles.textarea}
-                required
-                maxLength={2000}
-              />
-              <button
-                type="submit"
-                style={styles.submitButton}
-                className="submit-btn"
-                disabled={submitting}
-              >
-                {submitting ? (
-                  <>
-                    <div className="spinner small"></div>
-                    A criar...
-                  </>
-                ) : 'Criar Discussão'}
-              </button>
-            </form>
-          </div>
-        </div>
-      )}
-
-      <style>{`
-        @keyframes optimized-float {
-          0%, 100% { transform: translateY(0px) rotate(0deg); }
-          33% { transform: translateY(-10px) rotate(1deg); }
-          66% { transform: translateY(5px) rotate(-1deg); }
-        }
-
-        @keyframes spin {
-          0% { transform: rotate(0deg); }
-          100% { transform: rotate(360deg); }
-        }
-
-        .spinner {
-          width: 20px;
-          height: 20px;
-          border: 2px solid rgba(59, 130, 246, 0.3);
-          border-radius: 50%;
-          border-top-color: #3b82f6;
-          animation: spin 1s linear infinite;
-          margin-right: 8px;
-        }
-
-        .spinner.small {
-          width: 16px;
-          height: 16px;
-          border-width: 2px;
-          margin: 0;
-        }
-
-        .hover-card:hover {
-          transform: translateY(-3px);
-          box-shadow: 0 10px 30px rgba(76, 175, 80, 0.4);
-          border-color: rgba(76, 175, 80, 0.6);
-          background: linear-gradient(135deg, rgba(255, 255, 255, 0.22) 0%, rgba(255, 255, 255, 0.12) 100%);
-        }
-
-        .hover-button:hover {
-          background: linear-gradient(135deg, #00b366 0%, #00d474 100%);
-          transform: translateY(-2px);
-          box-shadow: 0 6px 20px rgba(0, 151, 89, 0.5);
-        }
-
-        .discussion-item:hover {
-          background-color: rgba(255, 255, 255, 0.05);
-        }
-
-        .action-button:hover {
-          transform: scale(1.05);
-        }
-
-        .delete-btn:hover {
-          background-color: rgba(239, 68, 68, 0.25) !important;
-        }
-
-        .close-btn:hover {
-          background-color: rgba(156, 163, 175, 0.25) !important;
-        }
-
-        .send-btn:hover:not(:disabled) {
-          background-color: #2563eb !important;
-        }
-
-        input:focus, textarea:focus, select:focus {
-          border-color: #3b82f6 !important;
-          box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1) !important;
-        }
-
-        ::placeholder {
-          color: #64748b !important;
-        }
-      `}</style>
-            </div>
-          </div>
-        </PageLayout>
-      )}
-
-      {/* New Chat Interface - segunda página */}
-      {isDrawerOpen && (
-        <>
-          <div style={styles.chatOverlay} onClick={closeDiscussion}></div>
-          
-          <div 
-            style={styles.chatContainer} 
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* Sidebar - oculta no mobile */}
-            <div style={styles.sidebar}>
-              <div style={styles.sidebarHeader}>
-                <h2 style={styles.sidebarTitle}>Discussões</h2>
-                <p style={styles.sidebarSubtitle}>Conversas da comunidade</p>
-                
-                <div style={styles.sidebarControls}>
-                  <input
-                    type="text"
-                    placeholder="Pesquisar..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    style={styles.sidebarSearch}
-                  />
-                  
-                  <select
-                    value={sortBy}
-                    onChange={(e) => setSortBy(e.target.value as 'newest' | 'oldest' | 'popular')}
-                    style={styles.sidebarSelect}
-                  >
-                    <option value="newest">Mais Recentes</option>
-                    <option value="oldest">Mais Antigas</option>
-                    <option value="popular">Mais Populares</option>
-                  </select>
-                  
-                  <button
-                    onClick={() => setShowCreateForm(true)}
-                    style={styles.newDiscussionBtn}
-                    className="new-discussion-btn"
-                  >
-                    <PlusIcon />
-                    Nova Discussão
-                  </button>
-                </div>
-              </div>
-
-              <div style={styles.discussionList}>
-                {loading ? (
-                  <div style={styles.loading}>
-                    <div className="spinner"></div>
-                    A carregar...
-                  </div>
-                ) : filteredDiscussions.length === 0 ? (
-                  <div style={{ ...styles.emptyState, padding: '40px 24px' }}>
-                    <div style={styles.emptyStateText}>Nenhuma discussão encontrada</div>
-                  </div>
-                ) : (
-                  filteredDiscussions.map((discussion) => (
-                    <div
-                      key={discussion.id}
-                      style={{
-                        ...styles.discussionItem,
-                        ...(selectedDiscussion?.id === discussion.id ? styles.discussionItemActive : {}),
-                      }}
-                      className="discussion-item"
-                      onClick={() => openDiscussion(discussion)}
-                    >
-                      <div style={styles.discussionItemTitle}>{discussion.title}</div>
-                      <div style={styles.discussionItemMeta}>
-                        {discussion.author_username} • {formatDate(discussion.created_at)}
-                      </div>
-                      <div style={styles.discussionItemStats}>
-                        {discussion.comment_count} comentários
-                      </div>
-                    </div>
-                  ))
-                )}
-              </div>
-            </div>
-
-            {/* Chat Area */}
-            <div 
-              style={styles.chatArea}
-            >
-              {selectedDiscussion ? (
-                <>
-                  <div 
-                    style={styles.chatHeader}
-                  >
-                    <div style={styles.chatHeaderContent}>
-                      <h1 
-                        style={styles.chatHeaderTitle}
-                      >
-                        {selectedDiscussion.title}
-                      </h1>
-                      <div 
-                        style={styles.chatHeaderMeta}
-                      >
-                        Por {selectedDiscussion.author_username} • {formatDate(selectedDiscussion.created_at)}
-                      </div>
-                      <div 
-                        style={styles.chatHeaderDescription}
-                      >
-                        {selectedDiscussion.description}
-                      </div>
-                    </div>
-                    
-                    <div style={styles.chatHeaderActions}>
-                      {user && selectedDiscussion.author_id === Number(user.id) && (
-                        <button
-                          style={{ ...styles.actionButton, ...styles.deleteButton }}
-                          onClick={() => handleDeleteDiscussion(selectedDiscussion.id)}
-                          className={`action-button delete-btn`}
-                          title="Apagar discussão"
-                        >
-                          <DeleteIcon />
-                        </button>
-                      )}
-                      <button
-                        style={{ ...styles.actionButton, ...styles.closeButton }}
-                        onClick={closeDiscussion}
-                        className={`action-button close-btn`}
-                        title="Fechar"
-                      >
-                        <CloseIcon />
-                      </button>
-                    </div>
-                  </div>
-
-                  <div 
-                    style={styles.messagesArea}
-                  >
-                    {comments.length === 0 ? (
-                      <div style={styles.emptyState}>
-                        <div style={styles.emptyStateIcon}>💬</div>
-                        <div style={styles.emptyStateText}>Nenhum comentário ainda</div>
-                        <div style={styles.emptyStateSubtext}>Seja o primeiro a comentar!</div>
-                      </div>
-                    ) : (
-                      <>
-                        {comments.map((comment) => {
-                          const isCurrentUser = user && comment.author_id === Number(user.id);
-                          return (
-                            <div 
-                              key={comment.id} 
-                              style={isCurrentUser ? styles.messageUser : styles.messageOther}
-                            >
-                              <div style={styles.messageHeader}>
-                                <span style={isCurrentUser ? styles.messageAuthorUser : styles.messageAuthor}>{comment.author_username}</span>
-                                <span style={styles.messageTime}>{formatChatTime(comment.created_at)}</span>
-                              </div>
-                              <div style={styles.messageContent}>{comment.content}</div>
-                            </div>
-                          );
-                        })}
-                        <div ref={messagesEndRef} />
-                      </>
-                    )}
-                  </div>
-
-                  <div style={styles.chatInputArea}>
-                    <div style={styles.chatInputContainer}>
-                      <input
-                        ref={chatInputRef}
-                        type="text"
-                        placeholder="Escreva uma mensagem..."
-                        value={newComment}
-                        onChange={(e) => setNewComment(e.target.value)}
-                        onKeyPress={handleKeyPress}
-                        style={styles.chatInput}
-                        disabled={submitting}
-                      />
-                      <button
-                        onClick={() => handleSendMessage()}
-                        style={styles.sendButton}
-                        className="send-btn"
-                        disabled={submitting || !newComment.trim()}
-                      >
-                        {submitting ? (
-                          <div className="spinner small"></div>
-                        ) : (
-                          <SendIcon />
-                        )}
-                      </button>
-                    </div>
-                  </div>
-                </>
-              ) : (
-                <div style={styles.emptyState}>
-                  <div style={styles.emptyStateIcon}>💭</div>
-                  <div style={styles.emptyStateText}>Selecione uma discussão</div>
-                  <div style={styles.emptyStateSubtext}>Escolha uma discussão para começar a conversar</div>
-                </div>
-              )}
-            </div>
-          </div>
         </>
       )}
 
