@@ -216,8 +216,11 @@ export const getPlayerImage = async (req: Request, res: Response, next: NextFunc
     console.log(`🖼️ Request origin: ${req.headers.origin}`);
     console.log(`🖼️ Request referer: ${req.headers.referer}`);
     
-    // Set CORS headers early
+    // Set CORS and CORP headers early
     res.header('Access-Control-Allow-Origin', '*');
+    // Allow browsers to embed this image from any origin (needed because the site and API run on different sub-domains)
+    res.header('Cross-Origin-Resource-Policy', 'cross-origin');
+    res.header('Cross-Origin-Embedder-Policy', 'unsafe-none');
     res.header('Access-Control-Allow-Methods', 'GET');
     res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
     
