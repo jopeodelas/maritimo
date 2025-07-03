@@ -70,31 +70,21 @@ const OptimizedImage = ({
 
   const sizesAttr = width ? (typeof width === 'number' ? `${width}px` : width.toString()) : undefined;
 
-  const isRaster = /\.(png|jpe?g)$/i.test(imageSrc);
-
   return (
-    <picture>
-      {isRaster && (
-        <>
-          <source srcSet={imageSrc.replace(/\.(png|jpe?g)$/i, '.avif')} type="image/avif" />
-          <source srcSet={imageSrc.replace(/\.(png|jpe?g)$/i, '.webp')} type="image/webp" />
-        </>
-      )}
-      <img
-        ref={imgRef}
-        src={imageSrc}
-        alt={alt}
-        width={width}
-        height={height}
-        sizes={sizesAttr}
-        style={imageStyle}
-        className={className}
-        loading={loading}
-        onLoad={handleLoad}
-        onError={handleError}
-        decoding="async"
-      />
-    </picture>
+    <img
+      ref={imgRef}
+      src={imageSrc}
+      alt={alt}
+      width={width}
+      height={height}
+      sizes={sizesAttr}
+      style={imageStyle}
+      className={className}
+      loading={loading}
+      onLoad={handleLoad}
+      onError={handleError}
+      decoding="async"
+    />
   );
 };
 
