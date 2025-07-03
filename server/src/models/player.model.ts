@@ -24,24 +24,51 @@ export class PlayerModel {
     try {
       console.log('Attempting to fetch players from database...');
       
-      // Get players with vote counts - exclude BYTEA data for performance
-      // Generate dynamic image_url for players with BYTEA data
-      const playersResult = await db.query(`
-        SELECT p.id, p.name, p.position, 
-               CASE 
-                 WHEN p.image_data IS NOT NULL 
-                 THEN CONCAT('/api/players/', p.id, '/image?v=', EXTRACT(EPOCH FROM p.created_at))
-                 WHEN p.image_url IS NOT NULL
-                 THEN p.image_url
-                 ELSE NULL
-               END AS image_url,
-               p.image_mime, p.created_at, COUNT(v.id) as vote_count
-        FROM players p
-        LEFT JOIN votes v ON p.id = v.player_id
-        GROUP BY p.id, p.name, p.position, p.image_url, p.image_mime, p.created_at, p.image_data
-        ORDER BY vote_count DESC
+      // First, check if image_data column exists
+      const columnCheckResult = await db.query(`
+        SELECT column_name
+        FROM information_schema.columns
+        WHERE table_schema = 'public' 
+          AND table_name = 'players'
+          AND column_name = 'image_data'
       `);
-
+      
+      const hasImageDataColumn = columnCheckResult.rows.length > 0;
+      console.log('Has image_data column:', hasImageDataColumn);
+      
+      let playersQuery: string;
+      
+      if (hasImageDataColumn) {
+        // Modern query with image_data column
+        playersQuery = `
+          SELECT p.id, p.name, p.position, 
+                 CASE 
+                   WHEN p.image_data IS NOT NULL 
+                   THEN CONCAT('/api/players/', p.id, '/image?v=', EXTRACT(EPOCH FROM p.created_at))
+                   WHEN p.image_url IS NOT NULL
+                   THEN p.image_url
+                   ELSE NULL
+                 END AS image_url,
+                 p.image_mime, p.created_at, COUNT(v.id) as vote_count
+          FROM players p
+          LEFT JOIN votes v ON p.id = v.player_id
+          GROUP BY p.id, p.name, p.position, p.image_url, p.image_mime, p.created_at, p.image_data
+          ORDER BY vote_count DESC
+        `;
+      } else {
+        // Legacy query without image_data column
+        playersQuery = `
+          SELECT p.id, p.name, p.position, 
+                 p.image_url,
+                 NULL as image_mime, p.created_at, COUNT(v.id) as vote_count
+          FROM players p
+          LEFT JOIN votes v ON p.id = v.player_id
+          GROUP BY p.id, p.name, p.position, p.image_url, p.created_at
+          ORDER BY vote_count DESC
+        `;
+      }
+      
+      const playersResult = await db.query(playersQuery);
       console.log('Players query result:', playersResult.rows);
 
       // Get total unique voters
@@ -93,10 +120,21 @@ export class PlayerModel {
       
       const { name, position, image_url, image_data, image_mime } = player;
       
+      // Check if image_data column exists
+      const columnCheckResult = await db.query(`
+        SELECT column_name
+        FROM information_schema.columns
+        WHERE table_schema = 'public' 
+          AND table_name = 'players'
+          AND column_name = 'image_data'
+      `);
+      
+      const hasImageDataColumn = columnCheckResult.rows.length > 0;
+      
       let query: string;
       let values: any[];
       
-      if (image_data && image_mime) {
+      if (hasImageDataColumn && image_data && image_mime) {
         // Store image in database as BYTEA
         query = 'INSERT INTO players (name, position, image_data, image_mime) VALUES ($1, $2, $3, $4) RETURNING *';
         values = [name, position, image_data, image_mime];
@@ -128,10 +166,21 @@ export class PlayerModel {
     try {
       const { name, position, image_url, image_data, image_mime } = player;
       
+      // Check if image_data column exists
+      const columnCheckResult = await db.query(`
+        SELECT column_name
+        FROM information_schema.columns
+        WHERE table_schema = 'public' 
+          AND table_name = 'players'
+          AND column_name = 'image_data'
+      `);
+      
+      const hasImageDataColumn = columnCheckResult.rows.length > 0;
+      
       let query: string;
       let values: any[];
       
-      if (image_data && image_mime) {
+      if (hasImageDataColumn && image_data && image_mime) {
         // Update with new image in database as BYTEA
         query = 'UPDATE players SET name = COALESCE($1, name), position = COALESCE($2, position), image_data = $3, image_mime = $4 WHERE id = $5 RETURNING *';
         values = [name, position, image_data, image_mime, id];
