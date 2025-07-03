@@ -83,7 +83,7 @@ const Navbar = () => {
     },
     navLinks: {
       display: 'flex',
-      gap: '0.8vw',
+      gap: '0.6vw',
       alignItems: 'center',
       flex: '1 1 auto',
       justifyContent: 'center',
@@ -94,7 +94,7 @@ const Navbar = () => {
       color: 'white',
       textDecoration: 'none',
       fontSize: '1vw',
-      fontWeight: '600',
+      fontWeight: '500',
       padding: '0.8vh 1.2vw',
       borderRadius: '0.4vw',
       transition: 'all 0.3s ease',
@@ -121,7 +121,7 @@ const Navbar = () => {
       padding: '0.8vh 1.2vw',
       borderRadius: '0.4vw',
       fontSize: '1vw',
-      fontWeight: '800',
+      fontWeight: '700',
       cursor: 'pointer',
       transition: 'all 0.3s ease',
       textShadow: '0.05vh 0.05vh 0.2vh rgba(0, 0, 0, 0.3)',
@@ -220,6 +220,15 @@ const Navbar = () => {
             aria-label="Ir para página de história"
           >
             História
+          </Link>
+          <Link
+            to="/maritodle"
+            style={styles.navLink}
+            className="hover-nav-link"
+            role="menuitem"
+            aria-label="Ir para página do Maritodle"
+          >
+            Maritodle
           </Link>
           <Link
             to="/chat"
