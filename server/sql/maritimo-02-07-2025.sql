@@ -24,12 +24,12 @@ SET row_security = off;
 -- Name: maritimo_voting; Type: DATABASE; Schema: -; Owner: postgres
 --
 
-CREATE DATABASE maritimo_voting WITH TEMPLATE = template0 ENCODING = 'UTF8' LOCALE_PROVIDER = libc LOCALE = 'en_US.UTF-8';
+-- CREATE DATABASE maritimo_voting WITH TEMPLATE = template0 ENCODING = 'UTF8' LOCALE_PROVIDER = libc LOCALE = 'en_US.UTF-8';
 
 
-ALTER DATABASE maritimo_voting OWNER TO postgres;
+-- ALTER DATABASE maritimo_voting OWNER TO postgres;
 
-\connect maritimo_voting
+-- \connect maritimo_voting
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;

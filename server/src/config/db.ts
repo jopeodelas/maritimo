@@ -19,6 +19,8 @@ const createPool = () => new Pool({
   min: 1,                     // Keep at least 1 connection warm
   idleTimeoutMillis: 30000,   // Close idle connections after 30s
   connectionTimeoutMillis: 10000, // Timeout connection attempts after 10s
+  // Fix schema issues for Supabase
+  options: '-c search_path=public,pg_catalog',
 });
 
 // Use global pool in production to persist across serverless invocations
