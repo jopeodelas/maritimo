@@ -243,7 +243,6 @@ const Squad = () => {
       display: "flex",
       flexDirection: "column",
       justifyContent: "space-between", // Apenas para desktop
-      backdropFilter: "blur(5px)",
       contain: "paint",
     },
     playerCardGlow: {
