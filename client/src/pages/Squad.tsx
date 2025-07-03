@@ -326,6 +326,53 @@ const Squad = () => {
       padding: "8vh 4%",
       fontStyle: "italic",
     },
+
+    // Estilos para mobile
+    mobilePlayerCard: {
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      gap: '0.5rem',
+      width: '100%',
+      maxWidth: '100%',
+      boxSizing: 'border-box',
+      background: "rgba(30, 40, 50, 0.8)",
+      border: "1px solid rgba(76, 175, 80, 0.4)",
+      borderRadius: "12px",
+      padding: "0.5rem",
+      boxShadow: "0 2px 8px rgba(0, 0, 0, 0.3)",
+      backdropFilter: "blur(5px)",
+    },
+    mobileImageContainer: {
+      position: "relative",
+      width: "100%",
+      aspectRatio: "1",
+      borderRadius: "8px",
+      overflow: "hidden",
+      backgroundColor: "rgba(20, 30, 40, 0.8)",
+    },
+    mobilePlayerImage: {
+      width: "100%",
+      height: "100%",
+      objectFit: "cover",
+      objectPosition: "top center", // Cabeça sempre visível
+      borderRadius: "8px",
+    },
+    mobilePlayerName: {
+      fontSize: "clamp(0.8rem, 3.5vw, 1rem)",
+      fontWeight: "700",
+      margin: "0",
+      color: "#FFFFFF",
+      lineHeight: "1.2",
+      textAlign: "center",
+      textShadow: "2px 2px 4px rgba(0, 0, 0, 0.9)",
+      wordBreak: "break-word",
+      hyphens: "auto",
+      background: "transparent",
+      padding: "0.25rem 0.5rem",
+      maxWidth: '100%',
+      boxSizing: 'border-box',
+    },
   });
 
   useEffect(() => {
@@ -450,50 +497,15 @@ const Squad = () => {
 
   const renderPlayerCard = (player: Player) => {
     if (isMobile) {
-      // Layout simplificado para mobile
+      // Layout melhorado para mobile com container global
       return (
-        <div key={player.id} style={{
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          gap: '0.5rem',
-          width: '100%',
-          maxWidth: '100%',
-          boxSizing: 'border-box'
-        }}>
+        <div key={player.id} style={styles.mobilePlayerCard}>
           {/* Container da imagem */}
-          <div 
-            style={{
-              background: "rgba(30, 40, 50, 0.8)",
-              border: "1px solid rgba(76, 175, 80, 0.4)",
-              borderRadius: "12px",
-              padding: "0.5rem",
-              textAlign: "center",
-              color: "white",
-              boxShadow: "0 2px 8px rgba(0, 0, 0, 0.3)",
-              transition: "all 0.2s ease",
-              position: "relative",
-              overflow: "hidden",
-              width: "100%",
-              aspectRatio: "1",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              backdropFilter: "blur(5px)",
-              maxWidth: '100%',
-              boxSizing: 'border-box'
-            }}
-          >
+          <div style={styles.mobileImageContainer}>
             <PlayerImage 
               imageUrl={player.image_url}
               playerName={player.name}
-              style={{
-                width: "100%",
-                height: "100%",
-                objectFit: "cover",
-                objectPosition: "center top",
-                borderRadius: "8px"
-              }}
+              style={styles.mobilePlayerImage}
               loading="lazy"
               width="200"
               height="200"
@@ -501,56 +513,20 @@ const Squad = () => {
             />
           </div>
           
-          {/* Nome fora do container - sem fundo preto */}
-          <h3 
-            style={{
-              fontSize: "clamp(0.8rem, 3.5vw, 1rem)",
-              fontWeight: "700",
-              margin: "0",
-              color: "#FFFFFF",
-              lineHeight: "1.2",
-              textAlign: "center",
-              textShadow: "2px 2px 4px rgba(0, 0, 0, 0.9)",
-              wordBreak: "break-word",
-              hyphens: "auto",
-              background: "transparent",
-              padding: "0.25rem 0.5rem",
-              maxWidth: '100%',
-              boxSizing: 'border-box'
-            }}
-          >
+          {/* Nome do jogador */}
+          <h3 style={styles.mobilePlayerName}>
             {player.name}
           </h3>
         </div>
       );
     }
 
-    // Layout original para desktop
+    // Layout original para desktop com hover CSS puro
     return (
       <div 
         key={player.id} 
         style={styles.playerCard}
-        className="hover-player-card"
-        onMouseEnter={(e) => {
-          const card = e.currentTarget;
-          card.style.transform = 'translateY(-1vh) scale(1.02)';
-          card.style.boxShadow = '0 6px 20px rgba(76, 175, 80, 0.4)';
-          card.style.borderColor = 'rgba(76, 175, 80, 1)';
-          const glow = card.querySelector('.player-glow') as HTMLElement;
-          if (glow) glow.style.opacity = '1';
-          const image = card.querySelector('img') as HTMLElement;
-          if (image) image.style.transform = 'scale(1.05)';
-        }}
-        onMouseLeave={(e) => {
-          const card = e.currentTarget;
-          card.style.transform = 'translateY(0) scale(1)';
-          card.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.4)';
-          card.style.borderColor = 'rgba(76, 175, 80, 0.6)';
-          const glow = card.querySelector('.player-glow') as HTMLElement;
-          if (glow) glow.style.opacity = '0';
-          const image = card.querySelector('img') as HTMLElement;
-          if (image) image.style.transform = 'scale(1)';
-        }}
+        className="player-card-hover"
       >
         <div style={styles.playerCardGlow} className="player-glow"></div>
         
@@ -652,18 +628,9 @@ const Squad = () => {
                   ...styles.navButton,
                   ...(isAnimating ? { opacity: 0.5, cursor: 'not-allowed' } : {})
                 }}
+                className="nav-button-hover"
                 onClick={() => navigatePosition('prev')}
                 disabled={isAnimating}
-                onMouseEnter={(e) => {
-                  if (!isAnimating) {
-                    e.currentTarget.style.transform = 'scale(1.1)';
-                    e.currentTarget.style.boxShadow = '0 1.2vh 3vh rgba(76, 175, 80, 0.4)';
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = 'scale(1)';
-                  e.currentTarget.style.boxShadow = '0 0.5vh 1.5vh rgba(0, 0, 0, 0.3)';
-                }}
               >
                 ←
               </button>
@@ -672,18 +639,9 @@ const Squad = () => {
                   ...styles.navButton,
                   ...(isAnimating ? { opacity: 0.5, cursor: 'not-allowed' } : {})
                 }}
+                className="nav-button-hover"
                 onClick={() => navigatePosition('next')}
                 disabled={isAnimating}
-                onMouseEnter={(e) => {
-                  if (!isAnimating) {
-                    e.currentTarget.style.transform = 'scale(1.1)';
-                    e.currentTarget.style.boxShadow = '0 1.2vh 3vh rgba(76, 175, 80, 0.4)';
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = 'scale(1)';
-                  e.currentTarget.style.boxShadow = '0 0.5vh 1.5vh rgba(0, 0, 0, 0.3)';
-                }}
               >
                 →
               </button>
@@ -709,6 +667,64 @@ const Squad = () => {
         </div>
       </div>
     </div>
+
+    {/* CSS otimizado para performance */}
+    <style>{`
+      /* Keyframes otimizado para performance */
+      @keyframes float {
+        0%, 100% { 
+          transform: translate3d(0, 0, 0); 
+        }
+        50% { 
+          transform: translate3d(0, -10px, 0); 
+        }
+      }
+
+      .player-card-hover {
+        transition: all 0.2s ease !important;
+        will-change: transform;
+      }
+
+      .player-card-hover:hover {
+        transform: translateY(-1vh) scale(1.02) !important;
+        box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4) !important;
+        border-color: rgba(76, 175, 80, 1) !important;
+      }
+
+      .player-card-hover:hover .player-glow {
+        opacity: 1 !important;
+      }
+
+      .player-card-hover:hover img {
+        transform: scale(1.05) !important;
+        transition: transform 0.2s ease !important;
+      }
+
+      .nav-button-hover:not(:disabled):hover {
+        transform: scale(1.1) !important;
+        box-shadow: 0 1.2vh 3vh rgba(76, 175, 80, 0.4) !important;
+      }
+
+      .nav-button-hover {
+        transition: all 0.3s ease !important;
+        will-change: transform;
+      }
+
+      /* Otimização global para performance */
+      .background-pattern {
+        will-change: transform;
+        backface-visibility: hidden;
+        -webkit-backface-visibility: hidden;
+      }
+
+      /* Limitar repaints apenas em hover */
+      .player-card-hover,
+      .nav-button-hover {
+        transform: translateZ(0);
+        backface-visibility: hidden;
+        -webkit-backface-visibility: hidden;
+      }
+    `}</style>
     </PageLayout>
   );
 };

@@ -848,7 +848,7 @@ const ChatPage = () => {
   });
 
   return (
-    <>
+    <PageLayout>
       {/* Navbar mobile para a segunda página (chat) */}
       {isMobile && isDrawerOpen && (
         <>
@@ -862,7 +862,7 @@ const ChatPage = () => {
       
       {/* Layout original - primeira página (lista de discussões) */}
       {!isDrawerOpen && (
-    <PageLayout>
+        <>
       <div style={styles.container}>
         <div style={styles.backgroundPattern}></div>
         
@@ -1016,8 +1016,8 @@ const ChatPage = () => {
           color: #64748b !important;
         }
       `}</style>
-    </PageLayout>
-  )}
+        </>
+      )}
 
       {/* Create Discussion Modal */}
       {showCreateForm && (
@@ -1388,7 +1388,7 @@ const ChatPage = () => {
           color: #64748b !important;
         }
       `}</style>
-    </>
+    </PageLayout>
   );
 };
 
