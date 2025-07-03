@@ -29,12 +29,12 @@ const HomePage = () => {
         <div className="homepage-triangle"></div>
       </div>
       
-      <h1 className={`homepage-title ${isMobile ? "mobile-homepage-title" : ""}`}>
-        made by fans for fans
+      <h1 className={`homepage-title ${isMobile ? "mobile-homepage-title" : ""}`}> 
+        Marítimo Fans – Feito por adeptos para adeptos
       </h1>
       
-      <div className={`homepage-hover-me ${isMobile ? "mobile-homepage-hover-me" : ""}`}>
-        HOVER ME
+      <div className={`homepage-hover-me ${isMobile ? "mobile-homepage-hover-me" : ""}`}> 
+        Votações • Notícias • Chat
       </div>
       
       <div className="homepage-content">
