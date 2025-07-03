@@ -1001,11 +1001,12 @@ button.action-button,
   position: relative !important;
 }
 
+/* Icons: use stroke only (avoid unwanted fill) and scale responsively */
 button.action-button svg,
 .action-button svg {
-  width: 18px !important;
-  height: 18px !important;
-  fill: currentColor !important;
+  width: 20px !important;
+  height: 20px !important;
+  fill: none !important;          /* mantemos apenas traço */
   stroke: currentColor !important;
   display: block !important;
   opacity: 1 !important;
@@ -1029,9 +1030,11 @@ button.action-button svg,
     opacity: 1 !important;
     visibility: visible !important;
     display: block !important;
+    width: 24px !important;   /* ícones ligeiramente maiores em ecrã grande */
+    height: 24px !important;
   }
   
-  /* Botão de deletar - cor vermelha */
+  /* Botão de deletar - cor vermelha (traço) */
   button.delete-btn,
   .delete-btn {
     color: #ef4444 !important;
@@ -1039,12 +1042,11 @@ button.action-button svg,
   
   button.delete-btn svg,
   .delete-btn svg {
-    fill: #ef4444 !important;
     stroke: #ef4444 !important;
     color: #ef4444 !important;
   }
   
-  /* Botão de fechar - cor cinza */
+  /* Botão de fechar - cor cinza (traço) */
   button.close-btn,
   .close-btn {
     color: #9ca3af !important;
@@ -1052,7 +1054,6 @@ button.action-button svg,
   
   button.close-btn svg,
   .close-btn svg {
-    fill: #9ca3af !important;
     stroke: #9ca3af !important;
     color: #9ca3af !important;
   }

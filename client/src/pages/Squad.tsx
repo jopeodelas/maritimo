@@ -235,7 +235,7 @@ const Squad = () => {
       textAlign: "center",
       color: "white",
       boxShadow: "0 4px 12px rgba(0, 0, 0, 0.4)", // Apenas para desktop
-      transition: "all 0.2s ease",
+      transition: "transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease !important",
       cursor: "pointer",
       position: "relative",
       overflow: "hidden",
@@ -244,6 +244,7 @@ const Squad = () => {
       flexDirection: "column",
       justifyContent: "space-between", // Apenas para desktop
       backdropFilter: "blur(5px)",
+      contain: "paint",
     },
     playerCardGlow: {
       position: "absolute",
@@ -681,11 +682,12 @@ const Squad = () => {
       }
 
       .player-card-hover {
-        transition: all 0.2s ease !important;
-        will-change: transform;
+        /* Mantemos apenas as transições estritamente necessárias */
+        transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease !important;
       }
 
       .player-card-hover:hover {
+        will-change: transform, box-shadow;
         transform: translateY(-1vh) scale(1.02) !important;
         box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4) !important;
         border-color: rgba(76, 175, 80, 1) !important;
@@ -701,13 +703,13 @@ const Squad = () => {
       }
 
       .nav-button-hover:not(:disabled):hover {
+        will-change: transform, box-shadow;
         transform: scale(1.1) !important;
         box-shadow: 0 1.2vh 3vh rgba(76, 175, 80, 0.4) !important;
       }
 
       .nav-button-hover {
-        transition: all 0.3s ease !important;
-        will-change: transform;
+        transition: transform 0.3s ease, box-shadow 0.3s ease !important;
       }
 
       /* Otimização global para performance */
