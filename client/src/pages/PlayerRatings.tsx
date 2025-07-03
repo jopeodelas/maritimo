@@ -929,11 +929,12 @@ const PlayerRatings = () => {
             })}
           </p>
           
-          <div style={styles.rulesBox}>
-            Avalia a prestação dos jogadores do CS Marítimo no seu ultimo jogo, onde 6 representa mediano! Vota tambem no teu Homem do jogo!
-          </div>
-          
-          {!hasVoted && (
+          {/* Mostrar instruções resumidas APÓS votar e instruções completas ANTES de votar */}
+          {hasVoted ? (
+            <div style={styles.rulesBox}>
+              Avalia a prestação dos jogadores do CS Marítimo no seu último jogo!
+            </div>
+          ) : (
             <div style={styles.rulesBox}>
               <strong>COMO AVALIAR:</strong> Dê uma nota de 1 a 10 a cada jogador neste jogo onde 6 é neutro. 
               Escolha também o seu Homem do Jogo (estrela dourada) para submeter o seu voto.
