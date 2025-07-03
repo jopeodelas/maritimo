@@ -20,6 +20,7 @@ export interface TransferRumor {
   duplicateSignature?: string;
   // New field for coach specific info
   position?: string; // For coaches: 'treinador principal', 'adjunto', etc.
+  isApproved?: boolean;
 }
 
 export interface TransferStats {
@@ -1193,7 +1194,8 @@ class TransferService {
       description: dbRumor.description,
       isMainTeam: dbRumor.is_main_team,
       category: dbRumor.category as any,
-      position: dbRumor.position
+      position: dbRumor.position,
+      isApproved: dbRumor.is_approved,
     };
   }
 

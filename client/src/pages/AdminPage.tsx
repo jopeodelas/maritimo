@@ -50,6 +50,7 @@ interface TransferRumor {
   isMainTeam?: boolean;
   category?: string;
   position?: string;
+  isApproved?: boolean;
 }
 
 type TabType = 'polls' | 'users' | 'banned' | 'players' | 'rumors';
@@ -1056,7 +1057,7 @@ const AdminPage = () => {
                           >
                             Editar
                           </button>
-                          {rumor.status !== 'confirmado' && (
+                          {!rumor.isApproved && (
                             <button 
                               style={{...styles.button, ...styles.successButton, fontSize: '0.8rem', padding: '0.5rem'}}
                               onClick={() => approveRumor(rumor.id, rumor)}

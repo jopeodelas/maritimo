@@ -241,14 +241,17 @@ export const getPlayerImage = async (req: Request, res: Response, next: NextFunc
     }
     
     // Set appropriate headers for image serving
-    res.setHeader('Content-Type', player.image_mime || 'image/jpeg');
+    const mime = player.image_mime || 'image/png';
+    res.setHeader('Content-Type', mime);
     res.setHeader('Cache-Control', 'public, max-age=86400'); // 24 hours cache
     res.setHeader('Content-Length', player.image_data.length);
+    res.setHeader('Content-Disposition', 'inline');
     
     console.log(`✅ Serving image for player ${id} (${player.image_mime}, ${player.image_data.length} bytes)`);
     console.timeEnd('getPlayerImage');
     
-    return res.send(player.image_data);
+    // Send binary data explicitly
+    return res.end(player.image_data, 'binary');
   } catch (error) {
     console.error('❌ Error serving player image:', error);
     console.timeEnd('getPlayerImage');

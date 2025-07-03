@@ -15,6 +15,7 @@ export interface TransferRumor {
   isMainTeam?: boolean;
   category?: 'senior' | 'youth' | 'staff' | 'coach' | 'other';
   position?: string;
+  isApproved?: boolean;
 }
 
 export interface TransferStats {

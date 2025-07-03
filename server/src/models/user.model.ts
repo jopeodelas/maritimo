@@ -139,10 +139,20 @@ export class UserModel {
 
   static async findBannedUsers(): Promise<User[]> {
     try {
-      const result = await db.query(
-        'SELECT id, username, email, is_admin, is_banned, created_at FROM users WHERE is_banned = true ORDER BY created_at DESC'
-      );
-      return result.rows;
+      // Attempt query assuming column exists
+      try {
+        const result = await db.query(
+          'SELECT id, username, email, is_admin, is_banned, created_at FROM users WHERE is_banned = true ORDER BY created_at DESC'
+        );
+        return result.rows;
+      } catch (columnError: any) {
+        // If column does not exist, return empty list gracefully
+        if (columnError.message && columnError.message.includes('is_banned')) {
+          console.warn('is_banned column not found when fetching banned users – returning empty array');
+          return [];
+        }
+        throw columnError;
+      }
     } catch (error) {
       throw error;
     }
@@ -155,7 +165,18 @@ export class UserModel {
         [userId]
       );
       return result.rows.length > 0;
-    } catch (error) {
+    } catch (error: any) {
+      // Handle missing column error by creating the column on-the-fly, then retry once
+      if (error.message && error.message.includes('is_banned')) {
+        console.warn('Column is_banned missing, attempting to add column...');
+        await db.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS is_banned BOOLEAN NOT NULL DEFAULT FALSE');
+        // Retry update once more after adding the column
+        const retryResult = await db.query(
+          'UPDATE users SET is_banned = true WHERE id = $1 AND is_admin = false RETURNING *',
+          [userId]
+        );
+        return retryResult.rows.length > 0;
+      }
       throw error;
     }
   }
@@ -167,7 +188,18 @@ export class UserModel {
         [userId]
       );
       return result.rows.length > 0;
-    } catch (error) {
+    } catch (error: any) {
+      // Handle missing column error by creating the column on-the-fly, then retry once
+      if (error.message && error.message.includes('is_banned')) {
+        console.warn('Column is_banned missing, attempting to add column...');
+        await db.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS is_banned BOOLEAN NOT NULL DEFAULT FALSE');
+        // Retry update once more after adding the column
+        const retryResult = await db.query(
+          'UPDATE users SET is_banned = false WHERE id = $1 RETURNING *',
+          [userId]
+        );
+        return retryResult.rows.length > 0;
+      }
       throw error;
     }
   }
