@@ -201,10 +201,10 @@ const Squad = () => {
     playersGrid: {
       display: "grid",
       gridTemplateColumns: isMobile 
-        ? "repeat(auto-fit, minmax(140px, 1fr))" // Mobile: 2-3 colunas responsivas
+        ? "repeat(2, 1fr)" // Mobile: exatamente 2 colunas
         : "repeat(var(--grid-columns, 3), 1fr)", // Desktop: será definido no JSX
       gridAutoRows: "1fr",
-      gap: isMobile ? "1rem" : "2%",
+      gap: isMobile ? "1.5rem" : "2%",
       padding: isMobile ? "1rem" : "2%",
       height: isMobile ? "auto" : "70vh",
       opacity: 1,
@@ -219,19 +219,13 @@ const Squad = () => {
       transform: "translateX(2%)",
     },
     playerCard: {
-      background: isMobile 
-        ? "rgba(30, 40, 50, 0.8)" // Mobile: fundo semi-transparente 
-        : "rgba(40, 55, 70, 0.95)", // Desktop mantém
-      border: isMobile 
-        ? "1px solid rgba(76, 175, 80, 0.4)" // Mobile: borda mais sutil
-        : "2px solid rgba(76, 175, 80, 0.6)", // Desktop mantém
+      background: "rgba(40, 55, 70, 0.95)", // Apenas para desktop
+      border: "2px solid rgba(76, 175, 80, 0.6)", // Apenas para desktop
       borderRadius: "8px",
-      padding: isMobile ? "0.75rem" : "3%", // Mobile: padding menor mas presente
+      padding: "3%", // Apenas para desktop
       textAlign: "center",
       color: "white",
-      boxShadow: isMobile 
-        ? "0 2px 8px rgba(0, 0, 0, 0.3)" // Mobile: sombra mais sutil
-        : "0 4px 12px rgba(0, 0, 0, 0.4)", // Desktop mantém
+      boxShadow: "0 4px 12px rgba(0, 0, 0, 0.4)", // Apenas para desktop
       transition: "all 0.2s ease",
       cursor: "pointer",
       position: "relative",
@@ -239,8 +233,8 @@ const Squad = () => {
       height: "100%",
       display: "flex",
       flexDirection: "column",
-      justifyContent: isMobile ? "center" : "space-between", // Mobile: centralizado
-      backdropFilter: "blur(5px)", // Adiciona blur para melhor visibilidade
+      justifyContent: "space-between", // Apenas para desktop
+      backdropFilter: "blur(5px)",
     },
     playerCardGlow: {
       position: "absolute",
@@ -258,11 +252,11 @@ const Squad = () => {
       position: "relative",
       width: "100%",
       height: "0",
-      marginBottom: isMobile ? "0.5rem" : "3%",
+      marginBottom: "3%", // Apenas para desktop
       borderRadius: "6px",
       overflow: "hidden",
-      border: isMobile ? "none" : "2px solid rgba(76, 175, 80, 0.6)",
-      background: isMobile ? "transparent" : "rgba(20, 30, 40, 0.8)",
+      border: "2px solid rgba(76, 175, 80, 0.6)", // Apenas para desktop
+      background: "rgba(20, 30, 40, 0.8)", // Apenas para desktop
     },
     playerImage: {
       position: "absolute",
@@ -275,24 +269,24 @@ const Squad = () => {
       transition: "transform 0.2s ease",
     },
     playerName: {
-      fontSize: isMobile ? "clamp(0.9rem, 4vw, 1.1rem)" : "clamp(0.8rem, 1.5vh, 1.1rem)",
+      fontSize: "clamp(0.8rem, 1.5vh, 1.1rem)", // Apenas para desktop
       fontWeight: "700",
-      margin: isMobile ? "0.5rem 0 0 0" : "0",
+      margin: "0", // Apenas para desktop
       color: "#FFFFFF",
       lineHeight: "1.2",
       textAlign: "center",
       padding: "0",
       background: "transparent",
-      textShadow: isMobile ? "1px 1px 3px rgba(0, 0, 0, 0.8)" : "none",
+      textShadow: "none", // Apenas para desktop
     },
     playerPosition: {
-      fontSize: "clamp(0.7rem, 1.2vh, 0.9rem)",
+      fontSize: "clamp(0.7rem, 1.2vh, 0.9rem)", // Apenas para desktop
       fontWeight: "600",
-      margin: isMobile ? "0.25rem 0 0 0" : "0.25rem 0 0 0",
+      margin: "0.25rem 0 0 0", // Apenas para desktop
       color: "#4CAF50",
       lineHeight: "1.1",
       textAlign: "center",
-      padding: isMobile ? "0 0.5rem" : "0 2%",
+      padding: "0 2%", // Apenas para desktop
     },
 
     loading: {
@@ -414,8 +408,8 @@ const Squad = () => {
   // Calcular altura da imagem baseada no número de jogadores
   const getImagePadding = (playerCount: number): string => {
     if (isMobile) {
-      // Mobile: proporção mais retangular para mostrar melhor os jogadores
-      return "120%";
+      // Mobile: não precisa mais desta função pois usa aspectRatio: "1"
+      return "100%";
     }
     
     // Desktop: lógica original
@@ -445,13 +439,84 @@ const Squad = () => {
     }, 250);
   };
 
-  const renderPlayerCard = (player: Player) => (
-    <div 
-      key={player.id} 
-      style={styles.playerCard}
-      className={isMobile ? "mobile-squad-player-card hover-player-card" : "hover-player-card"}
-      onMouseEnter={(e) => {
-        if (!isMobile) {
+  const renderPlayerCard = (player: Player) => {
+    if (isMobile) {
+      // Layout especial para mobile - nome fora do container
+      return (
+        <div key={player.id} style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          gap: '0.5rem'
+        }}>
+          {/* Container da imagem sem o nome */}
+          <div 
+            style={{
+              background: "rgba(30, 40, 50, 0.8)",
+              border: "1px solid rgba(76, 175, 80, 0.4)",
+              borderRadius: "8px",
+              padding: "0.75rem",
+              textAlign: "center",
+              color: "white",
+              boxShadow: "0 2px 8px rgba(0, 0, 0, 0.3)",
+              transition: "all 0.2s ease",
+              position: "relative",
+              overflow: "hidden",
+              width: "100%",
+              aspectRatio: "1",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              backdropFilter: "blur(5px)"
+            }}
+            className="mobile-squad-player-card"
+          >
+            <PlayerImage 
+              imageUrl={player.image_url}
+              playerName={player.name}
+              style={{
+                width: "100%",
+                height: "100%",
+                objectFit: "cover",
+                objectPosition: "center top",
+                borderRadius: "4px"
+              }}
+              className="mobile-squad-player-image"
+              loading="lazy"
+              width="200"
+              height="200"
+              showFallbackText={true}
+            />
+          </div>
+          
+          {/* Nome fora do container */}
+          <h3 
+            style={{
+              fontSize: "clamp(0.8rem, 3.5vw, 1rem)",
+              fontWeight: "700",
+              margin: "0",
+              color: "#FFFFFF",
+              lineHeight: "1.2",
+              textAlign: "center",
+              textShadow: "1px 1px 3px rgba(0, 0, 0, 0.8)",
+              wordBreak: "break-word",
+              hyphens: "auto"
+            }}
+            className="mobile-squad-player-name"
+          >
+            {player.name}
+          </h3>
+        </div>
+      );
+    }
+
+    // Layout original para desktop
+    return (
+      <div 
+        key={player.id} 
+        style={styles.playerCard}
+        className="hover-player-card"
+        onMouseEnter={(e) => {
           const card = e.currentTarget;
           card.style.transform = 'translateY(-1vh) scale(1.02)';
           card.style.boxShadow = '0 6px 20px rgba(76, 175, 80, 0.4)';
@@ -460,10 +525,8 @@ const Squad = () => {
           if (glow) glow.style.opacity = '1';
           const image = card.querySelector('img') as HTMLElement;
           if (image) image.style.transform = 'scale(1.05)';
-        }
-      }}
-      onMouseLeave={(e) => {
-        if (!isMobile) {
+        }}
+        onMouseLeave={(e) => {
           const card = e.currentTarget;
           card.style.transform = 'translateY(0) scale(1)';
           card.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.4)';
@@ -472,43 +535,37 @@ const Squad = () => {
           if (glow) glow.style.opacity = '0';
           const image = card.querySelector('img') as HTMLElement;
           if (image) image.style.transform = 'scale(1)';
-        }
-      }}
-    >
-      <div style={styles.playerCardGlow} className="player-glow"></div>
-      
-      <div style={{
-        ...styles.playerImageContainer,
-        paddingBottom: imagePadding
-      }}>
-        <PlayerImage 
-          imageUrl={player.image_url}
-          playerName={player.name}
-          style={styles.playerImage}
-          className={isMobile ? "mobile-squad-player-image" : ""}
-          loading="lazy"
-          width="200"
-          height="200"
-          showFallbackText={true}
-        />
-      </div>
-      
-      <h3 
-        style={styles.playerName}
-        className={isMobile ? "mobile-squad-player-name" : ""}
+        }}
       >
-        {player.name}
-      </h3>
-      {!isMobile && (
+        <div style={styles.playerCardGlow} className="player-glow"></div>
+        
+        <div style={{
+          ...styles.playerImageContainer,
+          paddingBottom: imagePadding
+        }}>
+          <PlayerImage 
+            imageUrl={player.image_url}
+            playerName={player.name}
+            style={styles.playerImage}
+            loading="lazy"
+            width="200"
+            height="200"
+            showFallbackText={true}
+          />
+        </div>
+        
+        <h3 style={styles.playerName}>
+          {player.name}
+        </h3>
         <p 
           style={styles.playerPosition}
           className="desktop-player-position"
         >
           {player.position}
         </p>
-      )}
-    </div>
-  );
+      </div>
+    );
+  };
 
   if (loading) {
     return (
