@@ -76,13 +76,15 @@ const Squad = () => {
       animation: "float 20s ease-in-out infinite",
     },
     content: {
-      maxWidth: '1400px',
+      maxWidth: isMobile ? "100%" : "1400px",
       margin: '0 auto',
       padding: isMobile 
-        ? '70px 1rem 1rem' // Mobile: padding top para header + spacing
+        ? '70px 0.5rem 1rem' // Mobile: padding top para header + spacing menor
         : '2vh 2vw', // Desktop original
       position: "relative",
       zIndex: 2,
+      width: isMobile ? "100%" : "auto",
+      boxSizing: isMobile ? "border-box" : "content-box",
     },
     heroSection: {
       background: "rgba(30, 40, 50, 0.95)",
@@ -132,14 +134,17 @@ const Squad = () => {
       background: "rgba(30, 40, 50, 0.95)",
       border: "1px solid rgba(76, 175, 80, 0.3)",
       borderRadius: "clamp(0.8rem, 2vw, 1.2rem)",
-      padding: "clamp(1.5rem, 3vh, 2rem) clamp(1.5rem, 3vw, 2rem)",
+      padding: isMobile ? "1rem" : "clamp(1.5rem, 3vh, 2rem) clamp(1.5rem, 3vw, 2rem)",
       backdropFilter: "blur(10px)",
       boxShadow: "0 clamp(0.3rem, 1vh, 0.8rem) clamp(1.5rem, 3vh, 2rem) rgba(0, 0, 0, 0.4)",
       position: "relative",
-      overflow: "hidden",
+      overflow: isMobile ? "visible" : "hidden",
       height: isMobile ? "auto" : "85vh",
       display: 'flex',
       flexDirection: 'column',
+      width: isMobile ? "100%" : "auto",
+      maxWidth: isMobile ? "100%" : "auto",
+      boxSizing: isMobile ? "border-box" : "content-box",
     },
     positionHeader: {
       display: "flex",
@@ -204,7 +209,7 @@ const Squad = () => {
         ? "repeat(2, 1fr)" // Mobile: exatamente 2 colunas
         : "repeat(var(--grid-columns, 3), 1fr)", // Desktop: será definido no JSX
       gridAutoRows: "1fr",
-      gap: isMobile ? "1.5rem" : "2%",
+      gap: isMobile ? "1rem" : "2%",
       padding: isMobile ? "1rem" : "2%",
       height: isMobile ? "auto" : "70vh",
       opacity: 1,
@@ -213,6 +218,10 @@ const Squad = () => {
       alignContent: isMobile ? "start" : "stretch",
       justifyContent: 'center',
       marginBottom: isMobile ? "2rem" : "0",
+      width: isMobile ? "100%" : "auto",
+      maxWidth: isMobile ? "100%" : "auto",
+      boxSizing: isMobile ? "border-box" : "content-box",
+      overflow: isMobile ? "hidden" : "visible",
     },
     playersGridAnimating: {
       opacity: 0.7,
@@ -441,21 +450,24 @@ const Squad = () => {
 
   const renderPlayerCard = (player: Player) => {
     if (isMobile) {
-      // Layout especial para mobile - nome fora do container
+      // Layout simplificado para mobile
       return (
         <div key={player.id} style={{
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
-          gap: '0.5rem'
+          gap: '0.5rem',
+          width: '100%',
+          maxWidth: '100%',
+          boxSizing: 'border-box'
         }}>
-          {/* Container da imagem sem o nome */}
+          {/* Container da imagem */}
           <div 
             style={{
               background: "rgba(30, 40, 50, 0.8)",
               border: "1px solid rgba(76, 175, 80, 0.4)",
-              borderRadius: "8px",
-              padding: "0.75rem",
+              borderRadius: "12px",
+              padding: "0.5rem",
               textAlign: "center",
               color: "white",
               boxShadow: "0 2px 8px rgba(0, 0, 0, 0.3)",
@@ -467,9 +479,10 @@ const Squad = () => {
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              backdropFilter: "blur(5px)"
+              backdropFilter: "blur(5px)",
+              maxWidth: '100%',
+              boxSizing: 'border-box'
             }}
-            className="mobile-squad-player-card"
           >
             <PlayerImage 
               imageUrl={player.image_url}
@@ -479,9 +492,8 @@ const Squad = () => {
                 height: "100%",
                 objectFit: "cover",
                 objectPosition: "center top",
-                borderRadius: "4px"
+                borderRadius: "8px"
               }}
-              className="mobile-squad-player-image"
               loading="lazy"
               width="200"
               height="200"
@@ -489,7 +501,7 @@ const Squad = () => {
             />
           </div>
           
-          {/* Nome fora do container */}
+          {/* Nome fora do container - sem fundo preto */}
           <h3 
             style={{
               fontSize: "clamp(0.8rem, 3.5vw, 1rem)",
@@ -498,11 +510,14 @@ const Squad = () => {
               color: "#FFFFFF",
               lineHeight: "1.2",
               textAlign: "center",
-              textShadow: "1px 1px 3px rgba(0, 0, 0, 0.8)",
+              textShadow: "2px 2px 4px rgba(0, 0, 0, 0.9)",
               wordBreak: "break-word",
-              hyphens: "auto"
+              hyphens: "auto",
+              background: "transparent",
+              padding: "0.25rem 0.5rem",
+              maxWidth: '100%',
+              boxSizing: 'border-box'
             }}
-            className="mobile-squad-player-name"
           >
             {player.name}
           </h3>

@@ -223,6 +223,11 @@
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     gap: 1rem;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    overflow: hidden;
+    padding: 0 1rem;
   }
   
   /* Layout principal empilhado */
@@ -397,10 +402,10 @@
     hyphens: auto !important;
     position: relative !important;
     z-index: 2 !important;
-    background: rgba(0, 0, 0, 0.7) !important;
+    background: transparent !important;
     padding: 0.5rem !important;
-    border-radius: 8px 8px 0 0 !important;
-    backdrop-filter: blur(5px) !important;
+    border-radius: 0 !important;
+    backdrop-filter: none !important;
   }
   
   .mobile-squad-player-position {
@@ -599,6 +604,11 @@
   .mobile-players-grid {
     grid-template-columns: 1fr 1fr;
     gap: 0.75rem;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    overflow: hidden;
+    padding: 0 0.75rem;
   }
   
   /* Ajustes para telas muito pequenas */

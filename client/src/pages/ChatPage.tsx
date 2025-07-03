@@ -413,7 +413,7 @@ const ChatPage = () => {
     // INTERFACE DE CHAT (quando uma discussão está aberta)
     chatOverlay: {
       position: 'fixed',
-      top: 0,
+      top: isMobile ? 0 : '70px', // No desktop, começa após a navbar
       left: 0,
       right: 0,
       bottom: 0,
@@ -424,12 +424,12 @@ const ChatPage = () => {
 
     chatContainer: {
       position: 'fixed',
-      top: isMobile ? '60px' : 0, // Adiciona espaço para a navbar mobile
+      top: isMobile ? '60px' : '70px', // Adiciona espaço para a navbar tanto no mobile quanto desktop
       left: 0,
       right: 0,
       bottom: 0,
       width: '100vw',
-      height: isMobile ? 'calc(100vh - 60px)' : '100vh', // Ajusta altura para acomodar navbar
+      height: isMobile ? 'calc(100vh - 60px)' : 'calc(100vh - 70px)', // Ajusta altura para acomodar navbar
       backgroundColor: '#1e293b',
       display: isDrawerOpen ? 'flex' : 'none',
       flexDirection: isMobile ? 'column' : 'row',
