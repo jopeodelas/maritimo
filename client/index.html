@@ -18,8 +18,10 @@
     
     <!-- Preload critical resources -->
     <link rel="preload" href="/src/assets/maritimo-crest.png" as="image" />
+    <link rel="preload" href="/src/assets/fonts/Shockwave.ttf" as="font" type="font/ttf" crossorigin />
     
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/src/assets/maritimo-crest.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/src/assets/maritimo-crest.png" />
     <link rel="canonical" href="https://maritimofans.pt" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <title>CS Marítimo Fans - Portal dos Adeptos</title>
@@ -45,6 +47,21 @@
         }
       }(window.location))
     </script>
+    
+    <!-- Structured Data (JSON-LD) -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "name": "CS Marítimo Fans",
+        "url": "https://maritimofans.pt",
+        "potentialAction": {
+          "@type": "SearchAction",
+          "target": "https://maritimofans.pt/search?query={search_term_string}",
+          "query-input": "required name=search_term_string"
+        }
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>
@@ -68,5 +85,8 @@
     </script>
     
     <script type="module" src="/src/main.tsx"></script>
+    
+    <!-- AddThis Social Sharing -->
+    <script type="text/javascript" src="//s7.addthis.com/js/300/addthis_widget.js#pubid=ra-64aexample" defer></script>
   </body>
 </html>
