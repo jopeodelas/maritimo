@@ -16,7 +16,7 @@ export const getSeasonSchedule = async (req: Request, res: Response) => {
     let { rows: matches } = await client.query(
       `SELECT fixture_id, home_team, away_team, match_date, status, home_score, away_score 
        FROM football_matches_cache 
-       WHERE season = $1 AND (home_team ILIKE '%Marítimo%' OR away_team ILIKE '%Marítimo%')
+       WHERE season = $1
        ORDER BY match_date ASC`,
       [season]
     );
@@ -29,7 +29,7 @@ export const getSeasonSchedule = async (req: Request, res: Response) => {
       ({ rows: matches } = await client2.query(
         `SELECT fixture_id, home_team, away_team, match_date, status, home_score, away_score 
          FROM football_matches_cache 
-         WHERE season = $1 AND (home_team ILIKE '%Marítimo%' OR away_team ILIKE '%Marítimo%')
+         WHERE season = $1
          ORDER BY match_date ASC`,
         [season]
       ));
