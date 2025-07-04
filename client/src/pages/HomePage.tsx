@@ -17,7 +17,7 @@ const HomePage = () => {
   return (
     <>
       <Seo 
-        title="CS Marítimo Fans – Feito por adeptos para adeptos" 
+        title="CS Marítimo Fans Made by Fans for Fans" 
         description="Portal dos adeptos do CS Marítimo. Votações de jogador, Maritodle, notícias, transferências e chat ao vivo." 
       />
       <div className={`homepage-container ${isMobile ? "mobile-homepage-container" : ""}`}>
@@ -39,9 +39,7 @@ const HomePage = () => {
           Marítimo Fans – Feito por adeptos para adeptos
         </h1>
         
-        <div className={`homepage-hover-me ${isMobile ? "mobile-homepage-hover-me" : ""}`}> 
-          Votações • Notícias • Chat
-        </div>
+      
         
         <div className="homepage-content">
           <div className={`homepage-logo-container ${isMobile ? "mobile-homepage-logo-container" : ""}`}>
