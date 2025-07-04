@@ -27,6 +27,9 @@ body {
   min-width: 320px;
   /* Fallback primeiro */
   min-height: 100vh;
+
+  /* Fundo gradiente global */
+  background: linear-gradient(135deg, #0F1419 0%, #1A252F 50%, #2C3E50 100%);
   
   /* Safe areas para notch/home indicator */
   padding-top: env(safe-area-inset-top);
