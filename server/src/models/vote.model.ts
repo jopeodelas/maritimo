@@ -1,4 +1,5 @@
 import db from '../config/db';
+import { cacheKeys } from '../utils/cache';
 
 export interface Vote {
   id: number;
@@ -44,7 +45,35 @@ export class VoteModel {
         'INSERT INTO votes (user_id, player_id) VALUES ($1, $2) RETURNING *',
         [userId, playerId]
       );
+      
+      // Invalidate cache since player rankings changed
+      const { cache } = await import('../utils/cache');
+      cache.delete(cacheKeys.PLAYER_RANKINGS);
+      cache.delete(cacheKeys.USER_VOTES(userId));
+      
       return result.rows[0];
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  static async delete(userId: number, playerId: number): Promise<boolean> {
+    try {
+      const result = await db.query(
+        'DELETE FROM votes WHERE user_id = $1 AND player_id = $2',
+        [userId, playerId]
+      );
+      
+      const deleted = (result.rowCount ?? 0) > 0;
+      
+      if (deleted) {
+        // Invalidate cache since player rankings changed
+        const { cache } = await import('../utils/cache');
+        cache.delete(cacheKeys.PLAYER_RANKINGS);
+        cache.delete(cacheKeys.USER_VOTES(userId));
+      }
+      
+      return deleted;
     } catch (error) {
       throw error;
     }

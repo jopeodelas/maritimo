@@ -1,4 +1,5 @@
 import db from '../config/db';
+import { withCache, cacheKeys } from '../utils/cache';
 
 export interface Player {
   id: number;
@@ -21,78 +22,85 @@ export interface PlayersResponse {
 
 export class PlayerModel {
   static async findAll(): Promise<PlayersResponse> {
-    try {
-      console.log('Attempting to fetch players from database...');
-      
-      // First, check if image_data column exists
-      const columnCheckResult = await db.query(`
-        SELECT column_name
-        FROM information_schema.columns
-        WHERE table_schema = 'public' 
-          AND table_name = 'players'
-          AND column_name = 'image_data'
-      `);
-      
-      const hasImageDataColumn = columnCheckResult.rows.length > 0;
-      console.log('Has image_data column:', hasImageDataColumn);
-      
-      let playersQuery: string;
-      
-      if (hasImageDataColumn) {
-        // Modern query with image_data column
-        playersQuery = `
-          SELECT p.id, p.name, p.position, 
-                 CASE 
-                   WHEN p.image_data IS NOT NULL 
-                   THEN CONCAT('/api/players/', p.id, '/image?v=', EXTRACT(EPOCH FROM p.created_at))
-                   WHEN p.image_url IS NOT NULL
-                   THEN p.image_url
-                   ELSE NULL
-                 END AS image_url,
-                 p.image_mime, p.created_at, COUNT(v.id) as vote_count
-          FROM players p
-          LEFT JOIN votes v ON p.id = v.player_id
-          GROUP BY p.id, p.name, p.position, p.image_url, p.image_mime, p.created_at, p.image_data
-          ORDER BY vote_count DESC
-        `;
-      } else {
-        // Legacy query without image_data column
-        playersQuery = `
-          SELECT p.id, p.name, p.position, 
-                 p.image_url,
-                 NULL as image_mime, p.created_at, COUNT(v.id) as vote_count
-          FROM players p
-          LEFT JOIN votes v ON p.id = v.player_id
-          GROUP BY p.id, p.name, p.position, p.image_url, p.created_at
-          ORDER BY vote_count DESC
-        `;
-      }
-      
-      const playersResult = await db.query(playersQuery);
-      console.log('Players query result:', playersResult.rows);
+    // Use cache for this expensive query (5 minutes TTL)
+    return withCache(
+      cacheKeys.PLAYER_RANKINGS,
+      async () => {
+        try {
+          console.log('Attempting to fetch players from database...');
+          
+          // First, check if image_data column exists
+          const columnCheckResult = await db.query(`
+            SELECT column_name
+            FROM information_schema.columns
+            WHERE table_schema = 'public' 
+              AND table_name = 'players'
+              AND column_name = 'image_data'
+          `);
+          
+          const hasImageDataColumn = columnCheckResult.rows.length > 0;
+          console.log('Has image_data column:', hasImageDataColumn);
+          
+          let playersQuery: string;
+          
+          if (hasImageDataColumn) {
+            // Modern query with image_data column
+            playersQuery = `
+              SELECT p.id, p.name, p.position, 
+                     CASE 
+                       WHEN p.image_data IS NOT NULL 
+                       THEN CONCAT('/api/players/', p.id, '/image?v=', EXTRACT(EPOCH FROM p.created_at))
+                       WHEN p.image_url IS NOT NULL
+                       THEN p.image_url
+                       ELSE NULL
+                     END AS image_url,
+                     p.image_mime, p.created_at, COUNT(v.id) as vote_count
+              FROM players p
+              LEFT JOIN votes v ON p.id = v.player_id
+              GROUP BY p.id, p.name, p.position, p.image_url, p.image_mime, p.created_at, p.image_data
+              ORDER BY vote_count DESC
+            `;
+          } else {
+            // Legacy query without image_data column
+            playersQuery = `
+              SELECT p.id, p.name, p.position, 
+                     p.image_url,
+                     NULL as image_mime, p.created_at, COUNT(v.id) as vote_count
+              FROM players p
+              LEFT JOIN votes v ON p.id = v.player_id
+              GROUP BY p.id, p.name, p.position, p.image_url, p.created_at
+              ORDER BY vote_count DESC
+            `;
+          }
+          
+          const playersResult = await db.query(playersQuery);
+          console.log('Players query result:', playersResult.rows);
 
-      // Get total unique voters
-      const votersResult = await db.query(`
-        SELECT COUNT(DISTINCT user_id) as total_unique_voters
-        FROM votes
-      `);
+          // Get total unique voters
+          const votersResult = await db.query(`
+            SELECT COUNT(DISTINCT user_id) as total_unique_voters
+            FROM votes
+          `);
 
-      console.log('Voters query result:', votersResult.rows);
+          console.log('Voters query result:', votersResult.rows);
 
-      const totalUniqueVoters = parseInt(votersResult.rows[0]?.total_unique_voters || '0');
+          const totalUniqueVoters = parseInt(votersResult.rows[0]?.total_unique_voters || '0');
 
-      const response = {
-        players: playersResult.rows,
-        totalUniqueVoters
-      };
+          const response = {
+            players: playersResult.rows,
+            totalUniqueVoters
+          };
 
-      console.log('Final response:', response);
+          console.log('Final response:', response);
 
-      return response;
-    } catch (error) {
-      console.error('Error in PlayerModel.findAll:', error);
-      throw error;
-    }
+          return response;
+        } catch (error) {
+          console.error('Error in PlayerModel.findAll:', error);
+          throw error;
+        }
+      },
+      300 // Cache for 5 minutes
+    );
   }
 
   static async findById(id: number): Promise<Player | null> {
@@ -155,6 +163,11 @@ export class PlayerModel {
       const result = await db.query(query, values);
       
       console.log('Player created with ID:', result.rows[0].id);
+      
+      // Invalidate cache since player rankings changed
+      const { cache } = await import('../utils/cache');
+      cache.delete(cacheKeys.PLAYER_RANKINGS);
+      
       return result.rows[0];
     } catch (error) {
       console.error('Error in PlayerModel.create:', error);
@@ -198,6 +211,11 @@ export class PlayerModel {
       }
       
       const result = await db.query(query, values);
+      
+      // Invalidate cache since player rankings may have changed
+      const { cache } = await import('../utils/cache');
+      cache.delete(cacheKeys.PLAYER_RANKINGS);
+      
       return result.rows[0] || null;
     } catch (error) {
       console.error('Error in PlayerModel.update:', error);
@@ -212,6 +230,11 @@ export class PlayerModel {
       
       // Then delete the player
       const result = await db.query('DELETE FROM players WHERE id = $1', [id]);
+      
+      // Invalidate cache since player rankings changed
+      const { cache } = await import('../utils/cache');
+      cache.delete(cacheKeys.PLAYER_RANKINGS);
+      
       return (result.rowCount ?? 0) > 0;
     } catch (error) {
       throw error;
