@@ -36,7 +36,7 @@ const HomePage = () => {
         </div>
         
         <h1 className={`homepage-title ${isMobile ? "mobile-homepage-title" : ""}`}> 
-          Marítimo Fans – Feito por adeptos para adeptos
+          Marítimo Fans – Made by Fans for Fans
         </h1>
         
       

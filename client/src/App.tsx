@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { lazy, Suspense } from 'react';
 import ProtectedRoute from './components/ProtectedRoute';
 import ProtectedAdminRoute from './components/ProtectedAdminRoute';
@@ -78,6 +78,119 @@ const globalStyles = `
   }
 `;
 
+// Component to handle footer visibility based on route
+function AppContent() {
+  const location = useLocation();
+  
+  // Routes where footer should be hidden
+  const hideFooterRoutes = ['/', '/login', '/register'];
+  const shouldHideFooter = hideFooterRoutes.includes(location.pathname);
+
+  return (
+    <LayoutStabilizer>
+      <NetworkStatusIndicator />
+      <div className="App">
+        <Suspense fallback={<PageLoader />}>
+          <Routes>
+            {/* Critical routes - immediately loaded */}
+            <Route path="/" element={<HomePage />} />
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/register" element={<RegisterPage />} />
+            
+            {/* Protected routes with lazy loading */}
+            <Route 
+              path="/main" 
+              element={
+                <ProtectedRoute>
+                  <MainPage />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/news" 
+              element={
+                <ProtectedRoute>
+                  <NewsPage />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/squad" 
+              element={
+                <ProtectedRoute>
+                  <Squad />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/voting" 
+              element={
+                <ProtectedRoute>
+                  <VotingPage />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/chat" 
+              element={
+                <ProtectedRoute>
+                  <ChatPage />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/history" 
+              element={
+                <ProtectedRoute>
+                  <HistoryPage />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/schedule" 
+              element={
+                <ProtectedRoute>
+                  <Schedule />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/ratings" 
+              element={
+                <ProtectedRoute>
+                  <PlayerRatings />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/maritodle" 
+              element={
+                <ProtectedRoute>
+                  <MaritodlePage />
+                </ProtectedRoute>
+              } 
+            />
+            
+            {/* Admin routes with lazy loading */}
+            <Route 
+              path="/admin" 
+              element={
+                <ProtectedAdminRoute>
+                  <AdminPage />
+                </ProtectedAdminRoute>
+              } 
+            />
+            
+            {/* 404 fallback route */}
+            <Route path="*" element={<NotFoundPage />} />
+          </Routes>
+        </Suspense>
+        {!shouldHideFooter && <Footer />}
+      </div>
+    </LayoutStabilizer>
+  );
+}
+
 function App() {
   return (
     <>
@@ -85,107 +198,7 @@ function App() {
       <ErrorBoundary>
         <AuthProvider>
           <Router>
-            <LayoutStabilizer>
-              <NetworkStatusIndicator />
-              <div className="App">
-                <Suspense fallback={<PageLoader />}>
-                  <Routes>
-                    {/* Critical routes - immediately loaded */}
-                    <Route path="/" element={<HomePage />} />
-                    <Route path="/login" element={<LoginPage />} />
-                    <Route path="/register" element={<RegisterPage />} />
-                    
-                    {/* Protected routes with lazy loading */}
-                    <Route 
-                      path="/main" 
-                      element={
-                        <ProtectedRoute>
-                          <MainPage />
-                        </ProtectedRoute>
-                      } 
-                    />
-                    <Route 
-                      path="/news" 
-                      element={
-                        <ProtectedRoute>
-                          <NewsPage />
-                        </ProtectedRoute>
-                      } 
-                    />
-                    <Route 
-                      path="/squad" 
-                      element={
-                        <ProtectedRoute>
-                          <Squad />
-                        </ProtectedRoute>
-                      } 
-                    />
-                    <Route 
-                      path="/voting" 
-                      element={
-                        <ProtectedRoute>
-                          <VotingPage />
-                        </ProtectedRoute>
-                      } 
-                    />
-                    <Route 
-                      path="/chat" 
-                      element={
-                        <ProtectedRoute>
-                          <ChatPage />
-                        </ProtectedRoute>
-                      } 
-                    />
-                    <Route 
-                      path="/history" 
-                      element={
-                        <ProtectedRoute>
-                          <HistoryPage />
-                        </ProtectedRoute>
-                      } 
-                    />
-                    <Route 
-                      path="/schedule" 
-                      element={
-                        <ProtectedRoute>
-                          <Schedule />
-                        </ProtectedRoute>
-                      } 
-                    />
-                    <Route 
-                      path="/ratings" 
-                      element={
-                        <ProtectedRoute>
-                          <PlayerRatings />
-                        </ProtectedRoute>
-                      } 
-                    />
-                    <Route 
-                      path="/maritodle" 
-                      element={
-                        <ProtectedRoute>
-                          <MaritodlePage />
-                        </ProtectedRoute>
-                      } 
-                    />
-                    
-                    {/* Admin routes with lazy loading */}
-                    <Route 
-                      path="/admin" 
-                      element={
-                        <ProtectedAdminRoute>
-                          <AdminPage />
-                        </ProtectedAdminRoute>
-                      } 
-                    />
-                    
-                    {/* 404 fallback route */}
-                    <Route path="*" element={<NotFoundPage />} />
-                  </Routes>
-                </Suspense>
-                <Footer />
-              </div>
-            </LayoutStabilizer>
+            <AppContent />
           </Router>
         </AuthProvider>
       </ErrorBoundary>
