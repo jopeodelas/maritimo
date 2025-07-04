@@ -3,10 +3,28 @@ import LayoutStabilizer from "../components/LayoutStabilizer";
 import { createStyles } from "../styles/styleUtils";
 import useIsMobile from "../hooks/useIsMobile";
 import Seo from '../components/Seo';
+import { useEffect, useState } from 'react';
+import { getSeasonFixtures, type Fixture } from '../services/scheduleService';
 
 const Schedule = () => {
   const isMobile = useIsMobile();
-  
+  const [fixtures, setFixtures] = useState<Fixture[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const data = await getSeasonFixtures(2025);
+        setFixtures(data);
+      } catch (err) {
+        console.error('Erro a buscar calendário:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
+
   const styles = createStyles({
     container: {
       minHeight: "100vh",
@@ -160,6 +178,24 @@ const Schedule = () => {
       background: "rgba(255, 255, 255, 0.8)",
       borderRadius: "50%",
     },
+    scheduleTable: {
+      width: '100%',
+      maxWidth: '60rem',
+      margin: '0 auto',
+      borderCollapse: 'collapse',
+      color: '#FFFFFF',
+    },
+    tableHeader: {
+      textAlign: 'left',
+      borderBottom: '2px solid rgba(76, 175, 80, 0.4)',
+      padding: '0.75rem',
+    },
+    tableRow: {
+      borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
+    },
+    tableCell: {
+      padding: '0.5rem 0.75rem',
+    },
   });
 
   return (
@@ -174,25 +210,41 @@ const Schedule = () => {
               <h1 style={styles.heroTitle}>Calendário e Resultados</h1>
             </div>
             <div style={styles.messageContainer}>
-              <div style={styles.calendarIcon}>
-                <div style={styles.calendarRings}>
-                  <div style={styles.calendarRing}></div>
-                  <div style={styles.calendarRing}></div>
-                </div>
-                <div style={styles.calendarTop}></div>
-                <div style={styles.calendarBody}>
-                  <div style={styles.calendarLine}></div>
-                  <div style={styles.calendarLine}></div>
-                  <div style={styles.calendarLine}></div>
-                </div>
-              </div>
-              <p style={styles.message}>
-                O calendário da nova época ainda não foi divulgado.
-              </p>
-              <p style={styles.subMessage}>
-                Esta página será atualizada assim que o calendário oficial for publicado.
-                Fique atento para acompanhar todos os jogos e resultados do CS Marítimo!
-              </p>
+              {loading ? (
+                <p style={styles.message}>A carregar calendário...</p>
+              ) : fixtures.length === 0 ? (
+                <p style={styles.message}>Sem jogos disponíveis para mostrar.</p>
+              ) : (
+                <table style={styles.scheduleTable}>
+                  <thead>
+                    <tr>
+                      <th style={styles.tableHeader}>Data</th>
+                      <th style={styles.tableHeader}>Jogo</th>
+                      <th style={styles.tableHeader}>Resultado</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {fixtures.map(match => {
+                      const dateObj = new Date(match.match_date);
+                      const dateStr = dateObj.toLocaleDateString('pt-PT', { day: '2-digit', month: '2-digit', year: 'numeric' });
+                      const timeStr = dateObj.toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit' });
+                      let result = '-';
+                      if (match.status === 'FT') {
+                        result = `${match.home_score ?? ''}-${match.away_score ?? ''}`;
+                      } else if (match.status !== 'NS') {
+                        result = match.status;
+                      }
+                      return (
+                        <tr key={match.fixture_id} style={styles.tableRow}>
+                          <td style={styles.tableCell}>{`${dateStr} ${timeStr}`}</td>
+                          <td style={styles.tableCell}>{`${match.home_team} vs ${match.away_team}`}</td>
+                          <td style={styles.tableCell}>{result}</td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              )}
             </div>
           </div>
         </LayoutStabilizer>

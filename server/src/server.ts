@@ -20,10 +20,12 @@ import maritodleRoutes from './routes/maritodle.routes';
 import maritodleDailyRoutes from './routes/maritodle-daily.routes';
 import playerRatingsRoutes from './routes/player-ratings.routes';
 import analyticsRoutes from './routes/analytics.routes';
+import scheduleRoutes from './routes/schedule.routes';
 import { errorHandler, notFoundHandler } from './middleware/error.middleware';
 import cacheMiddleware from './middleware/cache.middleware';
 import schedulerService from './services/scheduler.service';
 import maritodleSchedulerService from './services/maritodle-scheduler.service';
+import fixturesSchedulerService from './services/fixtures-scheduler.service';
 
 const app = express();
 
@@ -294,6 +296,7 @@ app.use('/api/maritodle', maritodleRoutes);
 app.use('/api/maritodle-daily', maritodleDailyRoutes);
 app.use('/api/player-ratings', playerRatingsRoutes);
 app.use('/api/analytics', analyticsRoutes);
+app.use('/api/fixtures', scheduleRoutes);
 console.log('✅ All routes registered');
 
 // Error handling
@@ -314,6 +317,10 @@ const server = app.listen(PORT, () => {
   // Inicializar scheduler do maritodle diário
   console.log('🎮 Initializing Maritodle daily scheduler...');
   maritodleSchedulerService.startDailyScheduler();
+  
+  // Start fixtures scheduler (30m)
+  console.log('📅 Initializing fixtures scheduler...');
+  fixturesSchedulerService.start();
 });
 
 // Configurar server timeouts e keepalive

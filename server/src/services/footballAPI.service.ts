@@ -756,6 +756,32 @@ class FootballAPIService {
       console.error('Error checking for new votings:', error);
     }
   }
+
+  // NEW: Fetch all fixtures for a specific season and league for CS Marítimo
+  async getSeasonFixtures(season: number, leagueId: number): Promise<APIFixture[]> {
+    try {
+      if (!process.env.RAPIDAPI_KEY || process.env.RAPIDAPI_KEY === 'demo_key') {
+        throw new Error('API key não configurada. Configure RAPIDAPI_KEY nas variáveis de ambiente.');
+      }
+
+      const teamId = MARITIMO_TEAM_IDS['API-Football']; // 214 para CS Marítimo
+
+      console.log(`🔍 Fetching fixtures for season ${season}, league ${leagueId}, team ${teamId}`);
+
+      const data = await this.makeAPIRequest('/fixtures', {
+        team: teamId,
+        season,
+        league: leagueId,
+      });
+
+      const fixtures = data.response || [];
+      console.log(`📆 Found ${fixtures.length} fixtures for season ${season}`);
+      return fixtures;
+    } catch (error: any) {
+      console.error('Error fetching season fixtures:', error.message);
+      throw error;
+    }
+  }
 }
 
 export default new FootballAPIService(); 

@@ -420,6 +420,77 @@ class FootballCacheService {
       client.release();
     }
   }
+
+  // NEW: Synchronize full season fixtures (both upcoming and finished)
+  async syncSeasonFixtures(season: number, leagueId: number): Promise<{ added: number; updated: number }> {
+    const client = await pool.connect();
+    try {
+      console.log(`🔄 Syncing season ${season} fixtures (league ${leagueId})`);
+
+      if (!(await this.canMakeAPIRequest())) {
+        console.warn('API request limit reached - skipping season sync');
+        return { added: 0, updated: 0 };
+      }
+
+      await this.incrementAPIRequestCount();
+      const fixtures = await footballAPIService.getSeasonFixtures(season, leagueId);
+
+      let added = 0;
+      let updated = 0;
+
+      await client.query('BEGIN');
+
+      for (const fixture of fixtures) {
+        const insertRes = await client.query(
+          `INSERT INTO football_matches_cache 
+            (fixture_id, home_team, away_team, match_date, status, home_score, away_score, season, league_name)
+           VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
+           ON CONFLICT (fixture_id) DO UPDATE 
+           SET status = EXCLUDED.status,
+               home_score = EXCLUDED.home_score,
+               away_score = EXCLUDED.away_score,
+               updated_at = CURRENT_TIMESTAMP,
+               season = EXCLUDED.season`,
+          [
+            fixture.fixture.id,
+            fixture.teams.home.name,
+            fixture.teams.away.name,
+            fixture.fixture.date,
+            fixture.fixture.status.short,
+            fixture.score?.fulltime?.home ?? null,
+            fixture.score?.fulltime?.away ?? null,
+            season,
+            'Liga Portugal 2'
+          ]
+        );
+
+        const affectedRows = insertRes.rowCount ?? 0;
+        if (affectedRows > 0) {
+          if (insertRes.command === 'INSERT') {
+            added += affectedRows;
+          } else {
+            updated += affectedRows;
+          }
+        }
+      }
+
+      await client.query(
+        `UPDATE football_sync_control 
+         SET last_check_sync = CURRENT_TIMESTAMP,
+             total_matches_cached = (SELECT COUNT(*) FROM football_matches_cache)`
+      );
+
+      await client.query('COMMIT');
+      console.log(`✅ Season sync completed → added: ${added}, updated: ${updated}`);
+      return { added, updated };
+    } catch (error) {
+      await client.query('ROLLBACK');
+      console.error('❌ Error in season sync:', error);
+      return { added: 0, updated: 0 };
+    } finally {
+      client.release();
+    }
+  }
 }
 
 export default new FootballCacheService(); 
