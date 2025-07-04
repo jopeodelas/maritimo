@@ -4,12 +4,12 @@ import ProtectedRoute from './components/ProtectedRoute';
 import ProtectedAdminRoute from './components/ProtectedAdminRoute';
 import { AuthProvider } from './contexts/AuthContext';
 import ErrorBoundary from './components/ErrorBoundary';
-import Footer from './components/Footer';
 
 import './styles/optimizedStyles.css';
 import './styles/accessibility.css';
 import LayoutStabilizer from './components/LayoutStabilizer';
 import NetworkStatusIndicator from './components/NetworkStatusIndicator';
+import Footer from './components/Footer';
 
 // PERFORMANCE: Immediately loaded components (critical pages)
 import MainPage from './pages/MainPage';
