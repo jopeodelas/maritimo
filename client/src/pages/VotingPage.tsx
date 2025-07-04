@@ -5,6 +5,7 @@ import { createStyles } from '../styles/styleUtils';
 import useIsMobile from '../hooks/useIsMobile';
 import api from '../services/api';
 import { useAnalytics } from '../hooks/useAnalytics';
+import Seo from '../components/Seo';
 
 interface Player {
   id: number;
@@ -507,6 +508,7 @@ const VotingPage = () => {
   if (loading) {
     return (
       <PageLayout>
+        <Seo title="Votação do Homem do Jogo - CS Marítimo Fans" description="Vota no Homem do Jogo do CS Marítimo." />
         <div style={styles.container}>
           <div style={styles.backgroundPattern} className="background-pattern"></div>
           <div style={styles.content}>
@@ -522,61 +524,62 @@ const VotingPage = () => {
 
   return (
     <PageLayout>
+      <Seo title="Votação do Homem do Jogo - CS Marítimo Fans" description="Vota no Homem do Jogo do CS Marítimo." />
       <div style={styles.container}>
         <div style={styles.backgroundPattern} className="background-pattern"></div>
 
-      <div style={styles.content}>
-        {/* Hero Section */}
-        <div style={styles.heroSection}>
-          <div style={styles.heroAccent}></div>
-          <h1 style={styles.heroTitle}>Votação de Jogadores</h1>
-          <p style={styles.heroSubtitle}>
-            Selecione os jogadores que acha que devem sair nesta janela de transferências
-          </p>
-        </div>
-
-        {selectedPlayers.length > 0 && (
-          <div style={styles.selectionInfo} className={isMobile ? "mobile-voting-selection-info" : ""}>
-            {selectedPlayers.length} jogador{selectedPlayers.length !== 1 ? 'es' : ''} selecionado{selectedPlayers.length !== 1 ? 's' : ''} para votação
+        <div style={styles.content}>
+          {/* Hero Section */}
+          <div style={styles.heroSection}>
+            <div style={styles.heroAccent}></div>
+            <h1 style={styles.heroTitle}>Votação de Jogadores</h1>
+            <p style={styles.heroSubtitle}>
+              Selecione os jogadores que acha que devem sair nesta janela de transferências
+            </p>
           </div>
-        )}
 
-        <div style={{ textAlign: 'center', marginBottom: '3vh' }}>
-          <button 
-            onClick={handleConfirmVotes}
-            disabled={selectedPlayers.length === 0 || isSubmitting}
-            style={{
-              ...styles.modernButton,
-              ...styles.confirmButton,
-              ...(selectedPlayers.length === 0 || isSubmitting ? styles.confirmButton.disabled : {}),
-              padding: isMobile ? '1rem 2rem' : '1.5vh 3vw', // Fixo para mobile
-              fontSize: isMobile ? '1rem' : '1.2vw', // Fixo para mobile
-              borderRadius: isMobile ? '0.75rem' : '0.5vw', // Cantos redondos para mobile
-            }}
-            className={isMobile ? "mobile-voting-button hover-button" : "hover-button"}
-          >
-            {isSubmitting ? 'A votar...' : `✓ Confirmar Votos (${selectedPlayers.length})`}
-          </button>
-        </div>
-
-        {Object.entries(groupedPlayers).map(([key, group]) => {
-          if (group.players.length === 0) return null;
-          
-          return (
-            <div key={key} style={styles.positionSection}>
-              <div style={styles.positionHeader}>
-                <span style={styles.positionIcon} className={isMobile ? "mobile-voting-position-icon" : ""}>{group.icon}</span>
-                <h2 style={styles.positionTitle} className={isMobile ? "mobile-voting-position-title" : ""}>{group.title}</h2>
-                <span style={styles.positionCount} className={isMobile ? "mobile-voting-position-count" : ""}>({group.players.length} jogadores)</span>
-              </div>
-              <div style={styles.playersGrid}>
-                {group.players.map((player, index) => renderPlayerCard(player, index))}
-              </div>
+          {selectedPlayers.length > 0 && (
+            <div style={styles.selectionInfo} className={isMobile ? "mobile-voting-selection-info" : ""}>
+              {selectedPlayers.length} jogador{selectedPlayers.length !== 1 ? 'es' : ''} selecionado{selectedPlayers.length !== 1 ? 's' : ''} para votação
             </div>
-          );
-        })}
+          )}
+
+          <div style={{ textAlign: 'center', marginBottom: '3vh' }}>
+            <button 
+              onClick={handleConfirmVotes}
+              disabled={selectedPlayers.length === 0 || isSubmitting}
+              style={{
+                ...styles.modernButton,
+                ...styles.confirmButton,
+                ...(selectedPlayers.length === 0 || isSubmitting ? styles.confirmButton.disabled : {}),
+                padding: isMobile ? '1rem 2rem' : '1.5vh 3vw', // Fixo para mobile
+                fontSize: isMobile ? '1rem' : '1.2vw', // Fixo para mobile
+                borderRadius: isMobile ? '0.75rem' : '0.5vw', // Cantos redondos para mobile
+              }}
+              className={isMobile ? "mobile-voting-button hover-button" : "hover-button"}
+            >
+              {isSubmitting ? 'A votar...' : `✓ Confirmar Votos (${selectedPlayers.length})`}
+            </button>
+          </div>
+
+          {Object.entries(groupedPlayers).map(([key, group]) => {
+            if (group.players.length === 0) return null;
+            
+            return (
+              <div key={key} style={styles.positionSection}>
+                <div style={styles.positionHeader}>
+                  <span style={styles.positionIcon} className={isMobile ? "mobile-voting-position-icon" : ""}>{group.icon}</span>
+                  <h2 style={styles.positionTitle} className={isMobile ? "mobile-voting-position-title" : ""}>{group.title}</h2>
+                  <span style={styles.positionCount} className={isMobile ? "mobile-voting-position-count" : ""}>({group.players.length} jogadores)</span>
+                </div>
+                <div style={styles.playersGrid}>
+                  {group.players.map((player, index) => renderPlayerCard(player, index))}
+                </div>
+              </div>
+            );
+          })}
+        </div>
       </div>
-    </div>
     </PageLayout>
   );
 };

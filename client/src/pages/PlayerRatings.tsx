@@ -10,6 +10,7 @@ import type {
   PlayerAverageRating, 
   ManOfTheMatchResult 
 } from '../types';
+import Seo from '../components/Seo';
 
 // Add CSS animation for loading spinner
 if (typeof document !== 'undefined') {
@@ -828,6 +829,7 @@ const PlayerRatings = () => {
   if (loading) {
     return (
       <PageLayout>
+        <Seo title="Avaliação dos Jogadores - CS Marítimo Fans" description="Avalia a prestação dos jogadores do CS Marítimo e escolhe o Homem do Jogo." />
         <div style={styles.container}>
           <div style={styles.backgroundPattern}></div>
           <div style={styles.content}>
@@ -845,6 +847,7 @@ const PlayerRatings = () => {
   if (error || !activeVoting) {
     return (
       <PageLayout>
+        <Seo title="Avaliação dos Jogadores - CS Marítimo Fans" description="Avalia a prestação dos jogadores do CS Marítimo e escolhe o Homem do Jogo." />
         <div style={styles.container}>
           <div style={styles.backgroundPattern}></div>
           <div style={styles.content}>
@@ -868,346 +871,347 @@ const PlayerRatings = () => {
 
   return (
     <PageLayout>
+      <Seo title="Avaliação dos Jogadores - CS Marítimo Fans" description="Avalia a prestação dos jogadores do CS Marítimo e escolhe o Homem do Jogo." />
       <div style={styles.container}>
         <div style={styles.backgroundPattern}></div>
-      <div style={styles.content}>
-        {/* Hero Section */}
-        <div style={styles.heroSection}>
-          <div style={styles.heroAccent}></div>
-          <h1 style={styles.heroTitle}>Avaliação dos Jogadores</h1>
-          
-          {/* Match Header com logos e resultado */}
-          <div style={styles.matchHeader}>
-            {activeVoting.matchDetails ? (
-              <>
-                <div style={styles.teamSection}>
-                  {activeVoting.matchDetails.homeLogo && (
-                    <img 
-                      src={activeVoting.matchDetails.homeLogo} 
-                      alt={activeVoting.matchDetails.homeTeam}
-                      style={styles.teamLogo}
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).style.display = 'none';
-                      }}
-                    />
-                  )}
-                  <div style={styles.teamName}>{activeVoting.matchDetails.homeTeam}</div>
-                </div>
-                
-                <div style={styles.scoreSection}>
-                  <div style={styles.score}>
-                    {activeVoting.matchDetails.homeScore} - {activeVoting.matchDetails.awayScore}
+        <div style={styles.content}>
+          {/* Hero Section */}
+          <div style={styles.heroSection}>
+            <div style={styles.heroAccent}></div>
+            <h1 style={styles.heroTitle}>Avaliação dos Jogadores</h1>
+            
+            {/* Match Header com logos e resultado */}
+            <div style={styles.matchHeader}>
+              {activeVoting.matchDetails ? (
+                <>
+                  <div style={styles.teamSection}>
+                    {activeVoting.matchDetails.homeLogo && (
+                      <img 
+                        src={activeVoting.matchDetails.homeLogo} 
+                        alt={activeVoting.matchDetails.homeTeam}
+                        style={styles.teamLogo}
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).style.display = 'none';
+                        }}
+                      />
+                    )}
+                    <div style={styles.teamName}>{activeVoting.matchDetails.homeTeam}</div>
                   </div>
-                  <div style={styles.matchStatus}>{activeVoting.matchDetails.status}</div>
-                </div>
-                
-                <div style={styles.teamSection}>
-                  {activeVoting.matchDetails.awayLogo && (
-                    <img 
-                      src={activeVoting.matchDetails.awayLogo} 
-                      alt={activeVoting.matchDetails.awayTeam}
-                      style={styles.teamLogo}
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).style.display = 'none';
-                      }}
-                    />
-                  )}
-                  <div style={styles.teamName}>{activeVoting.matchDetails.awayTeam}</div>
-                </div>
-              </>
+                  
+                  <div style={styles.scoreSection}>
+                    <div style={styles.score}>
+                      {activeVoting.matchDetails.homeScore} - {activeVoting.matchDetails.awayScore}
+                    </div>
+                    <div style={styles.matchStatus}>{activeVoting.matchDetails.status}</div>
+                  </div>
+                  
+                  <div style={styles.teamSection}>
+                    {activeVoting.matchDetails.awayLogo && (
+                      <img 
+                        src={activeVoting.matchDetails.awayLogo} 
+                        alt={activeVoting.matchDetails.awayTeam}
+                        style={styles.teamLogo}
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).style.display = 'none';
+                        }}
+                      />
+                    )}
+                    <div style={styles.teamName}>{activeVoting.matchDetails.awayTeam}</div>
+                  </div>
+                </>
+              ) : (
+                <p style={styles.heroSubtitle}>{activeVoting.home_team} vs {activeVoting.away_team}</p>
+              )}
+            </div>
+            
+            <p style={styles.matchInfo}>
+              {new Date(activeVoting.match_date).toLocaleDateString('pt-PT', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+              })}
+            </p>
+            
+            {/* Mostrar instruções resumidas APÓS votar e instruções completas ANTES de votar */}
+            {hasVoted ? (
+              <div style={styles.rulesBox}>
+                Avalia a prestação dos jogadores do CS Marítimo no seu último jogo!
+              </div>
             ) : (
-              <p style={styles.heroSubtitle}>{activeVoting.home_team} vs {activeVoting.away_team}</p>
+              <div style={styles.rulesBox}>
+                <strong>COMO AVALIAR:</strong> Dê uma nota de 1 a 10 a cada jogador neste jogo onde 6 é neutro. 
+                Escolha também o seu Homem do Jogo (estrela dourada) para submeter o seu voto.
+              </div>
             )}
           </div>
-          
-          <p style={styles.matchInfo}>
-            {new Date(activeVoting.match_date).toLocaleDateString('pt-PT', {
-              weekday: 'long',
-              year: 'numeric',
-              month: 'long',
-              day: 'numeric'
-            })}
-          </p>
-          
-          {/* Mostrar instruções resumidas APÓS votar e instruções completas ANTES de votar */}
-          {hasVoted ? (
-            <div style={styles.rulesBox}>
-              Avalia a prestação dos jogadores do CS Marítimo no seu último jogo!
-            </div>
-          ) : (
-            <div style={styles.rulesBox}>
-              <strong>COMO AVALIAR:</strong> Dê uma nota de 1 a 10 a cada jogador neste jogo onde 6 é neutro. 
-              Escolha também o seu Homem do Jogo (estrela dourada) para submeter o seu voto.
-            </div>
-          )}
-        </div>
 
-        <div style={styles.playersContainer}>
-          {activeVoting.players.map((player) => {
-            const playerRating = playerRatings.find(p => p.playerId === player.id);
-            const isManOfMatch = manOfMatchPlayerId === player.id;
-            
-            // DEBUG: Log para verificar estados
-            if (hasVoted && playerRating?.rating) {
-              console.log(`🔍 RENDER DEBUG: Player ${player.name} - Rating: ${playerRating.rating}, HasVoted: ${hasVoted}`);
-            }
-            
-            return (
-              <div 
-                key={player.id} 
-                style={styles.playerCard}
-                onClick={() => handlePlayerClick(player.id)}
-                className={isMobile ? "hover-card mobile-player-card-grid" : "hover-card"}
-              >
-                {playerRating?.showAverage && playerRating.averageRating && (
-                  <div style={styles.averageRating}>
-                    Média: {(() => {
-                      const avgRating = playerRating.averageRating.average_rating;
-                      console.log(`🎯 Displaying average for player:`, {
-                        playerId: player.id,
-                        playerName: player.name,
-                        avgRating,
-                        type: typeof avgRating,
-                        totalRatings: playerRating.averageRating.total_ratings
-                      });
-                      
-                      // Converter string para número se necessário
-                      const numericRating = typeof avgRating === 'string' ? parseFloat(avgRating) : avgRating;
-                      
-                      if (typeof numericRating === 'number' && numericRating > 0 && !isNaN(numericRating)) {
-                        return numericRating.toFixed(1);
-                      } else {
-                        return 'N/A';
-                      }
-                    })()} 
-                    ({playerRating.averageRating.total_ratings || 0} votos)
-                  </div>
-                )}
-
+          <div style={styles.playersContainer}>
+            {activeVoting.players.map((player) => {
+              const playerRating = playerRatings.find(p => p.playerId === player.id);
+              const isManOfMatch = manOfMatchPlayerId === player.id;
+              
+              // DEBUG: Log para verificar estados
+              if (hasVoted && playerRating?.rating) {
+                console.log(`🔍 RENDER DEBUG: Player ${player.name} - Rating: ${playerRating.rating}, HasVoted: ${hasVoted}`);
+              }
+              
+              return (
                 <div 
-                  style={styles.playerInfo}
-                  className={isMobile ? "mobile-player-info-column" : ""}
+                  key={player.id} 
+                  style={styles.playerCard}
+                  onClick={() => handlePlayerClick(player.id)}
+                  className={isMobile ? "hover-card mobile-player-card-grid" : "hover-card"}
                 >
-                  <PlayerImage
-                    imageUrl={player.image_url}
-                    playerName={player.name}
-                    style={{
-                      ...styles.playerImage,
-                      // Zoom out para imagens default para evitar corte
-                      objectFit: player.image_url?.includes('default-player') ? 'contain' : 'cover',
-                      padding: player.image_url?.includes('default-player') ? '0.2rem' : '0',
-                    }}
-                    loading="lazy"
-                    width="80"
-                    height="80"
-                    showFallbackText={true}
-                  />
-                  <div style={styles.playerDetails}>
-                    <div 
-                      style={styles.playerName}
-                      className={isMobile ? "mobile-player-name" : ""}
-                    >
-                      {player.name}
+                  {playerRating?.showAverage && playerRating.averageRating && (
+                    <div style={styles.averageRating}>
+                      Média: {(() => {
+                        const avgRating = playerRating.averageRating.average_rating;
+                        console.log(`🎯 Displaying average for player:`, {
+                          playerId: player.id,
+                          playerName: player.name,
+                          avgRating,
+                          type: typeof avgRating,
+                          totalRatings: playerRating.averageRating.total_ratings
+                        });
+                        
+                        // Converter string para número se necessário
+                        const numericRating = typeof avgRating === 'string' ? parseFloat(avgRating) : avgRating;
+                        
+                        if (typeof numericRating === 'number' && numericRating > 0 && !isNaN(numericRating)) {
+                          return numericRating.toFixed(1);
+                        } else {
+                          return 'N/A';
+                        }
+                      })()} 
+                      ({playerRating.averageRating.total_ratings || 0} votos)
                     </div>
-                    <div style={styles.playerPosition}>{player.position}</div>
-                    
-                    {/* Estrela no mobile fica na coluna esquerda */}
-                    {isMobile && (
-                      <div style={{ marginTop: '0.75rem', display: 'flex', justifyContent: 'center' }}>
-                        <button
-                          style={{
-                            width: "48px",
-                            height: "48px",
-                            borderRadius: "50%",
-                            border: "2px solid rgba(255, 215, 0, 0.5)",
-                            background: isManOfMatch ? "#FFD700" : "rgba(0, 0, 0, 0.3)",
-                            cursor: "pointer",
-                            transition: "all 0.3s ease",
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            transform: isManOfMatch ? "scale(1.05)" : "scale(1)",
-                            boxShadow: isManOfMatch ? "0 0 15px rgba(255, 215, 0, 0.8)" : "none",
-                          }}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleManOfMatchSelect(player.id, 'regular');
-                          }}
-                          disabled={hasVoted}
-                          title="Homem do Jogo"
-                          className="hover-button"
-                        >
-                          <span 
+                  )}
+
+                  <div 
+                    style={styles.playerInfo}
+                    className={isMobile ? "mobile-player-info-column" : ""}
+                  >
+                    <PlayerImage
+                      imageUrl={player.image_url}
+                      playerName={player.name}
+                      style={{
+                        ...styles.playerImage,
+                        // Zoom out para imagens default para evitar corte
+                        objectFit: player.image_url?.includes('default-player') ? 'contain' : 'cover',
+                        padding: player.image_url?.includes('default-player') ? '0.2rem' : '0',
+                      }}
+                      loading="lazy"
+                      width="80"
+                      height="80"
+                      showFallbackText={true}
+                    />
+                    <div style={styles.playerDetails}>
+                      <div 
+                        style={styles.playerName}
+                        className={isMobile ? "mobile-player-name" : ""}
+                      >
+                        {player.name}
+                      </div>
+                      <div style={styles.playerPosition}>{player.position}</div>
+                      
+                      {/* Estrela no mobile fica na coluna esquerda */}
+                      {isMobile && (
+                        <div style={{ marginTop: '0.75rem', display: 'flex', justifyContent: 'center' }}>
+                          <button
                             style={{
-                              fontSize: "28px",
-                              color: isManOfMatch ? "#000000" : "#FFD700",
-                              textShadow: isManOfMatch 
-                                ? "none" 
-                                : "1px 1px 2px rgba(0, 0, 0, 0.8)",
-                              lineHeight: "1",
+                              width: "48px",
+                              height: "48px",
+                              borderRadius: "50%",
+                              border: "2px solid rgba(255, 215, 0, 0.5)",
+                              background: isManOfMatch ? "#FFD700" : "rgba(0, 0, 0, 0.3)",
+                              cursor: "pointer",
+                              transition: "all 0.3s ease",
                               display: "flex",
                               alignItems: "center",
                               justifyContent: "center",
-                              fontWeight: "normal"
+                              transform: isManOfMatch ? "scale(1.05)" : "scale(1)",
+                              boxShadow: isManOfMatch ? "0 0 15px rgba(255, 215, 0, 0.8)" : "none",
                             }}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleManOfMatchSelect(player.id, 'regular');
+                            }}
+                            disabled={hasVoted}
+                            title="Homem do Jogo"
+                            className="hover-button"
                           >
-                            ★
-                          </span>
-                        </button>
-                      </div>
-                    )}
+                            <span 
+                              style={{
+                                fontSize: "28px",
+                                color: isManOfMatch ? "#000000" : "#FFD700",
+                                textShadow: isManOfMatch 
+                                  ? "none" 
+                                  : "1px 1px 2px rgba(0, 0, 0, 0.8)",
+                                lineHeight: "1",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                fontWeight: "normal"
+                              }}
+                            >
+                              ★
+                            </span>
+                          </button>
+                        </div>
+                      )}
+                    </div>
                   </div>
-                </div>
 
-                <div 
-                  style={styles.ratingsSection}
-                  className={isMobile ? "mobile-ratings-column" : ""}
-                >
                   <div 
-                    style={isMobile ? {
-                      display: 'grid',
-                      gridTemplateColumns: 'repeat(2, 1fr)',
-                      gridTemplateRows: 'repeat(5, 1fr)',
-                      gap: '0.4rem',
-                      gridAutoFlow: 'column',
-                      width: 'auto'
-                    } : styles.ratingButtons}
-                    className={isMobile ? "mobile-maritodle-ratings-container" : ""}
+                    style={styles.ratingsSection}
+                    className={isMobile ? "mobile-ratings-column" : ""}
                   >
-                    {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((rating) => {
-                      const isActive = playerRating?.rating === rating;
-                      const isAverage = rating === 6;
-                      const className = isMobile 
-                        ? `mobile-maritodle-rating-item hover-button${isActive ? ' active' : ''}${isAverage && !isActive ? ' average' : ''}`
-                        : "hover-button";
-                      
-                      return (
-                        <button
-                          key={rating}
-                          style={isMobile ? {
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            background: isActive ? 'rgba(255, 215, 0, 0.9)' : (isAverage ? 'rgba(255, 215, 0, 0.1)' : 'rgba(255, 255, 255, 0.1)'),
-                            border: isActive ? '2px solid #FFD700' : (isAverage ? '2px solid rgba(255, 215, 0, 0.5)' : '2px solid rgba(255, 255, 255, 0.3)'),
-                            borderRadius: '50%',
-                            width: '2.5rem',
-                            height: '2.5rem',
-                            fontSize: '0.9rem',
-                            fontWeight: '700',
-                            color: isActive ? '#000' : 'white',
-                            cursor: 'pointer',
-                            transition: 'all 0.3s ease',
-                            transform: isActive ? 'scale(1.1)' : 'scale(1)',
-                            boxShadow: isActive ? '0 0 15px rgba(255, 215, 0, 0.5)' : 'none'
-                          } : {
-                            ...styles.ratingButton,
-                            ...(isAverage ? styles.ratingButtonAverage : {}),
-                            ...(isActive ? styles.ratingButtonActive : {})
-                          }}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleRatingChange(player.id, rating);
-                          }}
-                          disabled={hasVoted}
-                          className={className}
-                        >
-                          {rating}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                {/* Estrela no desktop fica na posição original */}
-                {!isMobile && (
-                  <div 
-                    style={styles.manOfMatchSection}
-                  >
-                    <button
-                      style={{
-                        ...styles.manOfMatchButton,
-                        ...(isManOfMatch ? styles.manOfMatchButtonActive : {})
-                      }}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleManOfMatchSelect(player.id, 'regular');
-                      }}
-                      disabled={hasVoted}
-                      title="Homem do Jogo"
-                      className="hover-button"
+                    <div 
+                      style={isMobile ? {
+                        display: 'grid',
+                        gridTemplateColumns: 'repeat(2, 1fr)',
+                        gridTemplateRows: 'repeat(5, 1fr)',
+                        gap: '0.4rem',
+                        gridAutoFlow: 'column',
+                        width: 'auto'
+                      } : styles.ratingButtons}
+                      className={isMobile ? "mobile-maritodle-ratings-container" : ""}
                     >
-                      {/* Estrela usando CSS */}
-                      <span 
-                        style={{
-                          fontSize: "36px",
-                          color: isManOfMatch ? "#000000" : "#FFD700",
-                          textShadow: isManOfMatch 
-                            ? "none" 
-                            : "1px 1px 2px rgba(0, 0, 0, 0.8)",
-                          lineHeight: "1",
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          fontWeight: "normal"
-                        }}
-                      >
-                        ★
-                      </span>
-                    </button>
+                      {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((rating) => {
+                        const isActive = playerRating?.rating === rating;
+                        const isAverage = rating === 6;
+                        const className = isMobile 
+                          ? `mobile-maritodle-rating-item hover-button${isActive ? ' active' : ''}${isAverage && !isActive ? ' average' : ''}`
+                          : "hover-button";
+                        
+                        return (
+                          <button
+                            key={rating}
+                            style={isMobile ? {
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              background: isActive ? 'rgba(255, 215, 0, 0.9)' : (isAverage ? 'rgba(255, 215, 0, 0.1)' : 'rgba(255, 255, 255, 0.1)'),
+                              border: isActive ? '2px solid #FFD700' : (isAverage ? '2px solid rgba(255, 215, 0, 0.5)' : '2px solid rgba(255, 255, 255, 0.3)'),
+                              borderRadius: '50%',
+                              width: '2.5rem',
+                              height: '2.5rem',
+                              fontSize: '0.9rem',
+                              fontWeight: '700',
+                              color: isActive ? '#000' : 'white',
+                              cursor: 'pointer',
+                              transition: 'all 0.3s ease',
+                              transform: isActive ? 'scale(1.1)' : 'scale(1)',
+                              boxShadow: isActive ? '0 0 15px rgba(255, 215, 0, 0.5)' : 'none'
+                            } : {
+                              ...styles.ratingButton,
+                              ...(isAverage ? styles.ratingButtonAverage : {}),
+                              ...(isActive ? styles.ratingButtonActive : {})
+                            }}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleRatingChange(player.id, rating);
+                            }}
+                            disabled={hasVoted}
+                            className={className}
+                          >
+                            {rating}
+                          </button>
+                        );
+                      })}
+                    </div>
                   </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
 
-        {!hasVoted && (
-          <button
-            style={{
-              ...styles.submitButton,
-              ...(!canSubmit() ? styles.submitButtonDisabled : {})
-            }}
-            onClick={handleSubmit}
-            disabled={!canSubmit() || submitting}
-            className="hover-button"
-          >
-            {submitting ? 'A submeter...' : 'Submeter Avaliações'}
-          </button>
-        )}
-
-        {hasVoted && showResults && (
-          <div style={styles.resultsSection}>
-            <div style={styles.resultsTitle}>Homem do Jogo</div>
-            {manOfMatchResults.length > 0 ? (
-              <div style={styles.winnerCard}>
-                <PlayerImage
-                  imageUrl={getPlayerById(manOfMatchResults[0].player_id)?.image_url || ''}
-                  playerName={manOfMatchResults[0].player_name}
-                  style={styles.winnerImage}
-                  loading="lazy"
-                  width="120"
-                  height="120"
-                  showFallbackText={true}
-                />
-                <div style={styles.winnerName}>{manOfMatchResults[0].player_name}</div>
-                <div style={styles.winnerPercentage}>
-                  {typeof manOfMatchResults[0].percentage === 'number' 
-                    ? manOfMatchResults[0].percentage.toFixed(1) 
-                    : '0.0'}%
+                  {/* Estrela no desktop fica na posição original */}
+                  {!isMobile && (
+                    <div 
+                      style={styles.manOfMatchSection}
+                    >
+                      <button
+                        style={{
+                          ...styles.manOfMatchButton,
+                          ...(isManOfMatch ? styles.manOfMatchButtonActive : {})
+                        }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleManOfMatchSelect(player.id, 'regular');
+                        }}
+                        disabled={hasVoted}
+                        title="Homem do Jogo"
+                        className="hover-button"
+                      >
+                        {/* Estrela usando CSS */}
+                        <span 
+                          style={{
+                            fontSize: "36px",
+                            color: isManOfMatch ? "#000000" : "#FFD700",
+                            textShadow: isManOfMatch 
+                              ? "none" 
+                              : "1px 1px 2px rgba(0, 0, 0, 0.8)",
+                            lineHeight: "1",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            fontWeight: "normal"
+                          }}
+                        >
+                          ★
+                        </span>
+                      </button>
+                    </div>
+                  )}
                 </div>
-              </div>
-            ) : (
-              <div style={styles.noResultsMessage}>
-                <div style={styles.noResultsText}>
-                  Ainda não há votos suficientes para determinar o Homem do Jogo
-                </div>
-              </div>
-            )}
+              );
+            })}
           </div>
-        )}
+
+          {!hasVoted && (
+            <button
+              style={{
+                ...styles.submitButton,
+                ...(!canSubmit() ? styles.submitButtonDisabled : {})
+              }}
+              onClick={handleSubmit}
+              disabled={!canSubmit() || submitting}
+              className="hover-button"
+            >
+              {submitting ? 'A submeter...' : 'Submeter Avaliações'}
+            </button>
+          )}
+
+          {hasVoted && showResults && (
+            <div style={styles.resultsSection}>
+              <div style={styles.resultsTitle}>Homem do Jogo</div>
+              {manOfMatchResults.length > 0 ? (
+                <div style={styles.winnerCard}>
+                  <PlayerImage
+                    imageUrl={getPlayerById(manOfMatchResults[0].player_id)?.image_url || ''}
+                    playerName={manOfMatchResults[0].player_name}
+                    style={styles.winnerImage}
+                    loading="lazy"
+                    width="120"
+                    height="120"
+                    showFallbackText={true}
+                  />
+                  <div style={styles.winnerName}>{manOfMatchResults[0].player_name}</div>
+                  <div style={styles.winnerPercentage}>
+                    {typeof manOfMatchResults[0].percentage === 'number' 
+                      ? manOfMatchResults[0].percentage.toFixed(1) 
+                      : '0.0'}%
+                  </div>
+                </div>
+              ) : (
+                <div style={styles.noResultsMessage}>
+                  <div style={styles.noResultsText}>
+                    Ainda não há votos suficientes para determinar o Homem do Jogo
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
       </div>
-    </div>
     </PageLayout>
   );
 };

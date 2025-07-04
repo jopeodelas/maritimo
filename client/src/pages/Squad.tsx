@@ -4,6 +4,7 @@ import PageLayout from '../components/PageLayout';
 import PlayerImage from '../components/PlayerImage';
 import { createStyles } from '../styles/styleUtils';
 import useIsMobile from '../hooks/useIsMobile';
+import Seo from '../components/Seo';
 
 interface Player {
   id: number;
@@ -561,6 +562,7 @@ const Squad = () => {
   if (loading) {
     return (
       <PageLayout>
+        <Seo title="Plantel CS Marítimo" description="Conheça os jogadores que defendem as cores verde e vermelha." />
         <div style={styles.container}>
           <div style={styles.backgroundPattern} className="background-pattern"></div>
           <div style={styles.content}>
@@ -578,6 +580,7 @@ const Squad = () => {
   if (!currentPosition) {
     return (
       <PageLayout>
+        <Seo title="Plantel CS Marítimo" description="Conheça os jogadores que defendem as cores verde e vermelha." />
         <div style={styles.container}>
           <div style={styles.backgroundPattern} className="background-pattern"></div>
           <div style={styles.content}>
@@ -593,6 +596,7 @@ const Squad = () => {
 
   return (
     <PageLayout>
+      <Seo title="Plantel CS Marítimo" description="Conheça os jogadores que defendem as cores verde e vermelha." />
       <div style={styles.container}>
         <div style={styles.backgroundPattern} className="background-pattern"></div>
 

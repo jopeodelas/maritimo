@@ -1,7 +1,9 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import ReactGA from 'react-ga4';
+import { onCLS, onFID, onLCP } from 'web-vitals';
 import App from './App.tsx';
+import { HelmetProvider } from 'react-helmet-async';
 import './index.css';
 import './styles/mobile-responsive.css';
 import { GA_CONFIG } from './config/analytics';
@@ -80,8 +82,29 @@ if (gaEnabled) {
   });
 }
 
+// Web Vitals Monitoring
+const reportWebVitals = (metric: any) => {
+  if (gaEnabled) {
+    ReactGA.event({
+      action: metric.name,
+      category: 'Web Vitals',
+      label: metric.id,
+      value: Math.round(metric.value),
+      nonInteraction: true
+    });
+  } else {
+    console.log(`[WebVitals] ${metric.name}:`, metric.value);
+  }
+};
+
+onCLS(reportWebVitals);
+onFID(reportWebVitals);
+onLCP(reportWebVitals);
+
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <App />
+    <HelmetProvider>
+      <App />
+    </HelmetProvider>
   </React.StrictMode>,
 );

@@ -1,39 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://csmaritimofans.pt/</loc>
-    <lastmod>2025-01-26</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>1.0</priority>
+    <loc>https://maritimofans.pt/</loc>
   </url>
   <url>
-    <loc>https://csmaritimofans.pt/login</loc>
-    <lastmod>2025-01-26</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
+    <loc>https://maritimofans.pt/main</loc>
   </url>
   <url>
-    <loc>https://csmaritimofans.pt/register</loc>
-    <lastmod>2025-01-26</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
+    <loc>https://maritimofans.pt/squad</loc>
   </url>
   <url>
-    <loc>https://csmaritimofans.pt/main</loc>
-    <lastmod>2025-01-26</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.9</priority>
+    <loc>https://maritimofans.pt/maritodle</loc>
   </url>
   <url>
-    <loc>https://csmaritimofans.pt/voting</loc>
-    <lastmod>2025-01-26</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.9</priority>
+    <loc>https://maritimofans.pt/player-ratings</loc>
   </url>
   <url>
-    <loc>https://csmaritimofans.pt/news</loc>
-    <lastmod>2025-01-26</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.9</priority>
+    <loc>https://maritimofans.pt/news</loc>
+  </url>
+  <url>
+    <loc>https://maritimofans.pt/schedule</loc>
   </url>
 </urlset> 

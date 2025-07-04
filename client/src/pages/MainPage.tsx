@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import PageLayout from "../components/PageLayout";
+import Seo from '../components/Seo';
 import PlayerImage from "../components/PlayerImage";
 import LayoutStabilizer from "../components/LayoutStabilizer";
 import { createStyles } from "../styles/styleUtils";
@@ -993,6 +994,7 @@ const MainPage = () => {
   if (loading) {
     return (
       <PageLayout>
+        <Seo title="Página Principal - CS Marítimo Fans" description="Resumo das votações, rumores de transferências e Maritodle para adeptos do CS Marítimo." />
         <div style={styles.container}>
           <div style={styles.backgroundPattern}></div>
           <div style={styles.content}>
@@ -1005,6 +1007,7 @@ const MainPage = () => {
 
   return (
     <PageLayout>
+      <Seo title="Página Principal - CS Marítimo Fans" description="Resumo das votações, rumores de transferências e Maritodle para adeptos do CS Marítimo." />
       <div style={styles.container}>
         <div style={styles.backgroundPattern}></div>
         <div style={styles.content}>

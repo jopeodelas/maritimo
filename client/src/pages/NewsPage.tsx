@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import PageLayout from "../components/PageLayout";
+import Seo from '../components/Seo';
 import { createStyles } from "../styles/styleUtils";
 import useIsMobile from "../hooks/useIsMobile";
 import { newsService } from "../services/newsService";
@@ -334,6 +335,7 @@ const NewsPage = () => {
   if (loading) {
     return (
       <PageLayout>
+        <Seo title="Notícias - CS Marítimo Fans" description="Fica a par das últimas notícias e novidades sobre o CS Marítimo." />
         <div style={styles.container}>
           <div style={styles.backgroundPattern} className="background-pattern"></div>
           <div style={styles.content}>
@@ -348,6 +350,7 @@ const NewsPage = () => {
 
   return (
     <PageLayout>
+      <Seo title="Notícias - CS Marítimo Fans" description="Fica a par das últimas notícias e novidades sobre o CS Marítimo." />
       <div style={styles.container}>
         <div style={styles.backgroundPattern} className="background-pattern"></div>
         <div style={styles.content}>

@@ -2,6 +2,7 @@ import PageLayout from "../components/PageLayout";
 import LayoutStabilizer from "../components/LayoutStabilizer";
 import { createStyles } from "../styles/styleUtils";
 import useIsMobile from "../hooks/useIsMobile";
+import Seo from '../components/Seo';
 
 const Schedule = () => {
   const isMobile = useIsMobile();
@@ -163,6 +164,7 @@ const Schedule = () => {
 
   return (
     <PageLayout>
+      <Seo title="Calendário de Jogos - CS Marítimo Fans" description="Consulta o calendário e resultados dos jogos do CS Marítimo." />
       <div style={styles.container}>
         <div style={styles.backgroundPattern}></div>
         <LayoutStabilizer>

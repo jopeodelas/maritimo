@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import PageLayout from '../components/PageLayout';
+import Seo from '../components/Seo';
 import { createStyles } from '../styles/styleUtils';
 import useIsMobile from '../hooks/useIsMobile';
 import api from '../services/api';
@@ -1259,6 +1260,7 @@ const MaritodlePage = () => {
 
   return (
     <PageLayout>
+      <Seo title="Maritodle - Trivia CS Marítimo" description="Joga o Maritodle e descobre até que ponto conheces o CS Marítimo!" />
       <div style={styles.container}>
         <div style={styles.backgroundPattern}></div>
         <div style={{

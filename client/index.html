@@ -22,6 +22,8 @@
     
     <link rel="icon" type="image/png" sizes="32x32" href="/src/assets/maritimo-crest.png" />
     <link rel="icon" type="image/png" sizes="16x16" href="/src/assets/maritimo-crest.png" />
+    <link rel="shortcut icon" href="/src/assets/maritimo-crest.png" type="image/png" />
+    <link rel="apple-touch-icon" href="/src/assets/maritimo-crest.png" />
     <link rel="canonical" href="https://maritimofans.pt" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <title>CS Marítimo Fans - Portal dos Adeptos</title>
@@ -60,6 +62,27 @@
           "target": "https://maritimofans.pt/search?query={search_term_string}",
           "query-input": "required name=search_term_string"
         }
+      }
+    </script>
+    
+    <!-- SportsTeam Structured Data -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "SportsTeam",
+        "name": "Club Sport Marítimo Fans Portal",
+        "sport": "Soccer",
+        "url": "https://maritimofans.pt",
+        "logo": "https://maritimofans.pt/src/assets/maritimo-crest.png",
+        "memberOf": {
+          "@type": "SportsOrganization",
+          "name": "Primeira Liga"
+        },
+        "sameAs": [
+          "https://www.facebook.com/MaritimoFans",
+          "https://twitter.com/MaritimoFans",
+          "https://www.instagram.com/csmartimofans"
+        ]
       }
     </script>
   </head>

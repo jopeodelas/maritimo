@@ -1,11 +1,7 @@
 User-agent: *
 Allow: /
-Disallow: /api/
-Disallow: /admin/
-Disallow: /private/
 
-# Sitemap
-Sitemap: https://csmaritimo.pt/sitemap.xml
+Sitemap: https://maritimofans.pt/sitemap.xml
 
 # Crawl delay
 Crawl-delay: 1 
