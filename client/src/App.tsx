@@ -4,6 +4,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 import ProtectedAdminRoute from './components/ProtectedAdminRoute';
 import { AuthProvider } from './contexts/AuthContext';
 import ErrorBoundary from './components/ErrorBoundary';
+import Footer from './components/Footer';
 
 import './styles/optimizedStyles.css';
 import './styles/accessibility.css';
@@ -182,6 +183,7 @@ function App() {
                     <Route path="*" element={<NotFoundPage />} />
                   </Routes>
                 </Suspense>
+                <Footer />
               </div>
             </LayoutStabilizer>
           </Router>
