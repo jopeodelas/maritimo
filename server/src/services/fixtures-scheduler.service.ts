@@ -4,7 +4,7 @@ class FixturesSchedulerService {
   private readonly INTERVAL_MS = 30 * 60 * 1000; // 30 minutos
   private intervalId: NodeJS.Timeout | null = null;
   private readonly SEASON = 2025;
-  private readonly LEAGUE_ID = 92;
+  private readonly LEAGUE_ID = 95; // ID correto da Segunda Liga
 
   start() {
     this.runSync();

@@ -83,7 +83,7 @@ const MARITIMO_TEAM_IDS = {
 };
 
 // Liga Portugal 2 ID (Segunda Liga)
-const LIGA_PORTUGAL_2_ID = 219;
+const LIGA_PORTUGAL_2_ID = 95; // ID correto da Segunda Liga
 
 // Removed hardcoded data - using only real API data
 
@@ -168,33 +168,36 @@ class FootballAPIService {
         throw new Error('API key não configurada. Configure RAPIDAPI_KEY nas variáveis de ambiente.');
       }
 
-        const teamId = MARITIMO_TEAM_IDS['API-Football']; // 214 para CS Marítimo
-        
-        console.log(`🔍 Attempting to fetch recent matches for CS Marítimo (Team ID: ${teamId})`);
-        
-          const data = await this.makeAPIRequest('/fixtures', {
-            team: teamId,
-            last: limit,
-            status: 'FT', // Apenas jogos terminados
-            season: 2024 // Temporada atual
-          });
+      const teamId = MARITIMO_TEAM_IDS['API-Football']; // 214 para CS Marítimo
+      
+      console.log(`🔍 Attempting to fetch matches for CS Marítimo (Team ID: ${teamId})`);
+      
+      const data = await this.makeAPIRequest('/fixtures', {
+        team: teamId,
+        season: 2025 // Temporada atual
+      });
 
-          const matches = data.response || [];
-          
-          if (matches.length > 0) {
-            console.log(`📊 ✅ API Working! Found ${matches.length} recent matches for CS Marítimo`);
-            
-            // Log dos jogos encontrados para debug
-            matches.forEach((match: APIFixture, index: number) => {
-              console.log(`🏈 Match ${index + 1}: ${match.teams.home.name} vs ${match.teams.away.name} (${match.fixture.date})`);
-            });
+      const matches = data.response || [];
+      
+      if (matches.length > 0) {
+        console.log(`📊 ✅ API Working! Found ${matches.length} matches for CS Marítimo`);
+        
+        // Log dos jogos encontrados para debug
+        matches.forEach((match: APIFixture, index: number) => {
+          console.log(`🏈 Match ${index + 1}: ${match.teams.home.name} vs ${match.teams.away.name} (${match.fixture.date})`);
+        });
 
-            return matches;
-          } else {
+        // Se um limite foi especificado, retornar apenas os últimos X jogos
+        if (limit > 0) {
+          return matches.slice(-limit);
+        }
+
+        return matches;
+      } else {
         throw new Error('Nenhum jogo encontrado na API para o CS Marítimo');
       }
     } catch (error: any) {
-      console.error('Error fetching recent matches:', error.message);
+      console.error('Error fetching matches:', error.message);
       throw error;
     }
   }
@@ -771,11 +774,11 @@ class FootballAPIService {
       const data = await this.makeAPIRequest('/fixtures', {
         team: teamId,
         season,
-        league: leagueId,
+        league: leagueId
       });
 
       const fixtures = data.response || [];
-      console.log(`📆 Found ${fixtures.length} fixtures for season ${season}`);
+      console.log(`📆 Found ${fixtures.length} fixtures for season ${season} in league ${leagueId}`);
       return fixtures;
     } catch (error: any) {
       console.error('Error fetching season fixtures:', error.message);

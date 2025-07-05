@@ -5,6 +5,7 @@ import useIsMobile from "../hooks/useIsMobile";
 import Seo from '../components/Seo';
 import { useEffect, useState } from 'react';
 import { getSeasonFixtures, type Fixture } from '../services/scheduleService';
+import OptimizedImage from "../components/OptimizedImage";
 
 const Schedule = () => {
   const isMobile = useIsMobile();
@@ -24,6 +25,41 @@ const Schedule = () => {
     };
     fetchData();
   }, []);
+
+  const getStatusDisplay = (status: string, homeScore?: number, awayScore?: number) => {
+    switch (status) {
+      case 'FT':
+        return {
+          text: `${homeScore ?? 0}-${awayScore ?? 0}`,
+          color: '#4CAF50'
+        };
+      case 'LIVE':
+        return {
+          text: `${homeScore ?? 0}-${awayScore ?? 0}`,
+          color: '#F44336'
+        };
+      case 'HT':
+        return {
+          text: 'Intervalo',
+          color: '#FFA000'
+        };
+      case 'CANC':
+        return {
+          text: 'Cancelado',
+          color: '#F44336'
+        };
+      case 'PST':
+        return {
+          text: 'Adiado',
+          color: '#FF9800'
+        };
+      default:
+        return {
+          text: 'Por começar',
+          color: '#FFFFFF'
+        };
+    }
+  };
 
   const styles = createStyles({
     container: {
@@ -180,21 +216,57 @@ const Schedule = () => {
     },
     scheduleTable: {
       width: '100%',
-      maxWidth: '60rem',
+      maxWidth: '80rem',
       margin: '0 auto',
-      borderCollapse: 'collapse',
+      borderCollapse: 'separate',
+      borderSpacing: '0 0.5rem',
       color: '#FFFFFF',
     },
     tableHeader: {
       textAlign: 'left',
+      padding: '1rem',
+      background: 'rgba(76, 175, 80, 0.1)',
       borderBottom: '2px solid rgba(76, 175, 80, 0.4)',
-      padding: '0.75rem',
+      fontSize: 'clamp(0.875rem, 2vw, 1rem)',
+      fontWeight: '600',
     },
     tableRow: {
-      borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
+      background: 'rgba(30, 40, 50, 0.95)',
+      transition: 'transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out',
+      ':hover': {
+        transform: 'translateY(-2px)',
+        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)',
+      },
     },
     tableCell: {
-      padding: '0.5rem 0.75rem',
+      padding: '1rem',
+      verticalAlign: 'middle',
+      borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
+      fontSize: 'clamp(0.875rem, 2vw, 1rem)',
+    },
+    teamContainer: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: '1rem',
+    },
+    teamLogo: {
+      width: '2rem',
+      height: '2rem',
+      objectFit: 'contain',
+    },
+    teamName: {
+      flex: 1,
+    },
+    statusBadge: {
+      padding: '0.5rem 1rem',
+      borderRadius: '0.5rem',
+      fontWeight: '600',
+      textAlign: 'center',
+      minWidth: '6rem',
+    },
+    competitionInfo: {
+      fontSize: 'clamp(0.75rem, 1.5vw, 0.875rem)',
+      color: '#B0BEC5',
     },
   });
 
@@ -219,8 +291,11 @@ const Schedule = () => {
                   <thead>
                     <tr>
                       <th style={styles.tableHeader}>Data</th>
-                      <th style={styles.tableHeader}>Jogo</th>
+                      <th style={styles.tableHeader}>Competição</th>
+                      <th style={styles.tableHeader}>Casa</th>
                       <th style={styles.tableHeader}>Resultado</th>
+                      <th style={styles.tableHeader}>Fora</th>
+                      <th style={styles.tableHeader}>Local</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -228,17 +303,50 @@ const Schedule = () => {
                       const dateObj = new Date(match.match_date);
                       const dateStr = dateObj.toLocaleDateString('pt-PT', { day: '2-digit', month: '2-digit', year: 'numeric' });
                       const timeStr = dateObj.toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit' });
-                      let result = '-';
-                      if (match.status === 'FT') {
-                        result = `${match.home_score ?? ''}-${match.away_score ?? ''}`;
-                      } else if (match.status !== 'NS') {
-                        result = match.status;
-                      }
+                      const status = getStatusDisplay(match.status, match.home_score, match.away_score);
+                      
                       return (
                         <tr key={match.fixture_id} style={styles.tableRow}>
-                          <td style={styles.tableCell}>{`${dateStr} ${timeStr}`}</td>
-                          <td style={styles.tableCell}>{`${match.home_team} vs ${match.away_team}`}</td>
-                          <td style={styles.tableCell}>{result}</td>
+                          <td style={styles.tableCell}>
+                            <div>{dateStr}</div>
+                            <div style={styles.competitionInfo}>{timeStr}</div>
+                          </td>
+                          <td style={styles.tableCell}>
+                            <div>{match.competition}</div>
+                            <div style={styles.competitionInfo}>{match.round}</div>
+                          </td>
+                          <td style={styles.tableCell}>
+                            <div style={styles.teamContainer}>
+                              {match.home_team_logo && (
+                                <OptimizedImage
+                                  src={match.home_team_logo}
+                                  alt={`${match.home_team} logo`}
+                                  style={styles.teamLogo}
+                                />
+                              )}
+                              <span style={styles.teamName}>{match.home_team}</span>
+                            </div>
+                          </td>
+                          <td style={styles.tableCell}>
+                            <div style={{ ...styles.statusBadge, color: status.color }}>
+                              {status.text}
+                            </div>
+                          </td>
+                          <td style={styles.tableCell}>
+                            <div style={styles.teamContainer}>
+                              {match.away_team_logo && (
+                                <OptimizedImage
+                                  src={match.away_team_logo}
+                                  alt={`${match.away_team} logo`}
+                                  style={styles.teamLogo}
+                                />
+                              )}
+                              <span style={styles.teamName}>{match.away_team}</span>
+                            </div>
+                          </td>
+                          <td style={styles.tableCell}>
+                            <div>{match.venue}</div>
+                          </td>
                         </tr>
                       );
                     })}
